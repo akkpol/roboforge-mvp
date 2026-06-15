@@ -1,0 +1,17 @@
+app/node_modules/
+app/dist/
+app/dist-device/
+app/.npm-cache/
+app/.vercel/
+app/.vite-*.log
+app/design-reference/*
+!app/design-reference/master-target.png
+!app/design-reference/implementation-garage-qa2.jpg
+!app/design-reference/qa-comparison-mobile-qa2.jpg
+firmware/.pio/
+firmware/.venv/
+firmware/data/
+.vercel/
+.npm-cache/
+.DS_Store
+Thumbs.db
