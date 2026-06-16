@@ -1,7 +1,6 @@
-import { Bot, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { OwnerConsole } from "@/components/owner-console";
 import { getCurrentUser, getOwnerWorkspace } from "@/lib/supabase/server";
 
 const setupItems = [
@@ -23,33 +22,10 @@ export default async function DashboardPage() {
   const workspace = user
     ? await getOwnerWorkspace(user)
     : { error: null, profile: null, robots: [] };
-  const ownerName = workspace.profile?.display_name || user?.email || "RoboForge Owner";
 
-  return (
-    <main className="dashboard-shell">
-      <nav className="topbar dashboard-topbar">
-        <Link className="brand" href="/">
-          <span className="brand-mark">
-            <Bot size={21} />
-          </span>
-          <span>
-            <strong>ROBOFORGE</strong>
-            <small>DIGITAL HANGAR</small>
-          </span>
-        </Link>
-        <div className="topbar-actions">
-          <span className="account-pill">
-            {ownerName}
-          </span>
-          {configured ? (
-            <Link className="icon-command" href="/auth/sign-out" title="Sign out">
-              <LogOut size={18} />
-            </Link>
-          ) : null}
-        </div>
-      </nav>
-
-      {!configured ? (
+  if (!configured) {
+    return (
+      <main className="dashboard-shell">
         <section className="setup-alert">
           <div>
             <span className="eyebrow">AUTH NOT CONNECTED</span>
@@ -66,9 +42,13 @@ export default async function DashboardPage() {
             ))}
           </ol>
         </section>
-      ) : null}
+      </main>
+    );
+  }
 
-      {workspace.error ? (
+  if (workspace.error) {
+    return (
+      <main className="dashboard-shell">
         <section className="setup-alert">
           <div>
             <span className="eyebrow">WORKSPACE NEEDS ATTENTION</span>
@@ -81,9 +61,20 @@ export default async function DashboardPage() {
             <li>Reload after login</li>
           </ol>
         </section>
-      ) : null}
+      </main>
+    );
+  }
 
-      <OwnerConsole ownerName={ownerName} robots={workspace.robots} />
+  return (
+    <main className="demo-dashboard">
+      <iframe
+        className="demo-frame"
+        src="/demo/index.html?screen=garage"
+        title="RoboForge owner console"
+      />
+      <Link className="demo-sign-out" href="/auth/sign-out" title="Sign out">
+        <LogOut size={18} />
+      </Link>
     </main>
   );
 }
