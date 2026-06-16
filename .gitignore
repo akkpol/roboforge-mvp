@@ -4,6 +4,10 @@ app/dist-device/
 app/.npm-cache/
 app/.vercel/
 app/.vite-*.log
+web/node_modules/
+web/.next/
+web/out/
+web/.vercel/
 app/design-reference/*
 !app/design-reference/master-target.png
 !app/design-reference/implementation-garage-qa2.jpg
