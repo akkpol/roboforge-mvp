@@ -2,6 +2,7 @@ import type {
   DriveCommand,
   RobotTelemetry,
   RoverApi,
+  RoverApiErrorCode,
 } from "./types";
 
 const demoStatus: RobotTelemetry = {
@@ -24,6 +25,37 @@ export function clampDriveCommand(command: DriveCommand): DriveCommand {
   };
 }
 
+export class RoverApiError extends Error {
+  code: RoverApiErrorCode;
+  status?: number;
+  details?: unknown;
+
+  constructor(code: RoverApiErrorCode, status?: number, details?: unknown) {
+    super(`Rover API error: ${code}`);
+    this.name = "RoverApiError";
+    this.code = code;
+    this.status = status;
+    this.details = details;
+  }
+}
+
+export function getRoverErrorCode(error: unknown): RoverApiErrorCode {
+  return error instanceof RoverApiError ? error.code : "network_error";
+}
+
+function isRoverApiErrorCode(value: unknown): value is RoverApiErrorCode {
+  return (
+    value === "battery_configuration_mismatch" ||
+    value === "controls_not_armed" ||
+    value === "invalid_json" ||
+    value === "network_error" ||
+    value === "no_control_client" ||
+    value === "not_found" ||
+    value === "stale_sequence" ||
+    value === "unknown"
+  );
+}
+
 async function requestJson<T>(
   path: string,
   options?: RequestInit,
@@ -42,10 +74,29 @@ async function requestJson<T>(
     });
 
     if (!response.ok) {
-      throw new Error(`Rover API failed: ${response.status}`);
+      let details: unknown;
+      try {
+        details = await response.json();
+      } catch {
+        details = undefined;
+      }
+
+      const codeCandidate =
+        details && typeof details === "object" && "error" in details
+          ? (details as { error?: unknown }).error
+          : undefined;
+      const code = isRoverApiErrorCode(codeCandidate)
+        ? codeCandidate
+        : response.status === 404
+          ? "not_found"
+          : "unknown";
+      throw new RoverApiError(code, response.status, details);
     }
 
     return (await response.json()) as T;
+  } catch (error) {
+    if (error instanceof RoverApiError) throw error;
+    throw new RoverApiError("network_error", undefined, error);
   } finally {
     window.clearTimeout(timeout);
   }

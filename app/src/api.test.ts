@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { clampDriveCommand, DemoRoverApi } from "./api";
+import {
+  clampDriveCommand,
+  DemoRoverApi,
+  getRoverErrorCode,
+  RoverApiError,
+} from "./api";
 
 describe("clampDriveCommand", () => {
   it("keeps drive inputs within the Beta safety limits", () => {
@@ -24,5 +29,13 @@ describe("DemoRoverApi", () => {
     const api = new DemoRoverApi();
     expect((await api.setArmed(true)).armed).toBe(true);
     expect((await api.stop()).armed).toBe(false);
+  });
+});
+
+describe("getRoverErrorCode", () => {
+  it("preserves firmware error codes for contextual support", () => {
+    expect(
+      getRoverErrorCode(new RoverApiError("battery_configuration_mismatch", 409)),
+    ).toBe("battery_configuration_mismatch");
   });
 });

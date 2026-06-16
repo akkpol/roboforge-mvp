@@ -6,6 +6,13 @@ const copy = {
     landingBody:
       "Claim a real robot, give it a digital identity, drive it from your phone, and evolve it through missions and upgrades.",
     explore: "Explore the demo",
+    publicDemoMode: "Public Demo",
+    tryDemo: "Try demo",
+    publicDemoBody: "Vision, garage, missions, upgrades, and Beta lead capture.",
+    deviceModeChoice: "Device Mode",
+    connectRover: "Connect Rover-01",
+    deviceChoiceBody:
+      "For owners already connected to RoboForge-Rover-XXXX Wi-Fi.",
     beta: "Apply for beta",
     book: "Book a demo",
     garage: "My Garage",
@@ -28,7 +35,7 @@ const copy = {
     disarmed: "Controls locked",
     stop: "Emergency stop",
     demoMode: "Demo telemetry",
-    deviceMode: "Connected to Rover-01",
+    deviceMode: "Rover-01 local device mode",
     missionComplete: "Mission complete",
     engineerTitle: "AI Engineer",
     engineerBody:
@@ -52,6 +59,13 @@ const copy = {
     landingBody:
       "รับหุ่นจริงมาเป็นของคุณ สร้างตัวตนดิจิทัล ควบคุมผ่านมือถือ และพัฒนาด้วยภารกิจกับชุดอัปเกรด",
     explore: "ลองเดโม",
+    publicDemoMode: "Public Demo",
+    tryDemo: "ลองเดโม",
+    publicDemoBody: "ขาย vision, โรงรถ, ภารกิจ, upgrade และเก็บ lead Beta",
+    deviceModeChoice: "Device Mode",
+    connectRover: "เชื่อมต่อ Rover-01",
+    deviceChoiceBody:
+      "สำหรับเจ้าของที่ต่อ Wi-Fi RoboForge-Rover-XXXX แล้ว",
     beta: "สมัคร Beta",
     book: "จองเดโม",
     garage: "โรงรถของฉัน",
@@ -74,7 +88,7 @@ const copy = {
     disarmed: "ล็อกการควบคุม",
     stop: "หยุดฉุกเฉิน",
     demoMode: "ข้อมูลจำลอง",
-    deviceMode: "เชื่อมต่อ Rover-01 แล้ว",
+    deviceMode: "โหมดอุปกรณ์ Rover-01",
     missionComplete: "ภารกิจสำเร็จ",
     engineerTitle: "AI Engineer",
     engineerBody:
