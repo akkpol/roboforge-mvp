@@ -1,15 +1,7 @@
-import {
-  Bot,
-  BrainCircuit,
-  CheckCircle2,
-  Gauge,
-  LogOut,
-  ShieldCheck,
-} from "lucide-react";
-import Image from "next/image";
+import { Bot, LogOut } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { fleet, themes, type RobotType } from "@/lib/roboforge-data";
+import { OwnerConsole } from "@/components/owner-console";
 import { getCurrentUser, getOwnerWorkspace } from "@/lib/supabase/server";
 
 const setupItems = [
@@ -21,24 +13,6 @@ const setupItems = [
 
 export const dynamic = "force-dynamic";
 
-function getTheme(theme: string | null | undefined) {
-  return theme === "neo" ? themes.neo : themes.forge;
-}
-
-function getRobotImage(robotType: string | null | undefined) {
-  const matched = fleet.find((item) => item.id === robotType);
-  return matched?.image ?? fleet[0].image;
-}
-
-function getRobotLabel(robotType: string | null | undefined) {
-  const matched = fleet.find((item) => item.id === robotType);
-  return matched?.label ?? "Rover";
-}
-
-function getSetupCount(hasUser: boolean, robotCount: number) {
-  return [hasUser, robotCount > 0, true, false].filter(Boolean).length;
-}
-
 export default async function DashboardPage() {
   const { configured, user } = await getCurrentUser();
 
@@ -49,10 +23,7 @@ export default async function DashboardPage() {
   const workspace = user
     ? await getOwnerWorkspace(user)
     : { error: null, profile: null, robots: [] };
-  const activeRobot = workspace.robots[0] ?? null;
-  const activeTheme = getTheme(activeRobot?.theme);
   const ownerName = workspace.profile?.display_name || user?.email || "RoboForge Owner";
-  const setupCount = getSetupCount(Boolean(user), workspace.robots.length);
 
   return (
     <main className="dashboard-shell">
@@ -112,87 +83,7 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      <section className="dashboard-grid">
-        <article className="active-unit">
-          <div className="active-unit-image">
-            <Image
-              src={activeTheme.image}
-              alt={`${activeRobot?.display_name ?? activeTheme.robotName} active RoboForge unit`}
-              fill
-              priority
-              sizes="(min-width: 1000px) 48vw, 100vw"
-            />
-          </div>
-          <div className="active-unit-copy">
-            <span className="eyebrow">
-              ACTIVE UNIT // {activeRobot?.unit_code ?? "PENDING"}
-            </span>
-            <h1>{activeRobot?.display_name ?? activeTheme.robotName}</h1>
-            <p>
-              {getRobotLabel(activeRobot?.robot_type)} / {activeTheme.label} /{" "}
-              {activeRobot?.status ?? "pending"}
-            </p>
-            <div className="metric-grid">
-              <span>
-                <Gauge size={20} />
-                <strong>{workspace.robots.length}</strong>
-                Registered units
-              </span>
-              <span>
-                <ShieldCheck size={20} />
-                <strong>{user ? "Live" : "Locked"}</strong>
-                Auth session
-              </span>
-              <span>
-                <CheckCircle2 size={20} />
-                <strong>{setupCount}/4</strong>
-                Setup
-              </span>
-            </div>
-          </div>
-        </article>
-
-        <aside className="ai-panel">
-          <span className="eyebrow">
-            <BrainCircuit size={15} /> AI ENGINEER
-          </span>
-          <h2>{workspace.robots.length ? "Workspace is live." : "Workspace pending."}</h2>
-          <p>
-            Your owner profile and starter robot are now stored in Supabase.
-            Add robot events and AI recommendations after this owner workspace
-            is stable.
-          </p>
-          <div className="support-list">
-            <span>Owner: {ownerName}</span>
-            <span>Robot: {activeRobot?.unit_code ?? "not created"}</span>
-            <span>Auth: Google or email</span>
-          </div>
-        </aside>
-      </section>
-
-      <section className="dashboard-section">
-        <div className="section-heading">
-          <span className="eyebrow">REGISTERED UNITS</span>
-          <h2>Real owner data, separated by Supabase row-level security.</h2>
-        </div>
-        <div className="fleet-grid">
-          {workspace.robots.map((robot) => (
-            <article className="fleet-tile" key={robot.id}>
-              <Image
-                src={getRobotImage(robot.robot_type as RobotType)}
-                alt={`${robot.display_name} robot`}
-                width={360}
-                height={210}
-              />
-              <div>
-                <span>{robot.status}</span>
-                <strong>{robot.display_name}</strong>
-                <small>{robot.unit_code}</small>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <OwnerConsole ownerName={ownerName} robots={workspace.robots} />
     </main>
   );
 }
