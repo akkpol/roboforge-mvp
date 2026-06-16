@@ -1,12 +1,13 @@
 "use client";
 
-import { LockKeyhole, Mail, UserPlus } from "lucide-react";
+import { KeyRound, LockKeyhole, Mail, UserPlus } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 type Mode = "sign-in" | "sign-up";
+type BusyAction = "email" | "google" | null;
 
 export function AuthForm({ redirectTo }: { redirectTo: string }) {
   const router = useRouter();
@@ -15,8 +16,35 @@ export function AuthForm({ redirectTo }: { redirectTo: string }) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const configured = useMemo(() => isSupabaseConfigured(), []);
+  const busy = busyAction !== null;
+
+  async function continueWithGoogle() {
+    setMessage("");
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) {
+      setMessage("Add Supabase env vars first, then restart the dev server.");
+      return;
+    }
+
+    setBusyAction("google");
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", redirectTo);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: callbackUrl.toString(),
+      },
+    });
+
+    if (error) {
+      setBusyAction(null);
+      setMessage(error.message);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,7 +56,7 @@ export function AuthForm({ redirectTo }: { redirectTo: string }) {
       return;
     }
 
-    setBusy(true);
+    setBusyAction("email");
     const credentials = { email, password };
     const result =
       mode === "sign-in"
@@ -38,7 +66,7 @@ export function AuthForm({ redirectTo }: { redirectTo: string }) {
             options: { data: { full_name: name } },
           });
 
-    setBusy(false);
+    setBusyAction(null);
 
     if (result.error) {
       setMessage(result.error.message);
@@ -71,6 +99,21 @@ export function AuthForm({ redirectTo }: { redirectTo: string }) {
         >
           Sign up
         </button>
+      </div>
+
+      <div className="oauth-panel">
+        <button
+          className="button auth-submit oauth-button"
+          disabled={busy || !configured}
+          onClick={continueWithGoogle}
+          type="button"
+        >
+          <KeyRound size={18} />
+          {busyAction === "google" ? "Opening Google..." : "Continue with Google"}
+        </button>
+        <div className="auth-divider">
+          <span>Email access</span>
+        </div>
       </div>
 
       <form onSubmit={submit}>
@@ -123,7 +166,7 @@ export function AuthForm({ redirectTo }: { redirectTo: string }) {
 
         <button className="button auth-submit" disabled={busy || !configured} type="submit">
           <LockKeyhole size={18} />
-          {busy ? "Working..." : mode === "sign-in" ? "Login" : "Create account"}
+          {busyAction === "email" ? "Working..." : mode === "sign-in" ? "Login" : "Create account"}
         </button>
       </form>
 

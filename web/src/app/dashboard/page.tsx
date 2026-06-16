@@ -14,7 +14,7 @@ import { getCurrentUser } from "@/lib/supabase/server";
 
 const setupItems = [
   "Create Supabase project",
-  "Enable email/password auth",
+  "Enable Google or email auth",
   "Add env vars to Vercel",
   "Run the starter SQL schema",
 ];

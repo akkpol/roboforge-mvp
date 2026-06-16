@@ -14,7 +14,7 @@ Open `http://localhost:3000`.
 
 ## Supabase Auth
 
-Create a Supabase project, enable email/password auth, then add:
+Create a Supabase project, enable Google auth and/or email/password auth, then add:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
@@ -23,6 +23,18 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 
 Run `supabase/schema.sql` in the Supabase SQL editor to create the first
 multi-user tables with row-level security.
+
+For Google auth, add this app callback in Supabase Redirect URLs:
+
+```text
+https://<your-domain>/auth/callback
+```
+
+In Google Cloud, use the Supabase callback URL from the Google provider setup:
+
+```text
+https://<project-ref>.supabase.co/auth/v1/callback
+```
 
 ## Deploy
 

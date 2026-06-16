@@ -419,6 +419,40 @@ input:focus-visible {
   padding: 18px;
 }
 
+.oauth-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px 18px 0;
+}
+
+.oauth-button {
+  border-color: var(--line-bright);
+  color: var(--text);
+  background: var(--panel-strong);
+}
+
+.oauth-button:hover {
+  box-shadow: 0 14px 35px rgba(102, 228, 196, 0.12);
+}
+
+.auth-divider {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+
 .auth-card label {
   display: grid;
   gap: 7px;
