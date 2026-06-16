@@ -3,6 +3,7 @@ export type ThemeId = "forge" | "neo";
 export type Language = "en" | "th";
 export type ScreenId =
   | "landing"
+  | "setup"
   | "garage"
   | "profile"
   | "cockpit"
@@ -11,6 +12,24 @@ export type ScreenId =
   | "store";
 
 export type RobotType = "rover" | "tracked" | "drone" | "arm";
+
+export type RoverApiErrorCode =
+  | "battery_configuration_mismatch"
+  | "controls_not_armed"
+  | "invalid_json"
+  | "network_error"
+  | "no_control_client"
+  | "not_found"
+  | "stale_sequence"
+  | "unknown";
+
+export type UpgradeInterest =
+  | "Build and control Rover-01"
+  | "STEM workshop or school"
+  | "Sensor Pack"
+  | "Body Kit"
+  | "Neo Decal Set"
+  | "Future robot types";
 
 export interface RobotProfile {
   id: string;
@@ -40,6 +59,13 @@ export interface RobotTelemetry {
   uptime: number;
   firmwareVersion: string;
   wifiStrength: "strong" | "fair" | "weak";
+}
+
+export interface OwnerProgress {
+  setupComplete: boolean;
+  firstDriveComplete: boolean;
+  batteryCalibrated: boolean;
+  readyForFloorTest: boolean;
 }
 
 export interface DriveCommand {

@@ -28,17 +28,20 @@ import {
 } from "@phosphor-icons/react";
 import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { DemoRoverApi, HttpRoverApi } from "./api";
+import { DemoRoverApi, getRoverErrorCode, HttpRoverApi } from "./api";
 import { defaultProfile, fleet, themes } from "./data";
 import { translator } from "./i18n";
 import type {
   AppMode,
   DriveCommand,
   Language,
+  OwnerProgress,
   RobotProfile,
   RobotTelemetry,
+  RoverApiErrorCode,
   ScreenId,
   ThemeId,
+  UpgradeInterest,
 } from "./types";
 
 const betaUrl = import.meta.env.VITE_AIRTABLE_FORM_URL ?? "";
@@ -55,6 +58,50 @@ const initialTelemetry: RobotTelemetry = {
   wifiStrength: "weak",
 };
 
+const initialOwnerProgress: OwnerProgress = {
+  setupComplete: false,
+  firstDriveComplete: false,
+  batteryCalibrated: false,
+  readyForFloorTest: false,
+};
+
+type SetupCheck = "power" | "wifi" | "battery" | "wheels" | "motor";
+type SafetyCheck = "wheels" | "area" | "battery" | "people";
+
+const initialSetupChecks: Record<SetupCheck, boolean> = {
+  power: false,
+  wifi: false,
+  battery: false,
+  wheels: false,
+  motor: false,
+};
+
+const initialSafetyChecks: Record<SafetyCheck, boolean> = {
+  wheels: false,
+  area: false,
+  battery: false,
+  people: false,
+};
+
+const upgradeInterests: UpgradeInterest[] = [
+  "Build and control Rover-01",
+  "Sensor Pack",
+  "Body Kit",
+  "Neo Decal Set",
+  "STEM workshop or school",
+  "Future robot types",
+];
+
+function completeOwnerProgress(progress: OwnerProgress): OwnerProgress {
+  return {
+    ...progress,
+    readyForFloorTest:
+      progress.setupComplete &&
+      progress.firstDriveComplete &&
+      progress.batteryCalibrated,
+  };
+}
+
 function detectMode(): AppMode {
   const queryMode = new URLSearchParams(window.location.search).get("mode");
   if (queryMode === "device") return "device";
@@ -67,6 +114,7 @@ function initialScreen(mode: AppMode): ScreenId {
   const requested = new URLSearchParams(window.location.search).get("screen");
   const valid: ScreenId[] = [
     "landing",
+    "setup",
     "garage",
     "profile",
     "cockpit",
@@ -75,7 +123,7 @@ function initialScreen(mode: AppMode): ScreenId {
     "store",
   ];
   if (valid.includes(requested as ScreenId)) return requested as ScreenId;
-  return mode === "device" ? "garage" : "landing";
+  return mode === "device" ? "setup" : "landing";
 }
 
 function useStoredState<T>(key: string, fallback: T) {
@@ -205,10 +253,14 @@ function RobotHero({
   theme,
   compact = false,
   showIdentity = false,
+  identityStatus = "ONLINE",
+  identityOnline = true,
 }: {
   theme: ThemeId;
   compact?: boolean;
   showIdentity?: boolean;
+  identityStatus?: string;
+  identityOnline?: boolean;
 }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const selected = themes[theme];
@@ -237,7 +289,9 @@ function RobotHero({
         <div class="robot-hero__identity">
           <strong>{selected.robotName}</strong>
           <span>{selected.robotClass}</span>
-          <small><Broadcast size={13} weight="fill" /> ONLINE</small>
+          <small class={identityOnline ? "is-online" : "is-offline"}>
+            <Broadcast size={13} weight="fill" /> {identityStatus}
+          </small>
         </div>
       ) : null}
       <span class="robot-hero__serial">RF // ROVER-01 // DIGITAL FORM</span>
@@ -324,12 +378,14 @@ function TelemetryGrid({
 function Landing({
   theme,
   onExplore,
+  onDevice,
   onBeta,
   onBook,
   t,
 }: {
   theme: ThemeId;
   onExplore: () => void;
+  onDevice: () => void;
   onBeta: () => void;
   onBook: () => void;
   t: ReturnType<typeof translator>;
@@ -340,6 +396,20 @@ function Landing({
         <span class="eyebrow"><Lightning size={15} weight="fill" /> ROBOT IDENTITY PLATFORM</span>
         <h1>YOUR ROBOT.<br /><em>EVOLVED.</em></h1>
         <p>{t("landingBody")}</p>
+        <div class="start-choice" aria-label="Start RoboForge">
+          <button class="start-card is-primary" type="button" onClick={onExplore}>
+            <RocketLaunch size={25} weight="duotone" />
+            <span>{t("publicDemoMode")}</span>
+            <strong>{t("tryDemo")}</strong>
+            <small>{t("publicDemoBody")}</small>
+          </button>
+          <button class="start-card" type="button" onClick={onDevice}>
+            <Broadcast size={25} weight="duotone" />
+            <span>{t("deviceModeChoice")}</span>
+            <strong>{t("connectRover")}</strong>
+            <small>{t("deviceChoiceBody")}</small>
+          </button>
+        </div>
         <div class="landing__actions">
           <Button icon={RocketLaunch} onClick={onExplore}>{t("explore")}</Button>
           <Button icon={PaperPlaneTilt} variant="secondary" onClick={onBeta}>{t("beta")}</Button>
@@ -365,11 +435,178 @@ function Landing({
   );
 }
 
+function OwnerProgressPanel({
+  progress,
+  mode,
+  onSetup,
+  onMissions,
+}: {
+  progress: OwnerProgress;
+  mode: AppMode;
+  onSetup: () => void;
+  onMissions: () => void;
+}) {
+  if (mode !== "device") return null;
+
+  const items = [
+    ["Setup complete", progress.setupComplete],
+    ["First drive complete", progress.firstDriveComplete],
+    ["Battery calibrated", progress.batteryCalibrated],
+    ["Ready for floor test", progress.readyForFloorTest],
+  ] as const;
+
+  return (
+    <section class="owner-progress" aria-label="Owner progress">
+      <div>
+        <span class="eyebrow"><ShieldCheck size={15} weight="fill" /> OWNER PROGRESS</span>
+        <h2>Rover-01 readiness</h2>
+      </div>
+      <div class="owner-progress__items">
+        {items.map(([label, complete]) => (
+          <span class={complete ? "is-done" : ""}>
+            <CheckCircle size={16} weight={complete ? "fill" : "regular"} />
+            {label}
+          </span>
+        ))}
+      </div>
+      <div class="owner-progress__actions">
+        <Button icon={Gear} variant="secondary" onClick={onSetup}>Setup</Button>
+        <Button icon={RocketLaunch} variant="quiet" onClick={onMissions}>Missions</Button>
+      </div>
+    </section>
+  );
+}
+
+function DeviceSetupWizard({
+  telemetry,
+  progress,
+  onProgress,
+  onCockpit,
+  onGarage,
+  onMissions,
+}: {
+  telemetry: RobotTelemetry;
+  progress: OwnerProgress;
+  onProgress: (patch: Partial<OwnerProgress>) => void;
+  onCockpit: () => void;
+  onGarage: () => void;
+  onMissions: () => void;
+}) {
+  const [checks, setChecks] = useStoredState<Record<SetupCheck, boolean>>(
+    "roboforge-device-setup-checks",
+    initialSetupChecks,
+  );
+  const complete = Object.values(checks).every(Boolean);
+  const checking = telemetry.firmwareVersion === "loading";
+  const batteryLabel =
+    telemetry.batteryVoltage > 0
+      ? `${Math.round(telemetry.batteryPercent)}% / ${telemetry.batteryVoltage.toFixed(2)} V`
+      : checking
+        ? "Checking telemetry"
+        : "No battery telemetry";
+
+  const steps: Array<{
+    key: SetupCheck;
+    title: string;
+    body: string;
+  }> = [
+    {
+      key: "power",
+      title: "Power on Rover-01",
+      body: "Wait for the RoboForge-Rover-XXXX Wi-Fi network to appear.",
+    },
+    {
+      key: "wifi",
+      title: "Join Rover Wi-Fi",
+      body: "Connect this phone to RoboForge-Rover-XXXX, then open 192.168.4.1.",
+    },
+    {
+      key: "battery",
+      title: "Confirm battery reading",
+      body: `Current reading: ${batteryLabel}. Verify cell count before arming.`,
+    },
+    {
+      key: "wheels",
+      title: "Lift the wheels",
+      body: "Keep the drive wheels off the floor for the first motor response test.",
+    },
+    {
+      key: "motor",
+      title: "Ready for motor test",
+      body: "Cockpit Mission 01 will complete only after arm, movement, and zero release.",
+    },
+  ];
+
+  const toggle = (key: SetupCheck) => {
+    setChecks((current) => {
+      const next = { ...current, [key]: !current[key] };
+      onProgress({
+        batteryCalibrated: next.battery,
+        setupComplete: Object.values(next).every(Boolean),
+      });
+      return next;
+    });
+  };
+
+  const enterCockpit = () => {
+    onProgress({ setupComplete: true, batteryCalibrated: checks.battery });
+    onCockpit();
+  };
+
+  return (
+    <main class="screen">
+      <section class="screen-heading">
+        <div>
+          <span class="eyebrow"><Gear size={15} weight="fill" /> DEVICE SETUP</span>
+          <h1>Connect Rover-01</h1>
+          <p>Use this path only when the phone is on the Rover local Wi-Fi. Public demo users should stay in Garage.</p>
+        </div>
+        <StatusPill connected={telemetry.connected} mode="device" />
+      </section>
+      <section class="setup-layout">
+        <article class="setup-card">
+          <div class="setup-card__status">
+            <Broadcast size={28} weight="duotone" />
+            <div>
+              <strong>{telemetry.connected ? "Rover telemetry found" : checking ? "Checking Rover link" : "ยังไม่พบ Rover"}</strong>
+              <small>{telemetry.connected ? `${telemetry.firmwareVersion} / ${telemetry.wifiStrength}` : "Join RoboForge-Rover-XXXX Wi-Fi and keep this page open."}</small>
+            </div>
+          </div>
+          <div class="setup-steps">
+            {steps.map((step, index) => (
+              <label class={`setup-step ${checks[step.key] ? "is-done" : ""}`}>
+                <input
+                  type="checkbox"
+                  checked={checks[step.key]}
+                  onChange={() => toggle(step.key)}
+                />
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <p><strong>{step.title}</strong><small>{step.body}</small></p>
+              </label>
+            ))}
+          </div>
+          <div class="setup-actions">
+            <Button icon={GameController} disabled={!complete} onClick={enterCockpit}>Enter cockpit</Button>
+            <Button icon={House} variant="secondary" onClick={onGarage}>Open garage</Button>
+          </div>
+        </article>
+        <OwnerProgressPanel
+          progress={progress}
+          mode="device"
+          onSetup={() => undefined}
+          onMissions={onMissions}
+        />
+      </section>
+    </main>
+  );
+}
+
 function Garage({
   profile,
   theme,
   mode,
   telemetry,
+  progress,
   t,
   onScreen,
 }: {
@@ -377,6 +614,7 @@ function Garage({
   theme: ThemeId;
   mode: AppMode;
   telemetry: RobotTelemetry;
+  progress: OwnerProgress;
   t: ReturnType<typeof translator>;
   onScreen: (screen: ScreenId) => void;
 }) {
@@ -392,10 +630,21 @@ function Garage({
         </div>
         <StatusPill connected={telemetry.connected} mode={mode} />
       </section>
+      <OwnerProgressPanel
+        progress={progress}
+        mode={mode}
+        onSetup={() => onScreen("setup")}
+        onMissions={() => onScreen("missions")}
+      />
       <FleetRail selected={selectedFleet} setSelected={setSelectedFleet} />
       {selectedFleet === "rover" ? (
         <section class="garage-feature">
-          <RobotHero theme={theme} showIdentity />
+          <RobotHero
+            theme={theme}
+            showIdentity
+            identityOnline={telemetry.connected}
+            identityStatus={telemetry.connected ? "ONLINE" : mode === "device" ? "ROVER NOT FOUND" : "OFFLINE"}
+          />
           <div class="garage-feature__info">
             <span class="unit-label">ACTIVE UNIT // {profile.id.toUpperCase()}</span>
             <h2>{themes[theme].robotName}</h2>
@@ -403,7 +652,12 @@ function Garage({
             <TelemetryGrid telemetry={telemetry} mode={mode} />
             <TruthStrip />
             <div class="button-row">
-              <Button icon={GameController} onClick={() => onScreen("cockpit")}>{t("cockpit")}</Button>
+              <Button
+                icon={progress.setupComplete || mode === "public" ? GameController : Gear}
+                onClick={() => onScreen(mode === "device" && !progress.setupComplete ? "setup" : "cockpit")}
+              >
+                {mode === "device" && !progress.setupComplete ? "Continue setup" : t("cockpit")}
+              </Button>
               <Button icon={SlidersHorizontal} variant="secondary" onClick={() => onScreen("profile")}>{t("profile")}</Button>
             </div>
           </div>
@@ -500,7 +754,11 @@ function Joystick({
     if (!armed) return;
     if (shouldCapture) {
       activePointer.current = event.pointerId;
-      event.currentTarget.setPointerCapture(event.pointerId);
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // Synthetic QA events do not always create an active browser pointer.
+      }
     }
     if (activePointer.current !== event.pointerId) return;
 
@@ -549,39 +807,213 @@ function Joystick({
   );
 }
 
+const supportScripts: Array<{
+  code?: RoverApiErrorCode;
+  title: string;
+  body: string;
+}> = [
+  {
+    code: "battery_configuration_mismatch",
+    title: "Battery configuration mismatch",
+    body: "Power off before touching wiring. Confirm 1S/2S cell count in firmware config, verify the ADC divider, then compare voltage against a multimeter before arming again.",
+  },
+  {
+    code: "no_control_client",
+    title: "No control client",
+    body: "The Rover does not see an active phone on its Wi-Fi AP. Join RoboForge-Rover-XXXX, keep the browser tab open, then retry ARM from Device Setup.",
+  },
+  {
+    code: "stale_sequence",
+    title: "Stale drive sequence",
+    body: "The firmware rejected an old drive command. Tap Emergency stop, refresh Cockpit, then arm again so command numbering restarts cleanly.",
+  },
+  {
+    code: "controls_not_armed",
+    title: "Controls are locked",
+    body: "The drive endpoint rejected movement because ARM is off. Complete pre-flight safety, arm once, then move and release the joystick.",
+  },
+  {
+    code: "network_error",
+    title: "Rover link unavailable",
+    body: "The phone cannot reach the Rover API. Rejoin RoboForge-Rover-XXXX Wi-Fi, open http://192.168.4.1, and keep the phone near Rover-01.",
+  },
+  {
+    title: "Rover does not move",
+    body: "Confirm the cockpit is armed, then check the ENA/ENB jumpers are removed for PWM control.",
+  },
+  {
+    title: "Rover spins in place",
+    body: "One motor side is reversed. Power down, swap the pair on that side, and test with the wheels raised.",
+  },
+];
+
+function supportForCode(code: RoverApiErrorCode | null) {
+  return supportScripts.find((script) => script.code === code) ?? supportScripts[4];
+}
+
+function OfflineRecovery({
+  telemetry,
+  onSetup,
+  onEngineer,
+}: {
+  telemetry: RobotTelemetry;
+  onSetup: () => void;
+  onEngineer: (code: RoverApiErrorCode) => void;
+}) {
+  const checking = telemetry.firmwareVersion === "loading";
+
+  return (
+    <main class="screen cockpit">
+      <section class="offline-recovery">
+        <span class="offline-recovery__icon"><Broadcast size={39} weight="duotone" /></span>
+        <span class="eyebrow">DEVICE RECOVERY</span>
+        <h1>{checking ? "Checking Rover link" : "ยังไม่พบ Rover"}</h1>
+        <p>{checking ? "Waiting for the first local telemetry response." : "Device Mode is active, but this phone is not receiving telemetry from Rover-01."}</p>
+        <div class="recovery-checklist">
+          <span><CheckCircle size={16} /> Turn Rover-01 on</span>
+          <span><CheckCircle size={16} /> Join RoboForge-Rover-XXXX Wi-Fi</span>
+          <span><CheckCircle size={16} /> Open http://192.168.4.1 from that Wi-Fi</span>
+          <span><CheckCircle size={16} /> Keep wheels lifted before testing motors</span>
+        </div>
+        <div class="button-row">
+          <Button icon={Gear} onClick={onSetup}>Open setup wizard</Button>
+          <Button icon={Wrench} variant="secondary" onClick={() => onEngineer("network_error")}>Troubleshoot</Button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function ApiErrorCallout({
+  code,
+  onEngineer,
+}: {
+  code: RoverApiErrorCode | null;
+  onEngineer: (code: RoverApiErrorCode) => void;
+}) {
+  if (!code) return null;
+  const script = supportForCode(code);
+
+  return (
+    <article class="api-callout">
+      <Wrench size={22} weight="duotone" />
+      <div>
+        <strong>{script.title}</strong>
+        <small>{script.body}</small>
+      </div>
+      <button type="button" onClick={() => onEngineer(code)}>Open Engineer</button>
+    </article>
+  );
+}
+
+function PreflightModal({
+  open,
+  onClose,
+  onConfirm,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const [checks, setChecks] = useState(initialSafetyChecks);
+
+  useEffect(() => {
+    if (open) setChecks(initialSafetyChecks);
+  }, [open]);
+
+  if (!open) return null;
+
+  const rows: Array<[SafetyCheck, string]> = [
+    ["wheels", "Wheels are lifted for first motor test"],
+    ["area", "Floor area is clear"],
+    ["battery", "Battery voltage and cell count look correct"],
+    ["people", "No person is in front of or behind the robot"],
+  ];
+  const complete = Object.values(checks).every(Boolean);
+
+  return (
+    <div class="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <section class="modal preflight-modal" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>
+        <button class="modal__close" type="button" onClick={onClose} aria-label="Close"><X size={21} weight="bold" /></button>
+        <span class="eyebrow"><ShieldCheck size={15} weight="fill" /> PRE-FLIGHT SAFETY</span>
+        <h2>Confirm before ARM</h2>
+        <p>ARM enables live motor commands. Confirm the physical setup before the Rover can move.</p>
+        <div class="preflight-list">
+          {rows.map(([key, label]) => (
+            <label class={checks[key] ? "is-done" : ""}>
+              <input
+                type="checkbox"
+                checked={checks[key]}
+                onChange={() => setChecks((current) => ({ ...current, [key]: !current[key] }))}
+              />
+              <CheckCircle size={18} weight={checks[key] ? "fill" : "regular"} />
+              <span>{label}</span>
+            </label>
+          ))}
+        </div>
+        <div class="button-row">
+          <Button icon={Lightning} disabled={!complete} onClick={onConfirm}>ARM Rover</Button>
+          <Button icon={X} variant="secondary" onClick={onClose}>Cancel</Button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function Cockpit({
   mode,
   api,
   telemetry,
   setTelemetry,
+  progress,
+  onProgress,
+  onSetup,
+  onEngineer,
   t,
 }: {
   mode: AppMode;
   api: DemoRoverApi | HttpRoverApi;
   telemetry: RobotTelemetry;
   setTelemetry: (telemetry: RobotTelemetry) => void;
+  progress: OwnerProgress;
+  onProgress: (patch: Partial<OwnerProgress>) => void;
+  onSetup: () => void;
+  onEngineer: (code: RoverApiErrorCode) => void;
   t: ReturnType<typeof translator>;
 }) {
   const [speedLimit, setSpeedLimit] = useState(0.3);
   const [drive, setDrive] = useState({ throttle: 0, steering: 0 });
-  const [missionComplete, setMissionComplete] = useState(false);
+  const [mission, setMission] = useState({
+    armed: false,
+    movementSent: false,
+    zeroReleased: false,
+  });
+  const [lastErrorCode, setLastErrorCode] = useState<RoverApiErrorCode | null>(null);
+  const [preflightOpen, setPreflightOpen] = useState(false);
   const sequence = useRef(0);
   const driveRef = useRef(drive);
+  const armedRef = useRef(telemetry.armed);
+  const missionComplete = mission.armed && mission.movementSent && mission.zeroReleased;
 
   useEffect(() => {
     driveRef.current = drive;
   }, [drive]);
 
   useEffect(() => {
-    const poll = window.setInterval(async () => {
-      try {
-        setTelemetry(await api.getStatus());
-      } catch {
-        setTelemetry({ ...initialTelemetry, firmwareVersion: "link-lost" });
-      }
-    }, 1500);
-    return () => window.clearInterval(poll);
-  }, [api, setTelemetry]);
+    armedRef.current = telemetry.armed;
+  }, [telemetry.armed]);
+
+  useEffect(() => {
+    if (telemetry.armed) {
+      setMission((current) => ({ ...current, armed: true }));
+    }
+  }, [telemetry.armed]);
+
+  useEffect(() => {
+    if (missionComplete && !progress.firstDriveComplete) {
+      onProgress({ firstDriveComplete: true });
+    }
+  }, [missionComplete, onProgress, progress.firstDriveComplete]);
 
   useEffect(() => {
     if (!telemetry.armed) return;
@@ -591,7 +1023,29 @@ function Cockpit({
         speedLimit,
         sequence: ++sequence.current,
       };
-      void api.drive(command);
+      void api.drive(command)
+        .then(() => {
+          setLastErrorCode(null);
+          const isMoving =
+            Math.abs(command.throttle) > 0.05 ||
+            Math.abs(command.steering) > 0.05;
+          const isZero =
+            Math.abs(command.throttle) <= 0.02 &&
+            Math.abs(command.steering) <= 0.02;
+          setMission((current) => {
+            if (isMoving && !current.movementSent) {
+              return { ...current, movementSent: true };
+            }
+            if (isZero && current.movementSent && !current.zeroReleased) {
+              return { ...current, zeroReleased: true };
+            }
+            return current;
+          });
+        })
+        .catch((error) => {
+          const code = getRoverErrorCode(error);
+          setLastErrorCode(code);
+        });
     }, 120);
     return () => window.clearInterval(ticker);
   }, [api, speedLimit, telemetry.armed]);
@@ -599,35 +1053,74 @@ function Cockpit({
   useEffect(() => {
     const safetyStop = () => {
       setDrive({ throttle: 0, steering: 0 });
-      if (document.hidden) void api.stop().then(setTelemetry).catch(() => undefined);
+      if (document.hidden && armedRef.current) {
+        void api.stop().then(setTelemetry).catch(() => undefined);
+      }
     };
     document.addEventListener("visibilitychange", safetyStop);
     window.addEventListener("pagehide", safetyStop);
     return () => {
       document.removeEventListener("visibilitychange", safetyStop);
       window.removeEventListener("pagehide", safetyStop);
-      void api.stop().catch(() => undefined);
+      if (armedRef.current) void api.stop().catch(() => undefined);
     };
   }, [api, setTelemetry]);
 
-  const arm = async () => {
+  const setArmed = async (armed: boolean) => {
     try {
-      const next = await api.setArmed(!telemetry.armed);
+      const next = await api.setArmed(armed);
       setTelemetry(next);
-      if (telemetry.armed) setDrive({ throttle: 0, steering: 0 });
-    } catch {
-      setTelemetry({ ...telemetry, connected: false, armed: false });
+      setLastErrorCode(null);
+      if (armed) {
+        sequence.current = 0;
+        setMission((current) => ({ ...current, armed: true }));
+      } else {
+        setDrive({ throttle: 0, steering: 0 });
+      }
+    } catch (error) {
+      const code = getRoverErrorCode(error);
+      setLastErrorCode(code);
+      setTelemetry({
+        ...telemetry,
+        connected: code === "network_error" ? false : telemetry.connected,
+        armed: false,
+      });
     }
+  };
+
+  const arm = () => {
+    if (telemetry.armed) {
+      void setArmed(false);
+      return;
+    }
+    setPreflightOpen(true);
+  };
+
+  const confirmArm = () => {
+    setPreflightOpen(false);
+    void setArmed(true);
   };
 
   const stop = async () => {
     setDrive({ throttle: 0, steering: 0 });
     try {
       setTelemetry(await api.stop());
-    } catch {
+      setLastErrorCode(null);
+    } catch (error) {
+      setLastErrorCode(getRoverErrorCode(error));
       setTelemetry({ ...telemetry, armed: false });
     }
   };
+
+  if (mode === "device" && !telemetry.connected && telemetry.firmwareVersion !== "loading") {
+    return (
+      <OfflineRecovery
+        telemetry={telemetry}
+        onSetup={onSetup}
+        onEngineer={onEngineer}
+      />
+    );
+  }
 
   return (
     <main class="screen cockpit">
@@ -639,6 +1132,7 @@ function Cockpit({
         </div>
         <StatusPill connected={telemetry.connected} mode={mode} />
       </section>
+      <ApiErrorCallout code={lastErrorCode} onEngineer={onEngineer} />
       <TelemetryGrid telemetry={telemetry} mode={mode} />
       <section class="cockpit-grid">
         <article class="control-panel">
@@ -647,7 +1141,12 @@ function Cockpit({
               {telemetry.armed ? <Lightning size={20} weight="fill" /> : <LockKey size={20} weight="fill" />}
               <strong>{telemetry.armed ? t("armed") : t("disarmed")}</strong>
             </span>
-            <button class={`arm-switch ${telemetry.armed ? "is-on" : ""}`} type="button" onClick={arm}>
+            <button
+              class={`arm-switch ${telemetry.armed ? "is-on" : ""}`}
+              type="button"
+              onClick={arm}
+              disabled={mode === "device" && !telemetry.connected}
+            >
               <span />
               {telemetry.armed ? "ARMED" : "ARM"}
             </button>
@@ -662,9 +1161,10 @@ function Cockpit({
           <span class="eyebrow">MISSION 01</span>
           <h2>{t("mission")}</h2>
           <ol>
-            <li class="is-done">Connect to Rover-01</li>
-            <li class={telemetry.armed ? "is-done" : ""}>Arm local controls</li>
-            <li class={telemetry.lastCommandAt > 0 ? "is-done" : ""}>Move and release joystick</li>
+            <li class={mode === "public" || telemetry.connected ? "is-done" : ""}>Connect to Rover-01</li>
+            <li class={mission.armed ? "is-done" : ""}>Arm local controls</li>
+            <li class={mission.movementSent ? "is-done" : ""}>Send a movement command</li>
+            <li class={mission.zeroReleased ? "is-done" : ""}>Release joystick to zero</li>
           </ol>
           <label class="speed-control">
             <span>SPEED LIMIT <strong>{Math.round(speedLimit * 100)}%</strong></span>
@@ -678,13 +1178,6 @@ function Cockpit({
             />
           </label>
           <Button icon={HandPalm} variant="danger" onClick={stop}>{t("stop")}</Button>
-          <Button
-            icon={CheckCircle}
-            variant="secondary"
-            onClick={() => setMissionComplete(true)}
-          >
-            Finish test mission
-          </Button>
           {missionComplete ? (
             <div class="mission-success">
               <CheckCircle size={27} weight="fill" />
@@ -693,11 +1186,16 @@ function Cockpit({
           ) : null}
         </aside>
       </section>
+      <PreflightModal
+        open={preflightOpen}
+        onClose={() => setPreflightOpen(false)}
+        onConfirm={confirmArm}
+      />
     </main>
   );
 }
 
-function Missions() {
+function Missions({ progress }: { progress: OwnerProgress }) {
   return (
     <main class="screen">
       <section class="screen-heading">
@@ -708,7 +1206,12 @@ function Missions() {
         </div>
       </section>
       <div class="mission-cards">
-        <article class="is-active"><span>01</span><h2>First Drive</h2><p>Arm, move, release, and confirm the 400 ms safety stop.</p><small>AVAILABLE NOW</small></article>
+        <article class="is-active">
+          <span>01</span>
+          <h2>First Drive</h2>
+          <p>Arm, send a movement command, release to zero, and confirm the safety loop.</p>
+          <small>{progress.firstDriveComplete ? "COMPLETE" : "AVAILABLE NOW"}</small>
+        </article>
         <article><span>02</span><h2>Precision Dock</h2><p>Guide Rover-01 through a compact course at reduced speed.</p><small>BETA ROADMAP</small></article>
         <article><span>03</span><h2>Sensor Scout</h2><p>Unlock after the future distance sensor pack is installed.</p><small>COMING SOON</small></article>
       </div>
@@ -716,13 +1219,17 @@ function Missions() {
   );
 }
 
-function Engineer() {
-  const scripts = [
-    ["Rover does not move", "Confirm the cockpit is armed, then check the ENA/ENB jumpers are removed for PWM control."],
-    ["Rover spins in place", "One motor side is reversed. Power down, swap the pair on that side, and test with the wheels raised."],
-    ["Battery looks wrong", "Verify the configured 1S/2S cell count, then calibrate the ADC reading against a multimeter."],
-  ];
-  const [selected, setSelected] = useState(0);
+function Engineer({ supportCode }: { supportCode: RoverApiErrorCode | null }) {
+  const initialIndex = Math.max(
+    0,
+    supportScripts.findIndex((script) => script.code === supportCode),
+  );
+  const [selected, setSelected] = useState(initialIndex);
+
+  useEffect(() => {
+    const nextIndex = supportScripts.findIndex((script) => script.code === supportCode);
+    if (nextIndex >= 0) setSelected(nextIndex);
+  }, [supportCode]);
 
   return (
     <main class="screen">
@@ -735,16 +1242,20 @@ function Engineer() {
       </section>
       <section class="engineer-layout">
         <div class="engineer-prompts">
-          {scripts.map(([title], index) => (
+          {supportScripts.map((script, index) => (
             <button class={selected === index ? "is-selected" : ""} type="button" onClick={() => setSelected(index)}>
-              <Wrench size={20} weight="duotone" /> {title}
+              <Wrench size={20} weight="duotone" />
+              <span>
+                {script.title}
+                {script.code ? <small>{script.code}</small> : null}
+              </span>
             </button>
           ))}
         </div>
         <article class="engineer-answer">
           <span class="eyebrow">ROBOFORGE FIELD NOTE</span>
-          <h2>{scripts[selected][0]}</h2>
-          <p>{scripts[selected][1]}</p>
+          <h2>{supportScripts[selected].title}</h2>
+          <p>{supportScripts[selected].body}</p>
           <div class="safety-note"><ShieldCheck size={21} weight="fill" /> Power off before changing motor or battery wiring.</div>
         </article>
       </section>
@@ -752,7 +1263,41 @@ function Engineer() {
   );
 }
 
-function Store({ onBeta }: { onBeta: () => void }) {
+function Store({ onBeta }: { onBeta: (interest: UpgradeInterest) => void }) {
+  const items: Array<{
+    icon: IconComponent;
+    category: string;
+    title: string;
+    body: string;
+    state: string;
+    interest: UpgradeInterest;
+  }> = [
+    {
+      icon: Broadcast,
+      category: "HARDWARE",
+      title: "Sensor Pack",
+      body: "Distance sensing and mission telemetry for Rover-01.",
+      state: "ROADMAP",
+      interest: "Sensor Pack",
+    },
+    {
+      icon: PaintBrush,
+      category: "BODY KIT",
+      title: "Aegis Shell",
+      body: "A physical expression inspired by the Forge Digital Form.",
+      state: "CONCEPT",
+      interest: "Body Kit",
+    },
+    {
+      icon: Sparkle,
+      category: "DIGITAL",
+      title: "Neo Decal Set",
+      body: "Anime identity pack with matching future physical decals.",
+      state: "CONCEPT",
+      interest: "Neo Decal Set",
+    },
+  ];
+
   return (
     <main class="screen">
       <section class="screen-heading">
@@ -763,13 +1308,25 @@ function Store({ onBeta }: { onBeta: () => void }) {
         </div>
       </section>
       <div class="upgrade-grid">
-        <article><Broadcast size={31} weight="duotone" /><span>HARDWARE</span><h2>Sensor Pack</h2><p>Distance sensing and mission telemetry for Rover-01.</p><small>ROADMAP</small></article>
-        <article><PaintBrush size={31} weight="duotone" /><span>BODY KIT</span><h2>Aegis Shell</h2><p>A physical expression inspired by the Forge Digital Form.</p><small>CONCEPT</small></article>
-        <article><Sparkle size={31} weight="duotone" /><span>DIGITAL</span><h2>Neo Decal Set</h2><p>Anime identity pack with matching future physical decals.</p><small>CONCEPT</small></article>
+        {items.map((item) => {
+          const Icon = item.icon;
+          return (
+            <article>
+              <Icon size={31} weight="duotone" />
+              <span>{item.category}</span>
+              <h2>{item.title}</h2>
+              <p>{item.body}</p>
+              <small>{item.state}</small>
+              <Button icon={PaperPlaneTilt} variant="secondary" onClick={() => onBeta(item.interest)}>
+                Interested
+              </Button>
+            </article>
+          );
+        })}
       </div>
       <div class="interest-callout">
         <div><span class="eyebrow">VALIDATE THE NEXT BUILD</span><h2>Vote with a Beta application, not a Like.</h2></div>
-        <Button icon={PaperPlaneTilt} onClick={onBeta}>Register upgrade interest</Button>
+        <Button icon={PaperPlaneTilt} onClick={() => onBeta("Build and control Rover-01")}>Register upgrade interest</Button>
       </div>
     </main>
   );
@@ -778,10 +1335,12 @@ function Store({ onBeta }: { onBeta: () => void }) {
 function BetaModal({
   open,
   onClose,
+  defaultInterest,
   t,
 }: {
   open: boolean;
   onClose: () => void;
+  defaultInterest: UpgradeInterest;
   t: ReturnType<typeof translator>;
 }) {
   const [saved, setSaved] = useState(false);
@@ -810,13 +1369,13 @@ function BetaModal({
           <label>{t("name")}<input required name="name" autoComplete="name" /></label>
           <label>{t("email")}<input required type="email" name="email" autoComplete="email" /></label>
           <label>{t("interest")}
-            <select name="interest">
-              <option>Build and control Rover-01</option>
-              <option>STEM workshop or school</option>
-              <option>Anime customization</option>
-              <option>Future robot types</option>
+            <select key={defaultInterest} name="interest" defaultValue={defaultInterest}>
+              {upgradeInterests.map((interest) => (
+                <option value={interest}>{interest}</option>
+              ))}
             </select>
           </label>
+          <input type="hidden" name="source" value={defaultInterest} />
           <Button type="submit" icon={PaperPlaneTilt}>{t("submit")}</Button>
           <small>{t("noPrice")}</small>
           {saved ? <div class="saved-message"><CheckCircle size={18} weight="fill" /> {t("saved")}</div> : null}
@@ -829,17 +1388,29 @@ function BetaModal({
 function BottomNav({
   screen,
   onScreen,
+  mode,
 }: {
   screen: ScreenId;
   onScreen: (screen: ScreenId) => void;
+  mode: AppMode;
 }) {
-  const items: Array<[ScreenId, string, IconComponent]> = [
-    ["garage", "Garage", House],
-    ["cockpit", "Cockpit", GameController],
-    ["missions", "Missions", RocketLaunch],
-    ["engineer", "Engineer", Circuitry],
-    ["store", "Upgrades", ShoppingBagOpen],
-  ];
+  const items: Array<[ScreenId, string, IconComponent]> =
+    mode === "device"
+      ? [
+          ["setup", "Setup", Gear],
+          ["garage", "Garage", House],
+          ["cockpit", "Cockpit", GameController],
+          ["missions", "Missions", RocketLaunch],
+          ["engineer", "Engineer", Circuitry],
+          ["store", "Upgrades", ShoppingBagOpen],
+        ]
+      : [
+          ["garage", "Garage", House],
+          ["cockpit", "Cockpit", GameController],
+          ["missions", "Missions", RocketLaunch],
+          ["engineer", "Engineer", Circuitry],
+          ["store", "Upgrades", ShoppingBagOpen],
+        ];
   return (
     <nav class="bottom-nav">
       {items.map(([id, label, Icon]) => (
@@ -859,8 +1430,14 @@ export function App() {
   const [language, setLanguage] = useStoredState<Language>("roboforge-language", "en");
   const [theme, setTheme] = useStoredState<ThemeId>("roboforge-theme", "forge");
   const [profile, setProfile] = useStoredState<RobotProfile>("roboforge-profile", defaultProfile);
+  const [progress, setProgress] = useStoredState<OwnerProgress>(
+    "roboforge-owner-progress",
+    initialOwnerProgress,
+  );
   const [telemetry, setTelemetry] = useState(initialTelemetry);
   const [betaOpen, setBetaOpen] = useState(false);
+  const [betaInterest, setBetaInterest] = useState<UpgradeInterest>("Build and control Rover-01");
+  const [supportCode, setSupportCode] = useState<RoverApiErrorCode | null>(null);
   const t = translator(language);
 
   useEffect(() => {
@@ -873,12 +1450,51 @@ export function App() {
   }, [theme]);
 
   useEffect(() => {
-    api.getStatus().then(setTelemetry).catch(() => setTelemetry(initialTelemetry));
+    let active = true;
+
+    const loadStatus = async () => {
+      try {
+        const next = await api.getStatus();
+        if (active) setTelemetry(next);
+      } catch {
+        if (active) {
+          setTelemetry({ ...initialTelemetry, firmwareVersion: "link-lost" });
+        }
+      }
+    };
+
+    void loadStatus();
+    const poll = window.setInterval(loadStatus, 1500);
+    return () => {
+      active = false;
+      window.clearInterval(poll);
+    };
   }, [api]);
 
   const openBooking = () => {
     if (calendlyUrl) window.open(calendlyUrl, "_blank", "noopener,noreferrer");
-    else setBetaOpen(true);
+    else openBeta("Build and control Rover-01");
+  };
+
+  const openBeta = (interest: UpgradeInterest = "Build and control Rover-01") => {
+    setBetaInterest(interest);
+    setBetaOpen(true);
+  };
+
+  const updateProgress = (patch: Partial<OwnerProgress>) => {
+    setProgress(completeOwnerProgress({ ...progress, ...patch }));
+  };
+
+  const enterDeviceMode = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("mode", "device");
+    url.searchParams.set("screen", "setup");
+    window.location.assign(url.toString());
+  };
+
+  const openEngineer = (code: RoverApiErrorCode) => {
+    setSupportCode(code);
+    setScreen("engineer");
   };
 
   return (
@@ -889,7 +1505,7 @@ export function App() {
         theme={theme}
         setTheme={setTheme}
         mode={mode}
-        onLogo={() => setScreen(mode === "device" ? "garage" : "landing")}
+        onLogo={() => setScreen(mode === "device" ? "setup" : "landing")}
       />
       {screen !== "landing" ? (
         <button class="back-to-garage" type="button" onClick={() => setScreen("garage")}>
@@ -900,9 +1516,20 @@ export function App() {
         <Landing
           theme={theme}
           onExplore={() => setScreen("garage")}
-          onBeta={() => setBetaOpen(true)}
+          onDevice={enterDeviceMode}
+          onBeta={() => openBeta("Build and control Rover-01")}
           onBook={openBooking}
           t={t}
+        />
+      ) : null}
+      {screen === "setup" ? (
+        <DeviceSetupWizard
+          telemetry={telemetry}
+          progress={progress}
+          onProgress={updateProgress}
+          onCockpit={() => setScreen("cockpit")}
+          onGarage={() => setScreen("garage")}
+          onMissions={() => setScreen("missions")}
         />
       ) : null}
       {screen === "garage" ? (
@@ -911,6 +1538,7 @@ export function App() {
           theme={theme}
           mode={mode}
           telemetry={telemetry}
+          progress={progress}
           t={t}
           onScreen={setScreen}
         />
@@ -922,14 +1550,18 @@ export function App() {
           api={api}
           telemetry={telemetry}
           setTelemetry={setTelemetry}
+          progress={progress}
+          onProgress={updateProgress}
+          onSetup={() => setScreen("setup")}
+          onEngineer={openEngineer}
           t={t}
         />
       ) : null}
-      {screen === "missions" ? <Missions /> : null}
-      {screen === "engineer" ? <Engineer /> : null}
-      {screen === "store" ? <Store onBeta={() => setBetaOpen(true)} /> : null}
-      {screen !== "landing" ? <BottomNav screen={screen} onScreen={setScreen} /> : null}
-      <BetaModal open={betaOpen} onClose={() => setBetaOpen(false)} t={t} />
+      {screen === "missions" ? <Missions progress={progress} /> : null}
+      {screen === "engineer" ? <Engineer supportCode={supportCode} /> : null}
+      {screen === "store" ? <Store onBeta={openBeta} /> : null}
+      {screen !== "landing" ? <BottomNav screen={screen} onScreen={setScreen} mode={mode} /> : null}
+      <BetaModal open={betaOpen} onClose={() => setBetaOpen(false)} defaultInterest={betaInterest} t={t} />
     </div>
   );
 }
