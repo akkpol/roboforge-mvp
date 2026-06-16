@@ -360,6 +360,12 @@ input:focus-visible {
   font-size: 24px;
 }
 
+.fleet-tile small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .text-command {
   width: fit-content;
   gap: 8px;

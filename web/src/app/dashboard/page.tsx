@@ -9,8 +9,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { fleet, themes } from "@/lib/roboforge-data";
-import { getCurrentUser } from "@/lib/supabase/server";
+import { fleet, themes, type RobotType } from "@/lib/roboforge-data";
+import { getCurrentUser, getOwnerWorkspace } from "@/lib/supabase/server";
 
 const setupItems = [
   "Create Supabase project",
@@ -21,12 +21,38 @@ const setupItems = [
 
 export const dynamic = "force-dynamic";
 
+function getTheme(theme: string | null | undefined) {
+  return theme === "neo" ? themes.neo : themes.forge;
+}
+
+function getRobotImage(robotType: string | null | undefined) {
+  const matched = fleet.find((item) => item.id === robotType);
+  return matched?.image ?? fleet[0].image;
+}
+
+function getRobotLabel(robotType: string | null | undefined) {
+  const matched = fleet.find((item) => item.id === robotType);
+  return matched?.label ?? "Rover";
+}
+
+function getSetupCount(hasUser: boolean, robotCount: number) {
+  return [hasUser, robotCount > 0, true, false].filter(Boolean).length;
+}
+
 export default async function DashboardPage() {
   const { configured, user } = await getCurrentUser();
 
   if (configured && !user) {
     redirect("/login?redirect=/dashboard");
   }
+
+  const workspace = user
+    ? await getOwnerWorkspace(user)
+    : { error: null, profile: null, robots: [] };
+  const activeRobot = workspace.robots[0] ?? null;
+  const activeTheme = getTheme(activeRobot?.theme);
+  const ownerName = workspace.profile?.display_name || user?.email || "RoboForge Owner";
+  const setupCount = getSetupCount(Boolean(user), workspace.robots.length);
 
   return (
     <main className="dashboard-shell">
@@ -42,7 +68,7 @@ export default async function DashboardPage() {
         </Link>
         <div className="topbar-actions">
           <span className="account-pill">
-            {user?.email ?? "Supabase setup needed"}
+            {ownerName}
           </span>
           {configured ? (
             <Link className="icon-command" href="/auth/sign-out" title="Sign out">
@@ -71,35 +97,55 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
+      {workspace.error ? (
+        <section className="setup-alert">
+          <div>
+            <span className="eyebrow">WORKSPACE NEEDS ATTENTION</span>
+            <h1>Supabase data is not ready.</h1>
+            <p>{workspace.error}</p>
+          </div>
+          <ol>
+            <li>Confirm the starter SQL schema is applied</li>
+            <li>Confirm RLS policies allow owner rows</li>
+            <li>Reload after login</li>
+          </ol>
+        </section>
+      ) : null}
+
       <section className="dashboard-grid">
         <article className="active-unit">
           <div className="active-unit-image">
             <Image
-              src={themes.forge.image}
-              alt="AEGIS-01 active RoboForge unit"
+              src={activeTheme.image}
+              alt={`${activeRobot?.display_name ?? activeTheme.robotName} active RoboForge unit`}
               fill
               priority
               sizes="(min-width: 1000px) 48vw, 100vw"
             />
           </div>
           <div className="active-unit-copy">
-            <span className="eyebrow">ACTIVE UNIT // ROVER-01</span>
-            <h1>{themes.forge.robotName}</h1>
-            <p>{themes.forge.robotClass} / differential drive / beta owner</p>
+            <span className="eyebrow">
+              ACTIVE UNIT // {activeRobot?.unit_code ?? "PENDING"}
+            </span>
+            <h1>{activeRobot?.display_name ?? activeTheme.robotName}</h1>
+            <p>
+              {getRobotLabel(activeRobot?.robot_type)} / {activeTheme.label} /{" "}
+              {activeRobot?.status ?? "pending"}
+            </p>
             <div className="metric-grid">
               <span>
                 <Gauge size={20} />
-                <strong>82%</strong>
-                Battery
+                <strong>{workspace.robots.length}</strong>
+                Registered units
               </span>
               <span>
                 <ShieldCheck size={20} />
-                <strong>Safe</strong>
-                Owner mode
+                <strong>{user ? "Live" : "Locked"}</strong>
+                Auth session
               </span>
               <span>
                 <CheckCircle2 size={20} />
-                <strong>3/4</strong>
+                <strong>{setupCount}/4</strong>
                 Setup
               </span>
             </div>
@@ -110,36 +156,38 @@ export default async function DashboardPage() {
           <span className="eyebrow">
             <BrainCircuit size={15} /> AI ENGINEER
           </span>
-          <h2>Ready for the next phase.</h2>
+          <h2>{workspace.robots.length ? "Workspace is live." : "Workspace pending."}</h2>
           <p>
-            Keep this as scripted support first. Add OpenAI/Vercel AI Gateway
-            after owner accounts and robot events are stored reliably.
+            Your owner profile and starter robot are now stored in Supabase.
+            Add robot events and AI recommendations after this owner workspace
+            is stable.
           </p>
           <div className="support-list">
-            <span>Setup diagnosis</span>
-            <span>Battery safety notes</span>
-            <span>Upgrade recommendations</span>
+            <span>Owner: {ownerName}</span>
+            <span>Robot: {activeRobot?.unit_code ?? "not created"}</span>
+            <span>Auth: Google or email</span>
           </div>
         </aside>
       </section>
 
       <section className="dashboard-section">
         <div className="section-heading">
-          <span className="eyebrow">FLEET</span>
-          <h2>Multi-user foundation without overbuilding the product.</h2>
+          <span className="eyebrow">REGISTERED UNITS</span>
+          <h2>Real owner data, separated by Supabase row-level security.</h2>
         </div>
         <div className="fleet-grid">
-          {fleet.map((item) => (
-            <article className="fleet-tile" key={item.id}>
+          {workspace.robots.map((robot) => (
+            <article className="fleet-tile" key={robot.id}>
               <Image
-                src={item.image}
-                alt={`${item.label} robot concept`}
+                src={getRobotImage(robot.robot_type as RobotType)}
+                alt={`${robot.display_name} robot`}
                 width={360}
                 height={210}
               />
               <div>
-                <span>{item.state === "active" ? "OWNER READY" : item.state}</span>
-                <strong>{item.label}</strong>
+                <span>{robot.status}</span>
+                <strong>{robot.display_name}</strong>
+                <small>{robot.unit_code}</small>
               </div>
             </article>
           ))}
