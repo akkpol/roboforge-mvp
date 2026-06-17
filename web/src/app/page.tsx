@@ -9,9 +9,44 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { fleet, themes } from "@/lib/roboforge-data";
 
-export default function Home() {
+type HomeProps = {
+  searchParams: Promise<{
+    code?: string | string[];
+    error?: string | string[];
+    error_description?: string | string[];
+    next?: string | string[];
+  }>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  const code = firstParam(params.code);
+  const error = firstParam(params.error);
+  const errorDescription = firstParam(params.error_description);
+  const next = firstParam(params.next);
+
+  if (code) {
+    const callbackParams = new URLSearchParams({ code });
+    if (next?.startsWith("/") && !next.startsWith("//")) {
+      callbackParams.set("next", next);
+    }
+    redirect(`/auth/callback?${callbackParams.toString()}`);
+  }
+
+  if (error || errorDescription) {
+    const loginParams = new URLSearchParams();
+    if (error) loginParams.set("error", error);
+    if (errorDescription) loginParams.set("error_description", errorDescription);
+    redirect(`/login?${loginParams.toString()}`);
+  }
+
   return (
     <main className="marketing-shell">
       <nav className="topbar">
