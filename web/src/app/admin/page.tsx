@@ -1,5 +1,6 @@
 import { Activity, AlertTriangle, Bot, RadioTower, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { ClaimKitForm } from "@/app/admin/claim-kit-form";
 import { getBetaHealth } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/supabase/server";
 
@@ -87,6 +88,7 @@ export default async function AdminPage() {
       <section className="ops-metric-grid">
         {metric("Users", data.counts.ownerProfiles, "owner profiles")}
         {metric("Robots", data.counts.robots, "registered units")}
+        {metric("Codes", data.counts.claimCodes, "claim kits issued")}
         {metric("Claimed", data.counts.claimedRobots, "claimed robot codes")}
         {metric("Connect", data.counts.connectionSessions, `${successRate}% success`)}
         {metric("Control", data.counts.controlSessions, "session summaries")}
@@ -94,6 +96,31 @@ export default async function AdminPage() {
       </section>
 
       <section className="ops-grid">
+        <ClaimKitForm />
+
+        <article className="ops-panel">
+          <span className="eyebrow">
+            <ShieldCheck size={15} /> RECENT KITS
+          </span>
+          <h2>Claim Cards</h2>
+          <div className="ops-feed">
+            {data.claimKits.map((kit) => (
+              <span key={`${kit.created_at}-${kit.unit_code}`}>
+                <strong>{kit.unit_code}</strong>
+                <small>{kit.claimed_at ? "claimed" : "ready"}</small>
+                <p>
+                  {kit.claimed_at
+                    ? `Claimed ${new Date(kit.claimed_at).toLocaleDateString()}`
+                    : kit.expires_at
+                      ? `Expires ${new Date(kit.expires_at).toLocaleDateString()}`
+                      : "No expiry"}
+                </p>
+              </span>
+            ))}
+            {data.claimKits.length === 0 ? <p>No claim kits yet.</p> : null}
+          </div>
+        </article>
+
         <article className="ops-panel">
           <span className="eyebrow">
             <RadioTower size={15} /> CONNECTIONS

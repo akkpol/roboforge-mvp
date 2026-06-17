@@ -179,6 +179,111 @@ textarea:focus-visible {
   font-size: 12px;
 }
 
+.ops-form,
+.ops-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.ops-form {
+  align-content: start;
+}
+
+.ops-form label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ops-form input,
+.ops-form select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--line-bright);
+  color: var(--text);
+  background: var(--panel-strong);
+  font: inherit;
+}
+
+.ops-form input::placeholder {
+  color: #6f8290;
+}
+
+.ops-form-row,
+.ops-copy-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ops-claim-card {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.ops-claim-card img {
+  width: 180px;
+  height: 180px;
+  background: #fff;
+}
+
+.ops-claim-card div {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.ops-claim-card small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ops-claim-card strong {
+  font-size: 21px;
+}
+
+.ops-claim-card code,
+.ops-claim-card p {
+  overflow-wrap: anywhere;
+}
+
+.ops-claim-card code {
+  padding: 9px;
+  border: 1px solid var(--line);
+  color: var(--accent);
+  background: var(--panel-strong);
+  font-size: 15px;
+}
+
+.ops-copy-button {
+  display: inline-flex;
+  min-height: 35px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: var(--panel-strong);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ops-error {
+  padding: 10px;
+  border: 1px solid var(--danger);
+  color: #ffb0ad;
+  background: #241011;
+}
+
 .topbar {
   position: sticky;
   z-index: 20;
@@ -1819,6 +1924,17 @@ textarea:focus-visible {
 }
 
 @media (max-width: 560px) {
+  .ops-form-row,
+  .ops-copy-row,
+  .ops-claim-card {
+    grid-template-columns: 1fr;
+  }
+
+  .ops-claim-card img {
+    width: min(180px, 100%);
+    height: auto;
+  }
+
   .rf-console-topbar {
     align-items: flex-start;
   }

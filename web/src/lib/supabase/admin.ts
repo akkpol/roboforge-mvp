@@ -8,6 +8,7 @@ type HealthResult<T> =
 
 export type BetaHealth = {
   counts: {
+    claimCodes: number;
     claimedRobots: number;
     connectionSessions: number;
     controlSessions: number;
@@ -16,6 +17,13 @@ export type BetaHealth = {
     robotEvents: number;
     robots: number;
   };
+  claimKits: Array<{
+    claimed_at: string | null;
+    created_at: string;
+    expires_at: string | null;
+    robot_id: string;
+    unit_code: string;
+  }>;
   connectionResults: Record<string, number>;
   controlSummary: {
     commandCount: number;

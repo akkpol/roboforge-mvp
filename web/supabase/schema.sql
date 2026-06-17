@@ -455,6 +455,7 @@ begin
     'counts', jsonb_build_object(
       'ownerProfiles', (select count(*) from public.owner_profiles),
       'robots', (select count(*) from public.robots),
+      'claimCodes', (select count(*) from public.robot_claim_codes),
       'claimedRobots', (
         select count(*)
         from public.robot_claim_codes
@@ -499,6 +500,21 @@ begin
         limit 6
       ) feedback
     ), '[]'::jsonb)
+    ,
+    'claimKits', coalesce((
+      select jsonb_agg(to_jsonb(kits))
+      from (
+        select
+          robot_claim_codes.created_at,
+          robot_claim_codes.claimed_at,
+          robot_claim_codes.expires_at,
+          robot_claim_codes.robot_id,
+          robot_claim_codes.unit_code
+        from public.robot_claim_codes
+        order by robot_claim_codes.created_at desc
+        limit 8
+      ) kits
+    ), '[]'::jsonb)
   )
   into health;
 
@@ -508,6 +524,141 @@ $$;
 
 revoke all on function public.get_beta_health() from public;
 grant execute on function public.get_beta_health() to authenticated;
+
+create or replace function public.create_robot_claim_kit(
+  input_unit_code text,
+  input_robot_type text default 'rover',
+  input_display_name text default null,
+  input_board_type text default 'esp32',
+  input_firmware_version text default null,
+  input_expires_at timestamptz default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  board_type text;
+  created_robot_id uuid;
+  display_name text;
+  raw_code text;
+  robot_type text;
+  target_user uuid := (select auth.uid());
+  token text;
+  normalized_unit_code text;
+begin
+  if target_user is null then
+    raise exception 'login_required' using errcode = 'P0001';
+  end if;
+
+  if not public.is_app_admin() then
+    raise exception 'admin_required' using errcode = 'P0001';
+  end if;
+
+  normalized_unit_code := upper(regexp_replace(coalesce(input_unit_code, ''), '[^A-Za-z0-9-]', '', 'g'));
+  robot_type := lower(coalesce(nullif(trim(input_robot_type), ''), 'rover'));
+  display_name := coalesce(nullif(trim(input_display_name), ''), normalized_unit_code);
+  board_type := lower(coalesce(nullif(trim(input_board_type), ''), 'esp32'));
+
+  if length(normalized_unit_code) < 3 then
+    raise exception 'invalid_unit_code' using errcode = 'P0001';
+  end if;
+
+  if robot_type not in ('rover', 'tracked', 'drone', 'arm') then
+    raise exception 'invalid_robot_type' using errcode = 'P0001';
+  end if;
+
+  if exists (
+    select 1
+    from public.robot_claim_codes
+    where robot_claim_codes.unit_code = normalized_unit_code
+  ) then
+    raise exception 'duplicate_unit_code' using errcode = 'P0001';
+  end if;
+
+  insert into public.robots (
+    display_name,
+    owner_id,
+    robot_type,
+    status,
+    theme,
+    unit_code
+  )
+  values (
+    display_name,
+    target_user,
+    robot_type,
+    'offline',
+    'forge',
+    normalized_unit_code
+  )
+  returning id into created_robot_id;
+
+  insert into public.robot_progress (robot_id)
+  values (created_robot_id)
+  on conflict (robot_id) do nothing;
+
+  insert into public.robot_devices (
+    board_type,
+    firmware_version,
+    protocol_version,
+    robot_id
+  )
+  values (
+    board_type,
+    nullif(trim(input_firmware_version), ''),
+    'v1',
+    created_robot_id
+  )
+  on conflict (robot_id) do update
+  set board_type = excluded.board_type,
+      firmware_version = excluded.firmware_version,
+      updated_at = now();
+
+  for attempt in 1..5 loop
+    token := upper(encode(gen_random_bytes(6), 'hex'));
+    raw_code := 'RF-' ||
+      substr(token, 1, 4) || '-' ||
+      substr(token, 5, 4) || '-' ||
+      substr(token, 9, 4);
+
+    begin
+      insert into public.robot_claim_codes (
+        claim_code_hash,
+        created_by,
+        expires_at,
+        robot_id,
+        unit_code
+      )
+      values (
+        encode(digest(raw_code, 'sha256'), 'hex'),
+        target_user,
+        input_expires_at,
+        created_robot_id,
+        normalized_unit_code
+      );
+
+      return jsonb_build_object(
+        'claimCode', raw_code,
+        'expiresAt', input_expires_at,
+        'robotId', created_robot_id,
+        'unitCode', normalized_unit_code
+      );
+    exception
+      when unique_violation then
+        if attempt = 5 then
+          raise;
+        end if;
+    end;
+  end loop;
+
+  raise exception 'claim_code_generation_failed' using errcode = 'P0001';
+end;
+$$;
+
+revoke all on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) from public;
+grant execute on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) to authenticated;
 
 drop policy if exists "Owners can manage own workspaces" on public.workspaces;
 create policy "Owners can manage own workspaces"

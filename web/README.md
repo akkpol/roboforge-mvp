@@ -8,11 +8,10 @@ Do not turn this into a generic dashboard. The original RoboForge demo is the
 source of truth for the product experience: Garage, Cockpit, fleet selection,
 Forge/Neo themes, robot controls, density, and visual tone.
 
-`/dashboard` is currently the authenticated SaaS entry point and preserves the
-demo surface from `public/demo/index.html?screen=garage`. Future work should
-connect real Supabase data and owner/team workflows behind that existing
-experience, then migrate pieces into native Next.js components only when the UX
-stays at least as strong as the demo.
+`/dashboard` is the authenticated SaaS entry point and preserves the demo
+surface as native Next.js components. Future work should keep the existing
+Garage, Cockpit, fleet selection, Forge/Neo themes, robot controls, density,
+and visual tone while connecting more real hardware paths.
 
 New sessions should continue the SaaS integration here. Do not restart from a
 blank MVP shell or rebuild a plain admin control panel unless the product
@@ -24,10 +23,12 @@ direction is explicitly changed.
   place.
 - Google OAuth is wired through the app callback flow.
 - The first multi-user schema with row-level security is in `supabase/schema.sql`.
-- `/dashboard` is login-gated and loads the original demo Garage surface through
-  `public/demo`.
-- The next product work is teams, owner workspaces, robots, sessions, and real
-  control data behind the existing RoboForge experience.
+- `/dashboard` is login-gated and uses real owner workspace, robot, progress,
+  claim, connection, control-session, and feedback data.
+- `/admin` is login-gated for `app_admins` and can create physical robot claim
+  kits with a one-time code, claim URL, and QR image.
+- The next product work is firmware/local robot protocol integration behind
+  the existing RoboForge experience.
 
 ## Run Locally
 
@@ -55,6 +56,15 @@ multi-user tables with row-level security.
 `SUPABASE_SERVICE_ROLE_KEY` is server-only and only needed for the optional beta
 seed script. The `/admin` Ops view uses the authenticated user plus the
 `app_admins` table.
+
+## Claim Kits
+
+Open `/admin` with an account in `app_admins`, then create a claim kit for each
+physical robot. The action creates a robot, device row, progress row, hashed
+claim code, QR link, and printable card data in one flow.
+
+The QR opens `/dashboard?claim=<code>`. After login, the owner Garage claims the
+robot and removes the code from the URL.
 
 For Google auth, add this app callback in Supabase Redirect URLs:
 

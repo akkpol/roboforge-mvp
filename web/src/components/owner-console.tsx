@@ -27,7 +27,15 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState, useTransition } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import {
   claimRobotByCode,
   finishConnectionSession,
@@ -57,6 +65,7 @@ import {
 import type { OwnerWorkspace } from "@/lib/supabase/server";
 
 type OwnerConsoleProps = {
+  initialClaimCode?: string | null;
   workspace: OwnerWorkspace;
 };
 
@@ -1047,9 +1056,10 @@ function BottomNav({
   );
 }
 
-export function OwnerConsole({ workspace }: OwnerConsoleProps) {
+export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps) {
   const router = useRouter();
   const activeRobot = workspace.robots[0];
+  const autoClaimedCode = useRef<string | null>(null);
   const initialTheme = safeTheme(activeRobot?.theme);
   const [screen, setScreen] = useState<ConsoleScreen>("garage");
   const [theme, setTheme] = useState<ThemeId>(initialTheme);
@@ -1128,19 +1138,38 @@ export function OwnerConsole({ workspace }: OwnerConsoleProps) {
     });
   }
 
-  function claimRobot(claimCode: string) {
+  const finishClaim = useCallback(
+    (result: { error: string | null; ok: boolean }) => {
+      if (result.ok) {
+        setMessage("Robot claimed. Garage data refreshed.");
+        router.replace("/dashboard");
+        router.refresh();
+      } else {
+        setMessage(result.error ?? "Could not claim robot.");
+      }
+    },
+    [router],
+  );
+
+  const claimRobot = useCallback((claimCode: string) => {
     setMessage("");
     startTransition(() => {
-      void claimRobotByCode(claimCode).then((result) => {
-        if (result.ok) {
-          setMessage("Robot claimed. Garage data refreshed.");
-          router.refresh();
-        } else {
-          setMessage(result.error ?? "Could not claim robot.");
-        }
-      });
+      void claimRobotByCode(claimCode).then(finishClaim);
     });
-  }
+  }, [finishClaim]);
+
+  useEffect(() => {
+    const claimCode = initialClaimCode?.trim();
+
+    if (!claimCode || autoClaimedCode.current === claimCode) return;
+
+    autoClaimedCode.current = claimCode;
+    setScreen("garage");
+    setMessage("Claiming robot from QR card...");
+    startTransition(() => {
+      void claimRobotByCode(claimCode).then(finishClaim);
+    });
+  }, [finishClaim, initialClaimCode]);
 
   function startConnectionQuest() {
     setMessage("");

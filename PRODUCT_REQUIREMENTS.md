@@ -19,18 +19,20 @@ connect, and drive like a game.
 
 1. A user creates an account.
 2. The user opens their Garage.
-3. The user claims a robot with a QR code or claim code.
-4. The robot appears in the Garage with identity, theme, status, and progress.
-5. The app guides the user through a simple connection quest.
-6. The user connects to the robot local Wi-Fi and opens the local Cockpit.
-7. The user checks safety, arms the robot, drives, releases to stop, and ends
+3. The team creates a claim kit for a physical robot.
+4. The user claims a robot with a QR code or claim code.
+5. The robot appears in the Garage with identity, theme, status, and progress.
+6. The app guides the user through a simple connection quest.
+7. The user connects to the robot local Wi-Fi and opens the local Cockpit.
+8. The user checks safety, arms the robot, drives, releases to stop, and ends
    the session.
-8. The system records enough summary data to know whether the beta worked.
+9. The system records enough summary data to know whether the beta worked.
 
 ## Core Features For The First Beta
 
 - Account and login.
 - Personal Garage.
+- Admin/Ops claim kit creation for physical robots.
 - Claim robot by QR or code.
 - Robot profile with type, name, theme, device info, and progress.
 - Connection Quest for real robot setup.

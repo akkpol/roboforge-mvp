@@ -14,6 +14,7 @@ product and backend can handle early usage.
 
 - Users can sign up and log in.
 - Users have their own Garage.
+- The team can create claim kits for real robot units.
 - Users can claim a real robot with a QR code or code.
 - Users can connect to a robot in a simple guided flow that feels like a game.
 - Users can open a Cockpit and control the robot.
@@ -35,6 +36,7 @@ direction are part of the product.
 
 - Product requirements for the beta.
 - Supabase schema for ownership, claim, session, events, and feedback.
+- Claim kit creation for each physical robot.
 - Claim Robot flow.
 - Connection Quest flow.
 - Lyra setup and troubleshooting guidance.

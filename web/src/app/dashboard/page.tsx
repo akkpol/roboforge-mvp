@@ -11,11 +11,23 @@ const setupItems = [
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+type DashboardPageProps = {
+  searchParams?: Promise<{
+    claim?: string | string[];
+  }>;
+};
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const claimParam = Array.isArray(params.claim) ? params.claim[0] : params.claim;
+  const initialClaimCode = claimParam?.trim() || null;
   const { configured, user } = await getCurrentUser();
 
   if (configured && !user) {
-    redirect("/login?redirect=/dashboard");
+    const redirectTarget = initialClaimCode
+      ? `/dashboard?claim=${encodeURIComponent(initialClaimCode)}`
+      : "/dashboard";
+    redirect(`/login?redirect=${encodeURIComponent(redirectTarget)}`);
   }
 
   const workspace = user
@@ -64,5 +76,5 @@ export default async function DashboardPage() {
     );
   }
 
-  return <OwnerConsole workspace={workspace} />;
+  return <OwnerConsole initialClaimCode={initialClaimCode} workspace={workspace} />;
 }

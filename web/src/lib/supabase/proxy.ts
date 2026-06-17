@@ -2,6 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
+function cleanRedirect(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return value;
+}
+
 export async function updateSession(request: NextRequest) {
   const { publishableKey, url } = getSupabaseEnv();
   let response = NextResponse.next({ request });
@@ -34,14 +42,14 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith("/dashboard") && !user) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("redirect", pathname);
+    const redirectUrl = new URL("/login", request.url);
+    redirectUrl.searchParams.set("redirect", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(redirectUrl);
   }
 
   if (pathname === "/login" && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const redirectTarget = cleanRedirect(request.nextUrl.searchParams.get("redirect"));
+    return NextResponse.redirect(new URL(redirectTarget, request.url));
   }
 
   return response;
