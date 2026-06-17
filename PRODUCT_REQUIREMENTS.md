@@ -60,12 +60,13 @@ Useful first jobs:
 
 The first physical path can use ESP32 and local Wi-Fi, but RoboForge should not
 be locked to one exact board too early. The stable contract should be the robot
-protocol:
+protocol in `docs/ROBOT_PROTOCOL.md`:
 
 - `status`
 - `arm`
 - `drive`
 - `stop`
+- `info`
 
 Hardware can change later if the robot still speaks the same RoboForge control
 language.

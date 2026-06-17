@@ -8,13 +8,32 @@ import type {
 const demoStatus: RobotTelemetry = {
   connected: true,
   armed: false,
+  apSsid: "RoboForge-Rover-DEMO",
   batteryVoltage: 7.78,
   batteryPercent: 82,
+  commandTimeoutMs: 400,
+  deviceName: "RoboForge-Rover-DEMO",
   lastCommandAt: 0,
+  maxSpeed: 0.45,
+  protocolVersion: "v1",
+  robotType: "rover",
   uptime: 128,
   firmwareVersion: "demo-0.1.0",
   wifiStrength: "strong",
 };
+
+function normalizeTelemetry(raw: Partial<RobotTelemetry>): RobotTelemetry {
+  return {
+    ...demoStatus,
+    ...raw,
+    apSsid: raw.apSsid ?? raw.deviceName ?? demoStatus.apSsid,
+    commandTimeoutMs: raw.commandTimeoutMs ?? demoStatus.commandTimeoutMs,
+    deviceName: raw.deviceName ?? raw.apSsid ?? demoStatus.deviceName,
+    maxSpeed: raw.maxSpeed ?? demoStatus.maxSpeed,
+    protocolVersion: raw.protocolVersion ?? demoStatus.protocolVersion,
+    robotType: raw.robotType ?? demoStatus.robotType,
+  };
+}
 
 export function clampDriveCommand(command: DriveCommand): DriveCommand {
   return {
@@ -103,15 +122,19 @@ async function requestJson<T>(
 }
 
 export class HttpRoverApi implements RoverApi {
-  getStatus() {
-    return requestJson<RobotTelemetry>("/api/v1/status");
+  async getStatus() {
+    return normalizeTelemetry(
+      await requestJson<Partial<RobotTelemetry>>("/api/v1/status"),
+    );
   }
 
-  setArmed(armed: boolean) {
-    return requestJson<RobotTelemetry>("/api/v1/arm", {
-      method: "POST",
-      body: JSON.stringify({ armed }),
-    });
+  async setArmed(armed: boolean) {
+    return normalizeTelemetry(
+      await requestJson<Partial<RobotTelemetry>>("/api/v1/arm", {
+        method: "POST",
+        body: JSON.stringify({ armed }),
+      }),
+    );
   }
 
   async drive(command: DriveCommand) {
@@ -121,12 +144,14 @@ export class HttpRoverApi implements RoverApi {
     });
   }
 
-  stop() {
-    return requestJson<RobotTelemetry>("/api/v1/stop", {
-      method: "POST",
-      body: "{}",
-      keepalive: true,
-    });
+  async stop() {
+    return normalizeTelemetry(
+      await requestJson<Partial<RobotTelemetry>>("/api/v1/stop", {
+        method: "POST",
+        body: "{}",
+        keepalive: true,
+      }),
+    );
   }
 }
 

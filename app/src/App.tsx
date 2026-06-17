@@ -50,9 +50,15 @@ const calendlyUrl = import.meta.env.VITE_CALENDLY_URL ?? "";
 const initialTelemetry: RobotTelemetry = {
   connected: false,
   armed: false,
+  apSsid: "RoboForge-Rover",
   batteryVoltage: 0,
   batteryPercent: 0,
+  commandTimeoutMs: 400,
+  deviceName: "RoboForge-Rover",
   lastCommandAt: 0,
+  maxSpeed: 0.45,
+  protocolVersion: "v1",
+  robotType: "rover",
   uptime: 0,
   firmwareVersion: "loading",
   wifiStrength: "weak",
@@ -368,8 +374,8 @@ function TelemetryGrid({
       <article>
         <Gauge size={23} weight="duotone" />
         <span>LIMIT</span>
-        <strong>45%</strong>
-        <small>Beta safety mode</small>
+        <strong>{Math.round(telemetry.maxSpeed * 100)}%</strong>
+        <small>{telemetry.protocolVersion} / {telemetry.commandTimeoutMs} ms</small>
       </article>
     </div>
   );

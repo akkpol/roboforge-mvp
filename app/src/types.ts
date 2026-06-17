@@ -53,9 +53,15 @@ export interface RobotTheme {
 export interface RobotTelemetry {
   connected: boolean;
   armed: boolean;
+  apSsid: string;
   batteryVoltage: number;
   batteryPercent: number;
+  commandTimeoutMs: number;
+  deviceName: string;
   lastCommandAt: number;
+  maxSpeed: number;
+  protocolVersion: string;
+  robotType: RobotType;
   uptime: number;
   firmwareVersion: string;
   wifiStrength: "strong" | "fair" | "weak";

@@ -54,3 +54,6 @@ npm run build:device
 The app does not accept payment, create cloud accounts, stream camera video, use autonomous control, or claim future body kits and sensor packs are currently shipping. The UI explicitly separates the Digital Form, Installed Hardware, and Future Body Kit.
 
 See [firmware/README.md](firmware/README.md) for wiring, battery configuration, upload steps, and the mandatory raised-wheel safety test.
+
+The stable app-to-robot API is documented in [docs/ROBOT_PROTOCOL.md](docs/ROBOT_PROTOCOL.md).
+Use it as the contract for ESP32 now and for other boards later.

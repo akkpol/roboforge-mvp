@@ -1,0 +1,162 @@
+# RoboForge Robot Protocol v1
+
+This is the stable contract between RoboForge apps and a physical robot. The
+first implementation is the ESP32 Rover-01 firmware, but the product should not
+depend on one exact board as long as the robot speaks this protocol.
+
+## Transport
+
+- The robot hosts a local Wi-Fi access point.
+- The owner connects a phone or computer to that access point.
+- The local app opens `http://192.168.4.1`.
+- Live motor commands stay local. Supabase stores ownership, setup outcomes,
+  session summaries, important events, and feedback only.
+
+## Required Endpoints
+
+### `GET /api/v1/info`
+
+Returns device identity and protocol capabilities.
+
+```json
+{
+  "deviceName": "RoboForge-Rover-1234",
+  "robotType": "rover",
+  "firmwareVersion": "0.1.0",
+  "protocolVersion": "v1",
+  "apiBasePath": "/api/v1",
+  "apSsid": "RoboForge-Rover-1234",
+  "ipAddress": "192.168.4.1",
+  "maxSpeed": 0.45,
+  "commandTimeoutMs": 400,
+  "endpoints": [
+    "GET /api/v1/info",
+    "GET /api/v1/status",
+    "POST /api/v1/arm",
+    "POST /api/v1/drive",
+    "POST /api/v1/stop"
+  ],
+  "safety": {
+    "requiresArm": true,
+    "deadmanTimeoutMs": 400,
+    "disconnectStopsMotors": true,
+    "driveSequenceMustIncrease": true
+  }
+}
+```
+
+### `GET /api/v1/status`
+
+Returns telemetry and the same important protocol metadata.
+
+```json
+{
+  "connected": true,
+  "armed": false,
+  "batteryVoltage": 7.78,
+  "batteryPercent": 82,
+  "lastCommandAt": 123456,
+  "uptime": 128,
+  "firmwareVersion": "0.1.0",
+  "protocolVersion": "v1",
+  "deviceName": "RoboForge-Rover-1234",
+  "robotType": "rover",
+  "apSsid": "RoboForge-Rover-1234",
+  "ipAddress": "192.168.4.1",
+  "maxSpeed": 0.45,
+  "commandTimeoutMs": 400,
+  "wifiStrength": "strong"
+}
+```
+
+### `POST /api/v1/arm`
+
+Body:
+
+```json
+{ "armed": true }
+```
+
+The robot must reject arming when safety gates fail. The ESP32 Rover-01 blocks
+arming when battery voltage does not match the configured cell count or no
+control client is connected.
+
+### `POST /api/v1/drive`
+
+Body:
+
+```json
+{
+  "sequence": 1,
+  "throttle": 0.25,
+  "steering": 0,
+  "speedLimit": 0.3
+}
+```
+
+- `sequence` must increase.
+- `throttle` and `steering` are clamped from `-1` to `1`.
+- `speedLimit` is clamped from `0` to the robot's `maxSpeed`.
+- The client must send a zero command when the joystick is released.
+
+### `POST /api/v1/stop`
+
+Body:
+
+```json
+{}
+```
+
+The robot must stop motors immediately and disarm controls.
+
+## Standard Error Codes
+
+```text
+battery_configuration_mismatch
+controls_not_armed
+invalid_json
+network_error
+no_control_client
+not_found
+stale_sequence
+unknown
+```
+
+Lyra should translate these into plain owner guidance instead of showing raw
+technical messages first.
+
+## Required Safety Behavior
+
+- Motor output starts locked.
+- Arm must be explicit.
+- Stop must disarm.
+- Losing the control client stops motors.
+- Missing drive commands for `commandTimeoutMs` stops motors.
+- Sequence numbers prevent old drive commands from replaying.
+- First drive tests require raised wheels.
+
+## Prototype Check
+
+With a phone or computer connected to the robot Wi-Fi:
+
+```powershell
+node scripts/rover-protocol-check.mjs --base-url=http://192.168.4.1
+```
+
+Only after the wheels are raised:
+
+```powershell
+node scripts/rover-protocol-check.mjs --raised-wheels
+```
+
+## Hardware Info Still Needed
+
+Before changing motor or battery code for a new prototype, collect:
+
+- board model
+- motor driver model
+- battery chemistry and cell count
+- wiring photo or pin list
+- motor count and left/right channel mapping
+- whether the prototype has an accessible power switch and fuse
+

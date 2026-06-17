@@ -2,6 +2,9 @@
 
 ESP32 firmware for the local Rover-01 cockpit. The ESP32 creates a private Wi-Fi access point, serves the Preact app from LittleFS, and exposes the same-origin `/api/v1` control API.
 
+The stable app-to-robot contract is [RoboForge Robot Protocol v1](../docs/ROBOT_PROTOCOL.md).
+Hardware can change later if the robot still implements that contract.
+
 ## Standard Wiring
 
 | Function | GPIO | Note |
@@ -50,6 +53,20 @@ pio device monitor
 ```
 
 Connect the phone to `RoboForge-Rover-XXXX` and open `http://192.168.4.1`. The default password is in `include/config.h`; assign a unique password before distributing a kit.
+
+## Protocol Check
+
+With your computer connected to the robot Wi-Fi, run the non-driving check:
+
+```powershell
+node ..\scripts\rover-protocol-check.mjs --base-url=http://192.168.4.1
+```
+
+Only after the wheels are raised, run the physical drive check:
+
+```powershell
+node ..\scripts\rover-protocol-check.mjs --raised-wheels
+```
 
 ## Safety Behavior
 

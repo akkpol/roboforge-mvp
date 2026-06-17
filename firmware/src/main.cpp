@@ -143,12 +143,47 @@ void addStatusFields(JsonDocument& document) {
   document["lastCommandAt"] = lastCommandAt;
   document["uptime"] = millis() / 1000;
   document["firmwareVersion"] = ROBOFORGE_FIRMWARE_VERSION;
+  document["protocolVersion"] = ROBOFORGE_PROTOCOL_VERSION;
+  document["deviceName"] = accessPointName;
+  document["robotType"] = ROBOFORGE_ROBOT_TYPE;
+  document["apSsid"] = accessPointName;
+  document["ipAddress"] = WiFi.softAPIP().toString();
+  document["maxSpeed"] = kMaxBetaSpeed;
+  document["commandTimeoutMs"] = kCommandTimeoutMs;
   document["wifiStrength"] = wifiStrengthLabel();
 }
 
 void handleStatus() {
   JsonDocument response;
   addStatusFields(response);
+  sendJson(200, response);
+}
+
+void handleInfo() {
+  JsonDocument response;
+  response["deviceName"] = accessPointName;
+  response["robotType"] = ROBOFORGE_ROBOT_TYPE;
+  response["firmwareVersion"] = ROBOFORGE_FIRMWARE_VERSION;
+  response["protocolVersion"] = ROBOFORGE_PROTOCOL_VERSION;
+  response["apiBasePath"] = "/api/v1";
+  response["apSsid"] = accessPointName;
+  response["ipAddress"] = WiFi.softAPIP().toString();
+  response["maxSpeed"] = kMaxBetaSpeed;
+  response["commandTimeoutMs"] = kCommandTimeoutMs;
+
+  JsonArray endpoints = response["endpoints"].to<JsonArray>();
+  endpoints.add("GET /api/v1/info");
+  endpoints.add("GET /api/v1/status");
+  endpoints.add("POST /api/v1/arm");
+  endpoints.add("POST /api/v1/drive");
+  endpoints.add("POST /api/v1/stop");
+
+  JsonObject safety = response["safety"].to<JsonObject>();
+  safety["requiresArm"] = true;
+  safety["deadmanTimeoutMs"] = kCommandTimeoutMs;
+  safety["disconnectStopsMotors"] = true;
+  safety["driveSequenceMustIncrease"] = true;
+
   sendJson(200, response);
 }
 
@@ -280,6 +315,7 @@ void redirectToPortal() {
 }
 
 void setupRoutes() {
+  server.on("/api/v1/info", HTTP_GET, handleInfo);
   server.on("/api/v1/status", HTTP_GET, handleStatus);
   server.on("/api/v1/arm", HTTP_POST, handleArm);
   server.on("/api/v1/drive", HTTP_POST, handleDrive);

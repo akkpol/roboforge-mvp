@@ -30,6 +30,14 @@ describe("DemoRoverApi", () => {
     expect((await api.setArmed(true)).armed).toBe(true);
     expect((await api.stop()).armed).toBe(false);
   });
+
+  it("returns protocol metadata used by device diagnostics", async () => {
+    const api = new DemoRoverApi();
+    const status = await api.getStatus();
+    expect(status.protocolVersion).toBe("v1");
+    expect(status.maxSpeed).toBe(0.45);
+    expect(status.commandTimeoutMs).toBe(400);
+  });
 });
 
 describe("getRoverErrorCode", () => {

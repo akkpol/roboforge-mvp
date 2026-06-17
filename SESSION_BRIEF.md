@@ -25,6 +25,8 @@ product and backend can handle early usage.
   exact board unless the current task is specifically firmware work.
 - Supabase is currently on the free plan, so design the backend to be useful and
   lightweight.
+- The physical robot contract is `docs/ROBOT_PROTOCOL.md`; keep live motor
+  commands local to the robot Wi-Fi.
 
 ## Current Direction
 
@@ -42,6 +44,7 @@ direction are part of the product.
 - Lyra setup and troubleshooting guidance.
 - Admin/Ops view for beta health.
 - Backend testing for 100-1000 early users.
+- Firmware/local protocol checks for the physical prototype.
 
 ## Ask When Needed
 
