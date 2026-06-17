@@ -2,6 +2,33 @@
 
 Next.js SaaS shell for RoboForge owner accounts.
 
+## Current SaaS Direction
+
+Do not turn this into a generic dashboard. The original RoboForge demo is the
+source of truth for the product experience: Garage, Cockpit, fleet selection,
+Forge/Neo themes, robot controls, density, and visual tone.
+
+`/dashboard` is currently the authenticated SaaS entry point and preserves the
+demo surface from `public/demo/index.html?screen=garage`. Future work should
+connect real Supabase data and owner/team workflows behind that existing
+experience, then migrate pieces into native Next.js components only when the UX
+stays at least as strong as the demo.
+
+New sessions should continue the SaaS integration here. Do not restart from a
+blank MVP shell or rebuild a plain admin control panel unless the product
+direction is explicitly changed.
+
+## Started Work To Preserve
+
+- Supabase auth helpers, middleware, login, callback, and sign-out routes are in
+  place.
+- Google OAuth is wired through the app callback flow.
+- The first multi-user schema with row-level security is in `supabase/schema.sql`.
+- `/dashboard` is login-gated and loads the original demo Garage surface through
+  `public/demo`.
+- The next product work is teams, owner workspaces, robots, sessions, and real
+  control data behind the existing RoboForge experience.
+
 ## Run Locally
 
 ```bash
