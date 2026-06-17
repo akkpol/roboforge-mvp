@@ -3,6 +3,8 @@ import { AuthForm } from "@/components/auth-form";
 
 type LoginPageProps = {
   searchParams: Promise<{
+    error?: string | string[];
+    error_description?: string | string[];
     redirect?: string | string[];
   }>;
 };
@@ -13,9 +15,24 @@ function cleanRedirect(value: string | string[] | undefined) {
   return raw;
 }
 
+function authMessage(params: { error?: string | string[]; error_description?: string | string[] }) {
+  const rawError = Array.isArray(params.error) ? params.error[0] : params.error;
+  const rawDescription = Array.isArray(params.error_description)
+    ? params.error_description[0]
+    : params.error_description;
+
+  if (rawDescription) return decodeURIComponent(rawDescription);
+  if (rawError === "oauth") {
+    return "Google login returned to RoboForge, but the session code could not be exchanged. Check Supabase and Google OAuth callback settings.";
+  }
+  if (rawError) return `Login error: ${rawError}`;
+  return "";
+}
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const redirectTo = cleanRedirect(params.redirect);
+  const initialMessage = authMessage(params);
 
   return (
     <main className="auth-page">
@@ -28,7 +45,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
       </section>
       <Suspense fallback={<div className="auth-card">Loading auth...</div>}>
-        <AuthForm redirectTo={redirectTo} />
+        <AuthForm initialMessage={initialMessage} redirectTo={redirectTo} />
       </Suspense>
     </main>
   );

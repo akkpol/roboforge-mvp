@@ -9,13 +9,19 @@ import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 type Mode = "sign-in" | "sign-up";
 type BusyAction = "email" | "google" | null;
 
-export function AuthForm({ redirectTo }: { redirectTo: string }) {
+export function AuthForm({
+  initialMessage = "",
+  redirectTo,
+}: {
+  initialMessage?: string;
+  redirectTo: string;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage);
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const configured = useMemo(() => isSupabaseConfigured(), []);
   const busy = busyAction !== null;
