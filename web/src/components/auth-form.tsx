@@ -41,7 +41,6 @@ export function AuthForm({
       "/auth/callback",
       appUrl || window.location.origin,
     );
-    callbackUrl.searchParams.set("next", redirectTo);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
