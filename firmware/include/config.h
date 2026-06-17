@@ -1,6 +1,7 @@
 #pragma once
 
 // Change these values for each physical Beta kit before field testing.
+#define ROBOFORGE_UNIT_CODE "ROVER-01"
 #define ROBOFORGE_AP_PASSWORD "forge-rover-01"
 #define ROBOFORGE_BATTERY_CELLS 2
 #define ROBOFORGE_BATTERY_CALIBRATION 1.000f

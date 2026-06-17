@@ -115,6 +115,11 @@ export default async function AdminPage() {
                       ? `Expires ${new Date(kit.expires_at).toLocaleDateString()}`
                       : "No expiry"}
                 </p>
+                <p>
+                  {kit.ap_ssid ?? "SSID pending"} ·{" "}
+                  {kit.firmware_version ?? "firmware pending"} ·{" "}
+                  {kit.protocol_version ?? "protocol pending"}
+                </p>
               </span>
             ))}
             {data.claimKits.length === 0 ? <p>No claim kits yet.</p> : null}

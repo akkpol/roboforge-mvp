@@ -284,6 +284,49 @@ textarea:focus-visible {
   background: #241011;
 }
 
+.ops-manifest-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.ops-code-block {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ops-code-block > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ops-code-block span {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ops-code-block pre {
+  max-height: 240px;
+  overflow: auto;
+  margin: 0;
+  padding: 11px;
+  border: 1px solid var(--line);
+  color: #c8f8ff;
+  background: #07111a;
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .topbar {
   position: sticky;
   z-index: 20;

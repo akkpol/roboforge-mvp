@@ -17,6 +17,7 @@ const demoStatus: RobotTelemetry = {
   maxSpeed: 0.45,
   protocolVersion: "v1",
   robotType: "rover",
+  unitCode: "ROVER-01",
   uptime: 128,
   firmwareVersion: "demo-0.1.0",
   wifiStrength: "strong",
@@ -32,6 +33,7 @@ function normalizeTelemetry(raw: Partial<RobotTelemetry>): RobotTelemetry {
     maxSpeed: raw.maxSpeed ?? demoStatus.maxSpeed,
     protocolVersion: raw.protocolVersion ?? demoStatus.protocolVersion,
     robotType: raw.robotType ?? demoStatus.robotType,
+    unitCode: raw.unitCode ?? raw.deviceName ?? demoStatus.unitCode,
   };
 }
 

@@ -62,6 +62,7 @@ export interface RobotTelemetry {
   maxSpeed: number;
   protocolVersion: string;
   robotType: RobotType;
+  unitCode: string;
   uptime: number;
   firmwareVersion: string;
   wifiStrength: "strong" | "fair" | "weak";

@@ -35,6 +35,11 @@ Calibrate `ROBOFORGE_BATTERY_CALIBRATION` against a multimeter. Do not field-tes
 
 ## Build And Upload
 
+Create a claim kit in the SaaS `/admin` Ops view before flashing a physical
+unit. Copy the generated `firmware/include/config.h` block so the firmware unit
+code, AP password, battery cell count, protocol version, and Supabase claim kit
+match the same robot.
+
 From `app/`:
 
 ```powershell

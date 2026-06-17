@@ -1,6 +1,14 @@
 "use client";
 
-import { CheckCircle, Copy, PackagePlus, QrCode } from "lucide-react";
+import {
+  CheckCircle,
+  Copy,
+  FileCode2,
+  type LucideIcon,
+  PackagePlus,
+  QrCode,
+  Terminal,
+} from "lucide-react";
 import Image from "next/image";
 import { useActionState, useState } from "react";
 import {
@@ -29,6 +37,29 @@ function CopyButton({ text }: { text: string }) {
       {copied ? <CheckCircle size={15} /> : <Copy size={15} />}
       {copied ? "Copied" : "Copy"}
     </button>
+  );
+}
+
+function CopyBlock({
+  icon: Icon,
+  label,
+  text,
+}: {
+  icon: LucideIcon;
+  label: string;
+  text: string;
+}) {
+  return (
+    <section className="ops-code-block">
+      <div>
+        <span>
+          <Icon size={15} />
+          {label}
+        </span>
+        <CopyButton text={text} />
+      </div>
+      <pre>{text}</pre>
+    </section>
   );
 }
 
@@ -76,11 +107,28 @@ export function ClaimKitForm() {
         <div className="ops-form-row">
           <label>
             Firmware
-            <input name="firmwareVersion" placeholder="rover-0.1.0" />
+            <input defaultValue="0.1.0" name="firmwareVersion" />
           </label>
           <label>
             Expires
             <input name="expiresAt" type="datetime-local" />
+          </label>
+        </div>
+        <div className="ops-form-row">
+          <label>
+            Battery cells
+            <select defaultValue="2" name="batteryCells">
+              <option value="1">1S</option>
+              <option value="2">2S</option>
+            </select>
+          </label>
+          <label>
+            AP password
+            <input
+              autoComplete="off"
+              name="apPassword"
+              placeholder="auto-generate"
+            />
           </label>
         </div>
         <button className="button" disabled={isPending} type="submit">
@@ -110,6 +158,31 @@ export function ClaimKitForm() {
             </div>
             <p>{state.kit.claimUrl}</p>
           </div>
+        </section>
+      ) : null}
+
+      {state.kit ? (
+        <section className="ops-manifest-grid">
+          <CopyBlock
+            icon={FileCode2}
+            label="firmware/include/config.h"
+            text={state.kit.firmwareConfig}
+          />
+          <CopyBlock
+            icon={Terminal}
+            label="kit manifest"
+            text={state.kit.kitManifest}
+          />
+          <CopyBlock
+            icon={Terminal}
+            label="non-driving check"
+            text={state.kit.localCheckCommand}
+          />
+          <CopyBlock
+            icon={Terminal}
+            label="raised-wheel drive check"
+            text={state.kit.raisedWheelCheckCommand}
+          />
         </section>
       ) : null}
     </article>

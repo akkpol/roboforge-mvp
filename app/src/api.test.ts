@@ -35,6 +35,7 @@ describe("DemoRoverApi", () => {
     const api = new DemoRoverApi();
     const status = await api.getStatus();
     expect(status.protocolVersion).toBe("v1");
+    expect(status.unitCode).toBe("ROVER-01");
     expect(status.maxSpeed).toBe(0.45);
     expect(status.commandTimeoutMs).toBe(400);
   });

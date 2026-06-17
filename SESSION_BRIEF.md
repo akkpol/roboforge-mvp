@@ -14,7 +14,8 @@ product and backend can handle early usage.
 
 - Users can sign up and log in.
 - Users have their own Garage.
-- The team can create claim kits for real robot units.
+- The team can create claim kits for real robot units, including QR, firmware
+  config, local Wi-Fi details, and protocol check steps.
 - Users can claim a real robot with a QR code or code.
 - Users can connect to a robot in a simple guided flow that feels like a game.
 - Users can open a Cockpit and control the robot.

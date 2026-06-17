@@ -144,6 +144,7 @@ void addStatusFields(JsonDocument& document) {
   document["uptime"] = millis() / 1000;
   document["firmwareVersion"] = ROBOFORGE_FIRMWARE_VERSION;
   document["protocolVersion"] = ROBOFORGE_PROTOCOL_VERSION;
+  document["unitCode"] = ROBOFORGE_UNIT_CODE;
   document["deviceName"] = accessPointName;
   document["robotType"] = ROBOFORGE_ROBOT_TYPE;
   document["apSsid"] = accessPointName;
@@ -161,6 +162,7 @@ void handleStatus() {
 
 void handleInfo() {
   JsonDocument response;
+  response["unitCode"] = ROBOFORGE_UNIT_CODE;
   response["deviceName"] = accessPointName;
   response["robotType"] = ROBOFORGE_ROBOT_TYPE;
   response["firmwareVersion"] = ROBOFORGE_FIRMWARE_VERSION;
@@ -344,6 +346,16 @@ void setupRoutes() {
 }
 
 String buildAccessPointName() {
+  String unitCode = String(ROBOFORGE_UNIT_CODE);
+  unitCode.trim();
+
+  if (unitCode.length() > 0) {
+    unitCode.replace(" ", "-");
+    String ssid = "RoboForge-" + unitCode;
+    if (ssid.length() <= 31) return ssid;
+    return ssid.substring(0, 31);
+  }
+
   const uint64_t chipId = ESP.getEfuseMac();
   char suffix[5];
   snprintf(suffix, sizeof(suffix), "%04X", static_cast<uint16_t>(chipId & 0xFFFF));

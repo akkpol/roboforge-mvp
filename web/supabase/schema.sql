@@ -499,18 +499,23 @@ begin
         order by created_at desc
         limit 6
       ) feedback
-    ), '[]'::jsonb)
-    ,
+    ), '[]'::jsonb),
     'claimKits', coalesce((
       select jsonb_agg(to_jsonb(kits))
       from (
         select
+          robot_devices.ap_ssid,
+          robot_devices.battery_config,
           robot_claim_codes.created_at,
           robot_claim_codes.claimed_at,
           robot_claim_codes.expires_at,
+          robot_devices.firmware_version,
+          robot_devices.protocol_version,
           robot_claim_codes.robot_id,
           robot_claim_codes.unit_code
         from public.robot_claim_codes
+        left join public.robot_devices
+          on robot_devices.robot_id = robot_claim_codes.robot_id
         order by robot_claim_codes.created_at desc
         limit 8
       ) kits

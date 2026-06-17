@@ -18,9 +18,13 @@ export type BetaHealth = {
     robots: number;
   };
   claimKits: Array<{
+    ap_ssid: string | null;
+    battery_config: Record<string, unknown> | null;
     claimed_at: string | null;
     created_at: string;
     expires_at: string | null;
+    firmware_version: string | null;
+    protocol_version: string | null;
     robot_id: string;
     unit_code: string;
   }>;

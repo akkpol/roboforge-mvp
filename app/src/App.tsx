@@ -59,6 +59,7 @@ const initialTelemetry: RobotTelemetry = {
   maxSpeed: 0.45,
   protocolVersion: "v1",
   robotType: "rover",
+  unitCode: "ROVER-01",
   uptime: 0,
   firmwareVersion: "loading",
   wifiStrength: "weak",

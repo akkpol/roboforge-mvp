@@ -61,10 +61,14 @@ seed script. The `/admin` Ops view uses the authenticated user plus the
 
 Open `/admin` with an account in `app_admins`, then create a claim kit for each
 physical robot. The action creates a robot, device row, progress row, hashed
-claim code, QR link, and printable card data in one flow.
+claim code, QR link, printable card data, and a firmware kit manifest in one
+flow.
 
 The QR opens `/dashboard?claim=<code>`. After login, the owner Garage claims the
 robot and removes the code from the URL.
+
+The generated manifest includes the `firmware/include/config.h` block, local
+Wi-Fi SSID/password, claim URL, and the protocol check commands for that unit.
 
 For Google auth, add this app callback in Supabase Redirect URLs:
 

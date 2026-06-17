@@ -66,6 +66,7 @@ async function main() {
 
   const info = await request("/api/v1/info");
   assert(info.protocolVersion === "v1", "Expected protocolVersion v1");
+  assert(typeof info.unitCode === "string" && info.unitCode.length > 0, "Expected unitCode");
   assert(Array.isArray(info.endpoints), "Expected endpoint list from /api/v1/info");
   assert(info.endpoints.includes("POST /api/v1/stop"), "Expected stop endpoint");
 
@@ -124,6 +125,7 @@ async function main() {
         deviceName: info.deviceName,
         firmwareVersion: status.firmwareVersion,
         protocolVersion: info.protocolVersion,
+        unitCode: info.unitCode,
         driveCheck: runDriveCheck,
       },
       null,
@@ -141,4 +143,3 @@ main().catch((error) => {
   console.error(error.message);
   process.exit(1);
 });
-

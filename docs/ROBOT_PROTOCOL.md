@@ -20,12 +20,13 @@ Returns device identity and protocol capabilities.
 
 ```json
 {
-  "deviceName": "RoboForge-Rover-1234",
+  "unitCode": "RF-RV-0001",
+  "deviceName": "RoboForge-RF-RV-0001",
   "robotType": "rover",
   "firmwareVersion": "0.1.0",
   "protocolVersion": "v1",
   "apiBasePath": "/api/v1",
-  "apSsid": "RoboForge-Rover-1234",
+  "apSsid": "RoboForge-RF-RV-0001",
   "ipAddress": "192.168.4.1",
   "maxSpeed": 0.45,
   "commandTimeoutMs": 400,
@@ -53,15 +54,16 @@ Returns telemetry and the same important protocol metadata.
 {
   "connected": true,
   "armed": false,
+  "unitCode": "RF-RV-0001",
   "batteryVoltage": 7.78,
   "batteryPercent": 82,
   "lastCommandAt": 123456,
   "uptime": 128,
   "firmwareVersion": "0.1.0",
   "protocolVersion": "v1",
-  "deviceName": "RoboForge-Rover-1234",
+  "deviceName": "RoboForge-RF-RV-0001",
   "robotType": "rover",
-  "apSsid": "RoboForge-Rover-1234",
+  "apSsid": "RoboForge-RF-RV-0001",
   "ipAddress": "192.168.4.1",
   "maxSpeed": 0.45,
   "commandTimeoutMs": 400,
@@ -137,6 +139,10 @@ technical messages first.
 
 ## Prototype Check
 
+Create a claim kit in `/admin` first. The generated manifest includes the
+`firmware/include/config.h` values, local Wi-Fi SSID, claim URL, and test
+commands for that physical unit.
+
 With a phone or computer connected to the robot Wi-Fi:
 
 ```powershell
@@ -159,4 +165,3 @@ Before changing motor or battery code for a new prototype, collect:
 - wiring photo or pin list
 - motor count and left/right channel mapping
 - whether the prototype has an accessible power switch and fuse
-
