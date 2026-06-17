@@ -6,6 +6,7 @@ app/.vercel/
 app/.vite-*.log
 web/node_modules/
 web/.next/
+web/.next-dev-codex*.log
 web/out/
 web/.vercel/
 app/design-reference/*
