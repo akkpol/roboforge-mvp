@@ -13,6 +13,7 @@ export type BetaHealth = {
     connectionSessions: number;
     controlSessions: number;
     feedbackReports: number;
+    floorReadyRobots: number;
     ownerProfiles: number;
     robotEvents: number;
     robots: number;
@@ -24,8 +25,11 @@ export type BetaHealth = {
     created_at: string;
     expires_at: string | null;
     firmware_version: string | null;
+    hardware_profile: Record<string, unknown> | null;
     protocol_version: string | null;
+    readiness_status: string | null;
     robot_id: string;
+    robot_type: string | null;
     unit_code: string;
   }>;
   connectionResults: Record<string, number>;

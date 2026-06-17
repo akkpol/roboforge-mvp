@@ -1,6 +1,7 @@
 import { Activity, AlertTriangle, Bot, RadioTower, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { ClaimKitForm } from "@/app/admin/claim-kit-form";
+import { HardwareProfileForm } from "@/app/admin/hardware-profile-form";
 import { getBetaHealth } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/supabase/server";
 
@@ -90,6 +91,7 @@ export default async function AdminPage() {
         {metric("Robots", data.counts.robots, "registered units")}
         {metric("Codes", data.counts.claimCodes, "claim kits issued")}
         {metric("Claimed", data.counts.claimedRobots, "claimed robot codes")}
+        {metric("Floor", data.counts.floorReadyRobots, "ready for floor")}
         {metric("Connect", data.counts.connectionSessions, `${successRate}% success`)}
         {metric("Control", data.counts.controlSessions, "session summaries")}
         {metric("Feedback", data.counts.feedbackReports, "beta reports")}
@@ -97,6 +99,7 @@ export default async function AdminPage() {
 
       <section className="ops-grid">
         <ClaimKitForm />
+        <HardwareProfileForm claimKits={data.claimKits} />
 
         <article className="ops-panel">
           <span className="eyebrow">

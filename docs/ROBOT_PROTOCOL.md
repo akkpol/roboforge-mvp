@@ -165,3 +165,7 @@ Before changing motor or battery code for a new prototype, collect:
 - wiring photo or pin list
 - motor count and left/right channel mapping
 - whether the prototype has an accessible power switch and fuse
+
+Store these fields in the SaaS `/admin` Hardware Profile panel for the unit.
+Do not treat a robot as ready for floor testing until the profile is filled and
+the raised-wheel protocol check has passed.

@@ -16,6 +16,8 @@ product and backend can handle early usage.
 - Users have their own Garage.
 - The team can create claim kits for real robot units, including QR, firmware
   config, local Wi-Fi details, and protocol check steps.
+- The team can store prototype hardware details in Ops before changing firmware
+  for a specific unit.
 - Users can claim a real robot with a QR code or code.
 - Users can connect to a robot in a simple guided flow that feels like a game.
 - Users can open a Cockpit and control the robot.
@@ -46,6 +48,8 @@ direction are part of the product.
 - Admin/Ops view for beta health.
 - Backend testing for 100-1000 early users.
 - Firmware/local protocol checks for the physical prototype.
+- Hardware profile capture for board, motor driver, battery, wiring, fuse,
+  power switch, and readiness status.
 
 ## Ask When Needed
 

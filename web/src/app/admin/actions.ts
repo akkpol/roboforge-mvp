@@ -23,9 +23,19 @@ export type ClaimKitState = {
   ok: boolean;
 };
 
+export type HardwareProfileState = {
+  error: string | null;
+  ok: boolean;
+};
+
 const initialClaimKitState: ClaimKitState = {
   error: null,
   kit: null,
+  ok: false,
+};
+
+const initialHardwareProfileState: HardwareProfileState = {
+  error: null,
   ok: false,
 };
 
@@ -53,6 +63,10 @@ function formValue(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function formBoolean(formData: FormData, key: string) {
+  return formData.get(key) === "on";
+}
+
 function normalizeRobotType(value: string) {
   const normalized = value.trim().toLowerCase();
   return ["rover", "tracked", "drone", "arm"].includes(normalized)
@@ -62,6 +76,19 @@ function normalizeRobotType(value: string) {
 
 function normalizeFirmwareVersion(value: string) {
   return value.trim() || "0.1.0";
+}
+
+function normalizeReadinessStatus(value: string) {
+  const normalized = value.trim();
+  return [
+    "needs_details",
+    "ready_for_bench",
+    "ready_for_raised_wheels",
+    "ready_for_floor",
+    "blocked",
+  ].includes(normalized)
+    ? normalized
+    : "needs_details";
 }
 
 function sanitizeDefineValue(value: string) {
@@ -269,6 +296,113 @@ export async function createClaimKitAction(
       raisedWheelCheckCommand,
       qrDataUrl,
     },
+    ok: true,
+  };
+}
+
+export async function saveHardwareProfileAction(
+  _previousState: HardwareProfileState,
+  formData: FormData,
+): Promise<HardwareProfileState> {
+  const supabase = await createServerSupabaseClient();
+
+  if (!supabase) {
+    return {
+      ...initialHardwareProfileState,
+      error: "Supabase is not configured.",
+    };
+  }
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      ...initialHardwareProfileState,
+      error: "Login is required.",
+    };
+  }
+
+  const robotId = formValue(formData, "robotId");
+
+  if (!robotId) {
+    return {
+      ...initialHardwareProfileState,
+      error: "Choose a robot kit first.",
+    };
+  }
+
+  const batteryCells = Number(formValue(formData, "batteryCells") || "0");
+  const readinessStatus = normalizeReadinessStatus(
+    formValue(formData, "readinessStatus"),
+  );
+  const hardwareProfile = {
+    batteryCells: Number.isFinite(batteryCells) && batteryCells > 0 ? batteryCells : null,
+    batteryChemistry: formValue(formData, "batteryChemistry") || null,
+    boardModel: formValue(formData, "boardModel") || null,
+    hasFuse: formBoolean(formData, "hasFuse"),
+    hasPowerSwitch: formBoolean(formData, "hasPowerSwitch"),
+    motorChannels: formValue(formData, "motorChannels") || "differential_drive",
+    motorDriver: formValue(formData, "motorDriver") || null,
+    notes: formValue(formData, "notes") || null,
+    wiringStatus: formValue(formData, "wiringStatus") || "unknown",
+  };
+
+  const missingRequired = [
+    hardwareProfile.boardModel,
+    hardwareProfile.motorDriver,
+    hardwareProfile.batteryChemistry,
+    hardwareProfile.batteryCells,
+  ].some((value) => !value);
+
+  if (
+    readinessStatus !== "needs_details" &&
+    readinessStatus !== "blocked" &&
+    missingRequired
+  ) {
+    return {
+      ...initialHardwareProfileState,
+      error:
+        "Board, motor driver, battery chemistry, and cell count are required before marking the kit ready.",
+    };
+  }
+
+  const { error } = await supabase
+    .from("robot_devices")
+    .update({
+      battery_config: {
+        chemistry: hardwareProfile.batteryChemistry,
+        cells: hardwareProfile.batteryCells,
+      },
+      board_type: hardwareProfile.boardModel ?? "unknown",
+      hardware_profile: hardwareProfile,
+      readiness_status: readinessStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("robot_id", robotId);
+
+  if (error) {
+    return {
+      ...initialHardwareProfileState,
+      error: error.message,
+    };
+  }
+
+  await supabase.from("robot_events").insert({
+    event_type: "hardware_profile_updated",
+    message: `Ops updated hardware profile: ${readinessStatus}.`,
+    metadata: hardwareProfile,
+    robot_id: robotId,
+    severity: readinessStatus === "blocked" ? "warning" : "info",
+    user_id: user.id,
+  });
+
+  revalidatePath("/admin");
+
+  return {
+    error: null,
     ok: true,
   };
 }

@@ -70,6 +70,11 @@ robot and removes the code from the URL.
 The generated manifest includes the `firmware/include/config.h` block, local
 Wi-Fi SSID/password, claim URL, and the protocol check commands for that unit.
 
+After the kit exists, use the Hardware Profile panel in `/admin` to store the
+actual board model, motor driver, battery chemistry/cell count, wiring status,
+power switch, fuse/protected pack, and readiness status before changing
+firmware for that physical unit.
+
 For Google auth, add this app callback in Supabase Redirect URLs:
 
 ```text

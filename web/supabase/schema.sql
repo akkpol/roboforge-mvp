@@ -217,10 +217,38 @@ create table if not exists public.robot_devices (
   ap_ssid text,
   last_seen_at timestamptz,
   battery_config jsonb not null default '{}'::jsonb,
+  hardware_profile jsonb not null default '{}'::jsonb,
+  readiness_status text not null default 'needs_details',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (robot_id)
 );
+
+alter table public.robot_devices
+  add column if not exists hardware_profile jsonb not null default '{}'::jsonb;
+
+alter table public.robot_devices
+  add column if not exists readiness_status text not null default 'needs_details';
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'robot_devices_readiness_status_check'
+      and conrelid = 'public.robot_devices'::regclass
+  ) then
+    alter table public.robot_devices
+      add constraint robot_devices_readiness_status_check
+      check (readiness_status in (
+        'needs_details',
+        'ready_for_bench',
+        'ready_for_raised_wheels',
+        'ready_for_floor',
+        'blocked'
+      ));
+  end if;
+end $$;
 
 create table if not exists public.connection_sessions (
   id uuid primary key default gen_random_uuid(),
@@ -461,6 +489,11 @@ begin
         from public.robot_claim_codes
         where claimed_by is not null
       ),
+      'floorReadyRobots', (
+        select count(*)
+        from public.robot_devices
+        where readiness_status = 'ready_for_floor'
+      ),
       'connectionSessions', (select count(*) from public.connection_sessions),
       'controlSessions', (select count(*) from public.control_sessions),
       'robotEvents', (select count(*) from public.robot_events),
@@ -510,12 +543,17 @@ begin
           robot_claim_codes.claimed_at,
           robot_claim_codes.expires_at,
           robot_devices.firmware_version,
+          robot_devices.hardware_profile,
           robot_devices.protocol_version,
+          robot_devices.readiness_status,
           robot_claim_codes.robot_id,
+          robots.robot_type,
           robot_claim_codes.unit_code
         from public.robot_claim_codes
         left join public.robot_devices
           on robot_devices.robot_id = robot_claim_codes.robot_id
+        left join public.robots
+          on robots.id = robot_claim_codes.robot_id
         order by robot_claim_codes.created_at desc
         limit 8
       ) kits

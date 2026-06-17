@@ -34,6 +34,8 @@ connect, and drive like a game.
 - Personal Garage.
 - Admin/Ops claim kit creation for physical robots, including QR, firmware
   config, local Wi-Fi details, and protocol check steps.
+- Admin/Ops hardware profile capture for the prototype board, motor driver,
+  battery, wiring status, fuse/switch, and readiness gate.
 - Claim robot by QR or code.
 - Robot profile with type, name, theme, device info, and progress.
 - Connection Quest for real robot setup.

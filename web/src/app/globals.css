@@ -197,14 +197,25 @@ textarea:focus-visible {
 }
 
 .ops-form input,
-.ops-form select {
+.ops-form select,
+.ops-form textarea {
   width: 100%;
-  min-height: 42px;
-  padding: 0 11px;
   border: 1px solid var(--line-bright);
   color: var(--text);
   background: var(--panel-strong);
   font: inherit;
+}
+
+.ops-form input,
+.ops-form select {
+  min-height: 42px;
+  padding: 0 11px;
+}
+
+.ops-form textarea {
+  min-height: 92px;
+  resize: vertical;
+  padding: 10px 11px;
 }
 
 .ops-form input::placeholder {
@@ -282,6 +293,34 @@ textarea:focus-visible {
   border: 1px solid var(--danger);
   color: #ffb0ad;
   background: #241011;
+}
+
+.ops-success {
+  padding: 10px;
+  border: 1px solid var(--success);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success), transparent 92%);
+}
+
+.ops-toggle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ops-toggle-row label {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.ops-toggle-row input {
+  width: auto;
+  min-height: auto;
 }
 
 .ops-manifest-grid {
@@ -1969,7 +2008,8 @@ textarea:focus-visible {
 @media (max-width: 560px) {
   .ops-form-row,
   .ops-copy-row,
-  .ops-claim-card {
+  .ops-claim-card,
+  .ops-toggle-row {
     grid-template-columns: 1fr;
   }
 
