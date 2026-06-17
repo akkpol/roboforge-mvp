@@ -1,5 +1,46 @@
 export type ThemeId = "forge" | "neo";
 export type RobotType = "rover" | "tracked" | "drone" | "arm";
+export type ConsoleScreen =
+  | "garage"
+  | "profile"
+  | "cockpit"
+  | "missions"
+  | "engineer"
+  | "store";
+export type UpgradeInterest =
+  | "Build and control Rover-01"
+  | "STEM workshop or school"
+  | "Sensor Pack"
+  | "Body Kit"
+  | "Neo Decal Set"
+  | "Future robot types";
+export type RoverSupportCode =
+  | "battery_configuration_mismatch"
+  | "controls_not_armed"
+  | "invalid_json"
+  | "network_error"
+  | "no_control_client"
+  | "not_found"
+  | "stale_sequence"
+  | "unknown";
+
+export type OwnerProgress = {
+  battery_calibrated: boolean;
+  first_drive_complete: boolean;
+  ready_for_floor_test: boolean;
+  setup_complete: boolean;
+};
+
+export type RobotTelemetry = {
+  armed: boolean;
+  batteryPercent: number;
+  batteryVoltage: number;
+  connected: boolean;
+  firmwareVersion: string;
+  lastCommandAt: number;
+  uptime: number;
+  wifiStrength: "strong" | "fair" | "weak";
+};
 
 export const themes: Record<
   ThemeId,
@@ -56,5 +97,105 @@ export const fleet: Array<{
     label: "Arm",
     state: "concept",
     image: "/assets/fleet-arm.webp",
+  },
+];
+
+export const defaultProgress: OwnerProgress = {
+  battery_calibrated: false,
+  first_drive_complete: false,
+  ready_for_floor_test: false,
+  setup_complete: false,
+};
+
+export const demoTelemetry: RobotTelemetry = {
+  armed: false,
+  batteryPercent: 82,
+  batteryVoltage: 7.78,
+  connected: true,
+  firmwareVersion: "web-demo-0.1.0",
+  lastCommandAt: 0,
+  uptime: 128,
+  wifiStrength: "strong",
+};
+
+export const upgradeInterests: UpgradeInterest[] = [
+  "Build and control Rover-01",
+  "Sensor Pack",
+  "Body Kit",
+  "Neo Decal Set",
+  "STEM workshop or school",
+  "Future robot types",
+];
+
+export const capabilities = [
+  "Manual Drive",
+  "Wi-Fi Cockpit",
+  "Battery Telemetry",
+] as const;
+
+export const supportScripts: Array<{
+  body: string;
+  code: RoverSupportCode | null;
+  title: string;
+}> = [
+  {
+    code: "battery_configuration_mismatch",
+    title: "Battery gate blocked arming",
+    body:
+      "Check the configured cell count before driving. Compare the displayed voltage against a multimeter, then update the battery setting only after the pack is identified.",
+  },
+  {
+    code: "stale_sequence",
+    title: "Drive command was rejected",
+    body:
+      "The rover rejected an old drive command. Tap Emergency stop, refresh Cockpit, then arm again so command numbering restarts cleanly.",
+  },
+  {
+    code: "controls_not_armed",
+    title: "Controls are locked",
+    body:
+      "Arm the cockpit only after the wheels are raised and the area is clear. Hosted web Cockpit stays simulated; real controls live on the Rover local Wi-Fi.",
+  },
+  {
+    code: "network_error",
+    title: "Rover link is unavailable",
+    body:
+      "Join the RoboForge-Rover Wi-Fi network and open the local device page for real hardware. The cloud workspace should never proxy live motor commands.",
+  },
+  {
+    code: null,
+    title: "First build checklist",
+    body:
+      "Start with power, Wi-Fi, battery reading, raised wheels, and a zero-release test. Keep body kits and autonomy clearly marked as roadmap concepts until hardware validation is complete.",
+  },
+];
+
+export const upgradeItems: Array<{
+  body: string;
+  category: string;
+  interest: UpgradeInterest;
+  state: "ROADMAP" | "CONCEPT";
+  title: string;
+}> = [
+  {
+    category: "HARDWARE",
+    title: "Sensor Pack",
+    body: "Distance sensing and mission telemetry for Rover-01.",
+    state: "ROADMAP",
+    interest: "Sensor Pack",
+  },
+  {
+    category: "BODY KIT",
+    title: "Aegis Shell",
+    body: "A physical expression inspired by the Forge Digital Form.",
+    state: "CONCEPT",
+    interest: "Body Kit",
+  },
+  {
+    category: "DIGITAL",
+    title: "Neo Decal Set",
+    body: "Anime identity pack with matching future physical decals.",
+    state: "CONCEPT",
+    interest: "Neo Decal Set",
   },
 ];

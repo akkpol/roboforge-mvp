@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { defaultProgress, type OwnerProgress } from "@/lib/roboforge-data";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export type OwnerProfile = {
@@ -22,15 +23,34 @@ export type OwnerRobot = {
   updated_at: string;
 };
 
-type OwnerWorkspace = {
+export type RobotProgress = OwnerProgress & {
+  created_at: string;
+  robot_id: string;
+  updated_at: string;
+};
+
+export type RobotInterest = {
+  created_at: string;
+  id: string;
+  interest: string;
+  robot_id: string;
+};
+
+export type OwnerWorkspace = {
   error: string | null;
+  interests: RobotInterest[];
+  notice?: string | null;
   profile: OwnerProfile | null;
+  progress: RobotProgress | null;
   robots: OwnerRobot[];
 };
 
 const profileSelect = "id, display_name, created_at, updated_at";
 const robotSelect =
   "id, owner_id, unit_code, robot_type, display_name, theme, status, created_at, updated_at";
+const progressSelect =
+  "robot_id, setup_complete, first_drive_complete, battery_calibrated, ready_for_floor_test, created_at, updated_at";
+const interestSelect = "id, robot_id, interest, created_at";
 
 export async function createServerSupabaseClient() {
   const { publishableKey, url } = getSupabaseEnv();
@@ -83,13 +103,25 @@ function getDisplayName(user: User) {
   return rawName.trim() || user.email?.split("@")[0] || "RoboForge Owner";
 }
 
+function isMissingWorkspaceTable(error: { code?: string; message?: string }) {
+  const message = error.message ?? "";
+  return (
+    error.code === "PGRST205" ||
+    message.includes("schema cache") ||
+    message.includes("robot_progress") ||
+    message.includes("robot_interests")
+  );
+}
+
 export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
   const supabase = await createServerSupabaseClient();
 
   if (!supabase) {
     return {
       error: "Supabase is not configured.",
+      interests: [],
       profile: null,
+      progress: null,
       robots: [],
     };
   }
@@ -103,7 +135,9 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
   if (profileReadError) {
     return {
       error: profileReadError.message,
+      interests: [],
       profile: null,
+      progress: null,
       robots: [],
     };
   }
@@ -123,7 +157,9 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     if (profileCreateError) {
       return {
         error: profileCreateError.message,
+        interests: [],
         profile: null,
+        progress: null,
         robots: [],
       };
     }
@@ -140,44 +176,144 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
   if (robotsReadError) {
     return {
       error: robotsReadError.message,
+      interests: [],
       profile,
+      progress: null,
       robots: [],
     };
   }
 
-  const robots = (existingRobots ?? []) as OwnerRobot[];
+  let robots = (existingRobots ?? []) as OwnerRobot[];
 
-  if (robots.length > 0) {
-    return { error: null, profile, robots };
+  if (robots.length === 0) {
+    const { data: starterRobot, error: robotCreateError } = await supabase
+      .from("robots")
+      .upsert(
+        {
+          display_name: "AEGIS-01",
+          owner_id: user.id,
+          robot_type: "rover",
+          status: "offline",
+          theme: "forge",
+          unit_code: "ROVER-01",
+        },
+        { onConflict: "owner_id,unit_code" },
+      )
+      .select(robotSelect)
+      .single();
+
+    if (robotCreateError) {
+      return {
+        error: robotCreateError.message,
+        interests: [],
+        profile,
+        progress: null,
+        robots: [],
+      };
+    }
+
+    robots = [starterRobot as OwnerRobot];
   }
 
-  const { data: starterRobot, error: robotCreateError } = await supabase
-    .from("robots")
-    .upsert(
-      {
-        display_name: "AEGIS-01",
-        owner_id: user.id,
-        robot_type: "rover",
-        status: "offline",
-        theme: "forge",
-        unit_code: "ROVER-01",
-      },
-      { onConflict: "owner_id,unit_code" },
-    )
-    .select(robotSelect)
-    .single();
+  const activeRobot = robots[0];
+  const { data: existingProgress, error: progressReadError } = await supabase
+    .from("robot_progress")
+    .select(progressSelect)
+    .eq("robot_id", activeRobot.id)
+    .maybeSingle();
 
-  if (robotCreateError) {
+  if (progressReadError) {
+    if (isMissingWorkspaceTable(progressReadError)) {
+      return {
+        error: null,
+        interests: [],
+        notice:
+          "Supabase schema needs the new RoboForge workspace tables before progress and upgrade signals can persist.",
+        profile,
+        progress: null,
+        robots,
+      };
+    }
+
     return {
-      error: robotCreateError.message,
+      error: progressReadError.message,
+      interests: [],
       profile,
-      robots: [],
+      progress: null,
+      robots,
+    };
+  }
+
+  let progress = existingProgress as RobotProgress | null;
+
+  if (!progress) {
+    const { data: createdProgress, error: progressCreateError } = await supabase
+      .from("robot_progress")
+      .insert({
+        ...defaultProgress,
+        robot_id: activeRobot.id,
+      })
+      .select(progressSelect)
+      .single();
+
+    if (progressCreateError) {
+      if (isMissingWorkspaceTable(progressCreateError)) {
+        return {
+          error: null,
+          interests: [],
+          notice:
+            "Supabase schema needs the new RoboForge workspace tables before progress and upgrade signals can persist.",
+          profile,
+          progress: null,
+          robots,
+        };
+      }
+
+      return {
+        error: progressCreateError.message,
+        interests: [],
+        profile,
+        progress: null,
+        robots,
+      };
+    }
+
+    progress = createdProgress as RobotProgress;
+  }
+
+  const { data: existingInterests, error: interestsReadError } = await supabase
+    .from("robot_interests")
+    .select(interestSelect)
+    .eq("robot_id", activeRobot.id)
+    .order("created_at", { ascending: false });
+
+  if (interestsReadError) {
+    if (isMissingWorkspaceTable(interestsReadError)) {
+      return {
+        error: null,
+        interests: [],
+        notice:
+          "Supabase schema needs the new RoboForge workspace tables before upgrade signals can persist.",
+        profile,
+        progress,
+        robots,
+      };
+    }
+
+    return {
+      error: interestsReadError.message,
+      interests: [],
+      profile,
+      progress,
+      robots,
     };
   }
 
   return {
     error: null,
+    interests: (existingInterests ?? []) as RobotInterest[],
     profile,
-    robots: [starterRobot as OwnerRobot],
+    progress,
+    robots,
   };
 }

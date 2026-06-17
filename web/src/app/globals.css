@@ -10,7 +10,9 @@
   --accent: #ff9d1c;
   --accent-2: #66e4c4;
   --accent-3: #ff6fb7;
+  --accent-soft: rgba(255, 157, 28, 0.12);
   --danger: #ff5c58;
+  --success: #66e4c4;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
 }
 
@@ -506,44 +508,1039 @@ input:focus-visible {
   color: #ffd39d;
 }
 
-.dashboard-topbar {
-  position: static;
+.rf-console {
+  --screen-pad: clamp(14px, 4vw, 34px);
+  min-height: 100vh;
+  padding-bottom: 84px;
+  background:
+    linear-gradient(120deg, rgba(255, 157, 28, 0.08), transparent 28%),
+    linear-gradient(210deg, rgba(102, 228, 196, 0.08), transparent 32%),
+    var(--bg);
 }
 
-.demo-dashboard {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  background: var(--bg);
+.rf-console.theme-neo {
+  --accent: #ff6fb7;
+  --accent-soft: rgba(255, 111, 183, 0.14);
+  --accent-2: #86f7ff;
+  background:
+    linear-gradient(120deg, rgba(255, 111, 183, 0.1), transparent 28%),
+    linear-gradient(215deg, rgba(134, 247, 255, 0.08), transparent 34%),
+    #070713;
 }
 
-.demo-frame {
-  display: block;
-  width: 100%;
-  height: 100%;
+.rf-console-topbar,
+.rf-console-actions,
+.rf-theme-switch,
+.rf-button-row,
+.rf-status-pill,
+.rf-owner-progress__items span,
+.rf-capability-list span,
+.rf-panel-heading,
+.rf-panel-heading > span,
+.rf-drive-readout span,
+.rf-safety-note,
+.rf-mission-success,
+.rf-save-message,
+.rf-interest-count {
+  display: flex;
+  align-items: center;
+}
+
+.rf-console-topbar {
+  position: sticky;
+  z-index: 40;
+  top: 0;
+  min-height: 72px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--screen-pad);
+  border-bottom: 1px solid var(--line);
+  background: rgba(5, 8, 13, 0.94);
+  backdrop-filter: blur(18px);
+}
+
+.rf-console .brand {
   border: 0;
-  background: var(--bg);
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
 }
 
-.demo-sign-out {
-  position: fixed;
-  z-index: 30;
-  right: 14px;
-  bottom: 14px;
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1px solid var(--line-bright);
+.rf-console-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rf-theme-switch {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-theme-switch button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
   color: var(--muted);
-  background: rgba(5, 8, 13, 0.84);
-  backdrop-filter: blur(14px);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.demo-sign-out:hover {
+.rf-theme-switch button.is-active {
+  color: #160d03;
+  background: var(--accent);
+}
+
+.rf-sign-out,
+.rf-back-to-garage {
+  display: grid;
+  min-width: 38px;
+  min-height: 38px;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.rf-sign-out:hover,
+.rf-back-to-garage:hover {
   color: var(--text);
   border-color: var(--accent);
+}
+
+.rf-back-to-garage {
+  width: fit-content;
+  margin: 12px 0 0 var(--screen-pad);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rf-save-message,
+.rf-interest-count {
+  width: min(1240px, calc(100% - (var(--screen-pad) * 2)));
+  min-height: 36px;
+  gap: 8px;
+  margin: 10px auto 0;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  color: var(--accent-2);
+  background: rgba(10, 17, 25, 0.86);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rf-interest-count {
+  color: var(--muted);
+}
+
+.rf-save-message.is-warning {
+  color: #ffd39d;
+  border-color: rgba(255, 157, 28, 0.42);
+  background: rgba(255, 157, 28, 0.1);
+}
+
+.rf-screen {
+  width: min(1240px, calc(100% - (var(--screen-pad) * 2)));
+  margin: 0 auto;
+  padding: 18px 0 28px;
+}
+
+.rf-screen-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.rf-screen-heading h1 {
+  margin: 5px 0 6px;
+  font-size: clamp(38px, 10vw, 82px);
+  line-height: 0.95;
+}
+
+.rf-screen-heading p,
+.rf-profile-hero p,
+.rf-future-unit p,
+.rf-evolution-track p,
+.rf-mission-cards p,
+.rf-upgrade-grid p,
+.rf-engineer-answer > p,
+.rf-modal > p {
+  color: var(--muted);
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.rf-status-pill {
+  flex: 0 0 auto;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rf-status-pill.is-online {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success), transparent 50%);
+}
+
+.rf-owner-progress {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-owner-progress h2 {
+  margin-top: 4px;
+  font-size: 24px;
+}
+
+.rf-owner-progress__items {
+  display: grid;
+  gap: 7px;
+}
+
+.rf-owner-progress__items span {
+  min-height: 38px;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel-strong);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rf-owner-progress__items span.is-done {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success), transparent 58%);
+}
+
+.rf-fleet-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 13px;
+}
+
+.rf-fleet-card {
+  display: flex;
+  min-width: 0;
+  min-height: 122px;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 5px 8px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel);
+  text-align: center;
+  cursor: pointer;
+}
+
+.rf-fleet-card img {
+  display: block;
+  width: 100%;
+  height: 77px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--line);
+  filter: saturate(0.76) brightness(0.8);
+}
+
+.rf-fleet-card span {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-fleet-card small {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 7px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rf-fleet-card.is-selected {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.rf-fleet-card.is-selected img {
+  filter: saturate(1) brightness(1);
+}
+
+.rf-garage-feature,
+.rf-profile-hero {
+  display: grid;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-robot-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: min(600px, 72vh);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.rf-robot-hero--compact {
+  min-height: 430px;
+}
+
+.rf-robot-hero img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.rf-robot-identity {
+  position: absolute;
+  right: 12px;
+  bottom: 36px;
+  display: grid;
+  gap: 2px;
+  padding: 12px 13px;
+  border: 1px solid var(--line-bright);
+  background: rgba(5, 8, 13, 0.86);
+}
+
+.rf-robot-identity strong,
+.rf-robot-identity span,
+.rf-robot-identity small {
+  display: block;
+}
+
+.rf-robot-identity strong {
+  font-size: clamp(24px, 7vw, 42px);
+  line-height: 1;
+}
+
+.rf-robot-identity span,
+.rf-robot-identity small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-robot-identity small {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--success);
+}
+
+.rf-robot-serial {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.rf-garage-feature__info,
+.rf-profile-hero__copy {
+  padding: 22px 16px;
+}
+
+.rf-unit-label,
+.rf-concept-badge,
+.rf-evolution-track small,
+.rf-mission-cards small,
+.rf-upgrade-grid small,
+.rf-upgrade-grid article > span,
+.rf-engineer-prompts button small {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-garage-feature h2,
+.rf-profile-hero h1 {
+  margin: 5px 0 0;
+  font-size: clamp(42px, 11vw, 78px);
+  line-height: 0.95;
+}
+
+.rf-class-label {
+  margin: 5px 0 17px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.rf-telemetry-grid article {
+  display: flex;
+  min-height: 115px;
+  flex-direction: column;
+  padding: 12px 10px;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.rf-telemetry-grid svg,
+.rf-truth-strip span,
+.rf-evolution-track svg,
+.rf-upgrade-grid article > svg {
+  color: var(--accent);
+}
+
+.rf-telemetry-grid span {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.rf-telemetry-grid strong {
+  margin-top: auto;
+  font-size: 21px;
+}
+
+.rf-telemetry-grid small,
+.rf-truth-strip small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.rf-truth-strip {
+  display: grid;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.rf-truth-strip > div {
+  display: flex;
+  min-height: 63px;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.rf-truth-strip > div.is-future {
+  border-style: dashed;
+}
+
+.rf-truth-strip span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line-bright);
+}
+
+.rf-truth-strip p,
+.rf-truth-strip strong,
+.rf-truth-strip small {
+  display: block;
+  margin: 0;
+}
+
+.rf-truth-strip strong {
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.rf-button-row {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.rf-button {
+  border-radius: 0;
+}
+
+.rf-button--danger {
+  border-color: var(--danger);
+  color: #ffffff;
+  background: var(--danger);
+}
+
+.rf-button--quiet {
+  border-color: var(--line);
+  color: var(--muted);
+  background: transparent;
+}
+
+.rf-future-unit {
+  display: flex;
+  min-height: 440px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  border: 1px dashed var(--line-bright);
+  background: var(--panel);
+  text-align: center;
+}
+
+.rf-future-unit__icon {
+  display: grid;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 22px;
+  place-items: center;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.rf-future-unit h2 {
+  margin: 9px 0;
+  font-size: 38px;
+}
+
+.rf-profile-hero__visual .rf-robot-hero {
+  border-bottom: 1px solid var(--line);
+}
+
+.rf-capability-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 22px 0;
+}
+
+.rf-capability-list span {
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel-strong);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rf-capability-list svg {
+  color: var(--success);
+}
+
+.rf-evolution-section {
+  margin-top: 18px;
+  padding: 24px 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-section-title h2 {
+  margin: 5px 0 21px;
+  font-size: 30px;
+  text-transform: uppercase;
+}
+
+.rf-evolution-track,
+.rf-mission-cards,
+.rf-upgrade-grid,
+.rf-engineer-layout {
+  display: grid;
+  gap: 9px;
+}
+
+.rf-evolution-track article,
+.rf-mission-cards article,
+.rf-upgrade-grid article {
+  position: relative;
+  min-height: 220px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-evolution-track article.is-current,
+.rf-mission-cards article.is-active {
+  border-color: var(--accent);
+}
+
+.rf-evolution-track article > span,
+.rf-mission-cards article > span {
+  position: absolute;
+  top: 13px;
+  right: 16px;
+  color: var(--line-bright);
+  font-size: 39px;
+  font-weight: 700;
+}
+
+.rf-evolution-track h3,
+.rf-mission-cards h2,
+.rf-upgrade-grid h2 {
+  margin: 50px 0 7px;
+  font-size: 27px;
+}
+
+.rf-cockpit > .rf-telemetry-grid {
+  margin-bottom: 9px;
+}
+
+.rf-cockpit-grid {
+  display: grid;
+  gap: 9px;
+}
+
+.rf-control-panel,
+.rf-mission-panel {
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-panel-heading {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rf-panel-heading > span {
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.rf-panel-heading svg {
+  color: var(--accent);
+}
+
+.rf-arm-switch {
+  display: inline-flex;
+  min-width: 90px;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--line-bright);
+  color: var(--muted);
+  background: var(--panel-strong);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rf-arm-switch span {
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--line-bright);
+  background: var(--panel-soft);
+}
+
+.rf-arm-switch.is-on {
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.rf-arm-switch.is-on span {
+  border-color: var(--success);
+  background: var(--success);
+}
+
+.rf-joystick {
+  position: relative;
+  display: grid;
+  width: min(300px, 86vw);
+  aspect-ratio: 1;
+  margin: 30px auto 20px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--line-bright);
+  background: var(--panel-strong);
+}
+
+.rf-joystick.is-armed {
+  border-color: var(--accent);
+}
+
+.rf-joystick__thumb {
+  display: grid;
+  width: 78px;
+  height: 78px;
+  place-items: center;
+  border: 1px solid var(--line-bright);
+  border-radius: 50%;
+  color: var(--muted);
+  background: var(--panel-soft);
+  cursor: pointer;
+}
+
+.rf-joystick__thumb:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.rf-joystick.is-armed .rf-joystick__thumb {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.rf-joystick > span {
+  position: absolute;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.rf-joystick__north {
+  top: 9px;
+}
+
+.rf-joystick__south {
+  bottom: 9px;
+}
+
+.rf-joystick__west {
+  left: 9px;
+  transform: rotate(-90deg);
+}
+
+.rf-joystick__east {
+  right: 9px;
+  transform: rotate(90deg);
+}
+
+.rf-drive-readout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rf-drive-readout span {
+  justify-content: space-between;
+  padding: 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.rf-drive-readout strong {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.rf-mission-panel h2 {
+  margin: 5px 0 13px;
+  font-size: 31px;
+  text-transform: uppercase;
+}
+
+.rf-mission-panel ol {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+  counter-reset: mission;
+}
+
+.rf-mission-panel li {
+  min-height: 43px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel-strong);
+  counter-increment: mission;
+  font-size: 12px;
+}
+
+.rf-mission-panel li::before {
+  margin-right: 9px;
+  color: var(--line-bright);
+  content: "0" counter(mission);
+  font-weight: 700;
+}
+
+.rf-mission-panel li.is-done {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success), transparent 65%);
+}
+
+.rf-mission-success {
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--success);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success), transparent 92%);
+}
+
+.rf-mission-success strong,
+.rf-mission-success small {
+  display: block;
+}
+
+.rf-mission-success small {
+  color: var(--muted);
+}
+
+.rf-engineer-prompts {
+  display: grid;
+  gap: 7px;
+}
+
+.rf-engineer-prompts button {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rf-engineer-prompts button > span,
+.rf-engineer-prompts button small {
+  display: block;
+}
+
+.rf-engineer-prompts button.is-selected {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.rf-engineer-answer {
+  min-height: 300px;
+  padding: 25px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-engineer-answer h2 {
+  margin: 11px 0;
+  font-size: 32px;
+}
+
+.rf-safety-note {
+  gap: 9px;
+  margin-top: 25px;
+  padding: 13px;
+  border: 1px solid var(--danger);
+  color: #ffb0ad;
+  background: #241011;
+  font-size: 12px;
+}
+
+.rf-upgrade-grid article > span {
+  display: block;
+  margin-top: 12px;
+}
+
+.rf-upgrade-grid h2 {
+  margin-top: 20px;
+}
+
+.rf-upgrade-grid .rf-button {
+  width: 100%;
+  margin-top: 17px;
+}
+
+.rf-interest-callout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 17px;
+  margin-top: 10px;
+  padding: 24px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.rf-interest-callout h2 {
+  margin: 6px 0 0;
+  font-size: 27px;
+}
+
+.rf-modal-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.rf-modal {
+  position: relative;
+  width: min(500px, 100%);
+  max-height: calc(100vh - 30px);
+  overflow: auto;
+  padding: 29px 20px;
+  border: 1px solid var(--accent);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.rf-modal__close {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: var(--panel-strong);
+  cursor: pointer;
+}
+
+.rf-modal h2 {
+  margin: 11px 45px 7px 0;
+  font-size: 32px;
+}
+
+.rf-modal form {
+  display: grid;
+  gap: 13px;
+  margin-top: 21px;
+}
+
+.rf-modal label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rf-modal input,
+.rf-modal select {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 12px;
+  border: 1px solid var(--line-bright);
+  color: var(--text);
+  background: var(--panel-strong);
+}
+
+.rf-modal form > small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.rf-bottom-nav {
+  position: fixed;
+  z-index: 30;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 7px max(5px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(5px, env(safe-area-inset-left));
+  border-top: 1px solid var(--line);
+  background: rgba(5, 8, 13, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.rf-bottom-nav button {
+  display: flex;
+  min-height: 52px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rf-bottom-nav button.is-active {
+  color: var(--accent);
+}
+
+@media (min-width: 680px) {
+  .rf-owner-progress {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
+    align-items: center;
+  }
+
+  .rf-owner-progress__items,
+  .rf-mission-cards,
+  .rf-upgrade-grid,
+  .rf-evolution-track {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .rf-garage-feature,
+  .rf-profile-hero,
+  .rf-cockpit-grid,
+  .rf-engineer-layout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
+  }
+
+  .rf-garage-feature .rf-robot-hero,
+  .rf-profile-hero .rf-robot-hero {
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .rf-console-topbar {
+    align-items: flex-start;
+  }
+
+  .rf-screen-heading {
+    display: grid;
+  }
+
+  .rf-theme-switch button {
+    padding: 0 9px;
+  }
+
+  .rf-fleet-card {
+    min-height: 110px;
+  }
+
+  .rf-fleet-card img {
+    height: 68px;
+  }
+
+  .rf-garage-feature h2,
+  .rf-profile-hero h1 {
+    font-size: clamp(38px, 12vw, 58px);
+  }
 }
 
 .icon-command {
