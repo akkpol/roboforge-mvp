@@ -46,10 +46,16 @@ Create a Supabase project, enable Google auth and/or email/password auth, then a
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ROBOFORGE_ADMIN_EMAILS=
 ```
 
 Run `supabase/schema.sql` in the Supabase SQL editor to create the first
 multi-user tables with row-level security.
+
+`SUPABASE_SERVICE_ROLE_KEY` is server-only. Use it for `/admin` beta health
+metrics, never in client components. `ROBOFORGE_ADMIN_EMAILS` is a comma
+separated allowlist for the Ops view.
 
 For Google auth, add this app callback in Supabase Redirect URLs:
 
@@ -62,6 +68,18 @@ In Google Cloud, use the Supabase callback URL from the Google provider setup:
 ```text
 https://<project-ref>.supabase.co/auth/v1/callback
 ```
+
+## Beta Load Test
+
+Dry-run the expected row volume for the first beta without writing data:
+
+```bash
+npm run seed:beta -- --users=1000 --robots=300
+```
+
+The script defaults to dry-run. Only use `--execute` against a disposable
+Supabase branch or test project after setting `ROBOFORGE_ALLOW_PROD_SEED=true`
+and the service role key.
 
 ## Deploy
 

@@ -1288,6 +1288,9 @@ export function OwnerConsole({ workspace }: OwnerConsoleProps) {
               Neo
             </button>
           </div>
+          <Link className="rf-sign-out" href="/admin" title="Beta Ops">
+            <ShieldCheck size={18} />
+          </Link>
           <Link className="rf-sign-out" href="/auth/sign-out" title="Sign out">
             <LogOut size={18} />
           </Link>

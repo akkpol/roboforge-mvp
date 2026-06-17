@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:beta": "node scripts/beta-load-test.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-thai": "^5.2.8",
