@@ -280,6 +280,19 @@ create table if not exists public.control_sessions (
   metadata jsonb not null default '{}'::jsonb
 );
 
+create table if not exists public.robot_bench_tests (
+  id uuid primary key default gen_random_uuid(),
+  robot_id uuid not null references public.robots (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  stage text not null default 'bench'
+    check (stage in ('bench', 'raised_wheels', 'floor')),
+  result text not null default 'pending'
+    check (result in ('pending', 'passed', 'failed', 'blocked')),
+  checks jsonb not null default '{}'::jsonb,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.robot_events (
   id uuid primary key default gen_random_uuid(),
   robot_id uuid references public.robots (id) on delete cascade,
@@ -328,6 +341,7 @@ alter table public.robot_claim_codes enable row level security;
 alter table public.robot_devices enable row level security;
 alter table public.connection_sessions enable row level security;
 alter table public.control_sessions enable row level security;
+alter table public.robot_bench_tests enable row level security;
 alter table public.robot_events enable row level security;
 alter table public.lyra_sessions enable row level security;
 alter table public.feedback_reports enable row level security;
@@ -494,6 +508,19 @@ begin
         from public.robot_devices
         where readiness_status = 'ready_for_floor'
       ),
+      'benchTests', (select count(*) from public.robot_bench_tests),
+      'benchPassed', (
+        select count(*)
+        from public.robot_bench_tests
+        where stage = 'bench'
+          and result = 'passed'
+      ),
+      'raisedWheelPassed', (
+        select count(*)
+        from public.robot_bench_tests
+        where stage = 'raised_wheels'
+          and result = 'passed'
+      ),
       'connectionSessions', (select count(*) from public.connection_sessions),
       'controlSessions', (select count(*) from public.control_sessions),
       'robotEvents', (select count(*) from public.robot_events),
@@ -532,6 +559,24 @@ begin
         order by created_at desc
         limit 6
       ) feedback
+    ), '[]'::jsonb),
+    'latestBenchTests', coalesce((
+      select jsonb_agg(to_jsonb(tests))
+      from (
+        select
+          robot_bench_tests.checks,
+          robot_bench_tests.created_at,
+          robot_bench_tests.notes,
+          robot_bench_tests.result,
+          robot_bench_tests.robot_id,
+          robot_bench_tests.stage,
+          robots.unit_code
+        from public.robot_bench_tests
+        left join public.robots
+          on robots.id = robot_bench_tests.robot_id
+        order by robot_bench_tests.created_at desc
+        limit 8
+      ) tests
     ), '[]'::jsonb),
     'claimKits', coalesce((
       select jsonb_agg(to_jsonb(kits))
@@ -769,13 +814,33 @@ create policy "Owners can update robot claim codes"
 drop policy if exists "Owners can read robot devices" on public.robot_devices;
 create policy "Owners can read robot devices"
   on public.robot_devices for select
-  using (public.can_access_robot(robot_id));
+  using (public.can_access_robot(robot_id) or public.is_app_admin());
 
 drop policy if exists "Owners can manage robot devices" on public.robot_devices;
 create policy "Owners can manage robot devices"
   on public.robot_devices for all
-  using (public.can_manage_robot(robot_id))
-  with check (public.can_manage_robot(robot_id));
+  using (public.can_manage_robot(robot_id) or public.is_app_admin())
+  with check (public.can_manage_robot(robot_id) or public.is_app_admin());
+
+drop policy if exists "Users can read robot bench tests" on public.robot_bench_tests;
+create policy "Users can read robot bench tests"
+  on public.robot_bench_tests for select
+  using (
+    user_id = (select auth.uid())
+    or public.can_manage_robot(robot_id)
+    or public.is_app_admin()
+  );
+
+drop policy if exists "Users can insert robot bench tests" on public.robot_bench_tests;
+create policy "Users can insert robot bench tests"
+  on public.robot_bench_tests for insert
+  with check (
+    user_id = (select auth.uid())
+    and (
+      public.can_manage_robot(robot_id)
+      or public.is_app_admin()
+    )
+  );
 
 drop policy if exists "Users can read own connection sessions" on public.connection_sessions;
 create policy "Users can read own connection sessions"
@@ -916,6 +981,15 @@ create index if not exists control_sessions_user_started_idx
 
 create index if not exists control_sessions_connection_session_id_idx
   on public.control_sessions (connection_session_id);
+
+create index if not exists robot_bench_tests_robot_created_idx
+  on public.robot_bench_tests (robot_id, created_at desc);
+
+create index if not exists robot_bench_tests_user_created_idx
+  on public.robot_bench_tests (user_id, created_at desc);
+
+create index if not exists robot_bench_tests_stage_result_idx
+  on public.robot_bench_tests (stage, result);
 
 create index if not exists robot_events_robot_created_idx
   on public.robot_events (robot_id, created_at desc);

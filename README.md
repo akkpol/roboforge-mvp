@@ -6,13 +6,19 @@ RoboForge is a mobile-first robot identity and control platform. This repo now h
 - **SaaS Web:** authenticated owner workspace in `web/` using Next.js and Supabase while preserving the original demo UX.
 - **Device Mode:** the same interface served by Rover-01 over its ESP32 Wi-Fi access point with local motor control.
 
-## Current Direction
+## Current Product Direction
 
-This project is past the "static MVP shell" stage. The original demo in `app/` is the UX source of truth for Garage, Cockpit, fleet selection, Forge/Neo themes, robot controls, and the product feel.
+RoboForge should grow from the current demo into a real robot owner platform.
+The experience people see first should still feel like RoboForge: Garage,
+Cockpit, fleet selection, Forge/Neo themes, robot controls, and a companion-led
+setup flow.
 
-For SaaS work, do not replace that experience with a plain admin dashboard. Continue from the current `web/` direction: keep `/dashboard` login-gated, preserve the demo surface from `web/public/demo`, and incrementally connect Supabase auth, owner workspaces, robots, and sessions behind the same flows.
+For SaaS work, continue from the current `web/` direction: `/dashboard` is the
+logged-in owner Garage, Supabase stores owner/robot/session data, and the same
+product flow gradually connects to real robot units.
 
-Future sessions should continue the SaaS integration from the existing demo experience, not restart or simplify the project back into a generic MVP.
+If the product direction changes later, update these docs first so future work
+starts from the latest intent.
 
 For the current beta direction, read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md).
 For a short prompt to start future work, read [SESSION_BRIEF.md](SESSION_BRIEF.md).

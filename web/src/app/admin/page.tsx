@@ -1,5 +1,13 @@
-import { Activity, AlertTriangle, Bot, RadioTower, ShieldCheck } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Bot,
+  ClipboardCheck,
+  RadioTower,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
+import { BenchTestForm } from "@/app/admin/bench-test-form";
 import { ClaimKitForm } from "@/app/admin/claim-kit-form";
 import { HardwareProfileForm } from "@/app/admin/hardware-profile-form";
 import { getBetaHealth } from "@/lib/supabase/admin";
@@ -92,6 +100,7 @@ export default async function AdminPage() {
         {metric("Codes", data.counts.claimCodes, "claim kits issued")}
         {metric("Claimed", data.counts.claimedRobots, "claimed robot codes")}
         {metric("Floor", data.counts.floorReadyRobots, "ready for floor")}
+        {metric("Bench", data.counts.benchPassed, `${data.counts.raisedWheelPassed} raised-wheel`)}
         {metric("Connect", data.counts.connectionSessions, `${successRate}% success`)}
         {metric("Control", data.counts.controlSessions, "session summaries")}
         {metric("Feedback", data.counts.feedbackReports, "beta reports")}
@@ -100,6 +109,10 @@ export default async function AdminPage() {
       <section className="ops-grid">
         <ClaimKitForm />
         <HardwareProfileForm claimKits={data.claimKits} />
+        <BenchTestForm
+          claimKits={data.claimKits}
+          latestBenchTests={data.latestBenchTests}
+        />
 
         <article className="ops-panel">
           <span className="eyebrow">
@@ -144,6 +157,27 @@ export default async function AdminPage() {
             {Object.keys(data.connectionResults).length === 0 ? (
               <p>No connection sessions yet.</p>
             ) : null}
+          </div>
+        </article>
+
+        <article className="ops-panel">
+          <span className="eyebrow">
+            <ClipboardCheck size={15} /> TEST COVERAGE
+          </span>
+          <h2>Robot Checks</h2>
+          <div className="ops-list">
+            <span>
+              <strong>bench records</strong>
+              <small>{data.counts.benchTests.toLocaleString()}</small>
+            </span>
+            <span>
+              <strong>bench passed</strong>
+              <small>{data.counts.benchPassed.toLocaleString()}</small>
+            </span>
+            <span>
+              <strong>raised-wheel passed</strong>
+              <small>{data.counts.raisedWheelPassed.toLocaleString()}</small>
+            </span>
           </div>
         </article>
 

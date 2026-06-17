@@ -4,7 +4,7 @@ import { KeyRound, LockKeyhole, Mail, UserPlus } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 
 type Mode = "sign-in" | "sign-up";
 type BusyAction = "email" | "google" | null;
@@ -30,7 +30,11 @@ export function AuthForm({ redirectTo }: { redirectTo: string }) {
     }
 
     setBusyAction("google");
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    const { appUrl } = getSupabaseEnv();
+    const callbackUrl = new URL(
+      "/auth/callback",
+      appUrl || window.location.origin,
+    );
     callbackUrl.searchParams.set("next", redirectTo);
 
     const { error } = await supabase.auth.signInWithOAuth({

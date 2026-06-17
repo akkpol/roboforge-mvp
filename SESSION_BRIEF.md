@@ -1,6 +1,6 @@
 # RoboForge Session Brief
 
-Use this brief when opening a new working session.
+Use this brief to understand what the product is trying to become.
 
 ## What I Want
 
@@ -18,14 +18,17 @@ product and backend can handle early usage.
   config, local Wi-Fi details, and protocol check steps.
 - The team can store prototype hardware details in Ops before changing firmware
   for a specific unit.
+- The team can record bench and raised-wheel test results before putting a
+  physical robot on the floor.
 - Users can claim a real robot with a QR code or code.
 - Users can connect to a robot in a simple guided flow that feels like a game.
 - Users can open a Cockpit and control the robot.
 - Lyra helps with setup, errors, and next steps.
 - The backend records enough data to know what worked, what failed, and where
   users got stuck.
-- Hardware details may change, so avoid locking the product too early to one
-  exact board unless the current task is specifically firmware work.
+- Hardware details may change. The product should support the current prototype
+  first, then stay flexible enough for future boards if they can speak the same
+  robot protocol.
 - Supabase is currently on the free plan, so design the backend to be useful and
   lightweight.
 - The physical robot contract is `docs/ROBOT_PROTOCOL.md`; keep live motor
@@ -33,9 +36,9 @@ product and backend can handle early usage.
 
 ## Current Direction
 
-Keep the existing RoboForge product feel. It should not become a plain admin
-dashboard. The Garage, robot identity, Cockpit, missions, theme, and companion
-direction are part of the product.
+Keep the RoboForge product feel: Garage, robot identity, Cockpit, missions,
+theme, and companion guidance. The user should feel like they are setting up and
+controlling their own robot, not filling out technical forms.
 
 ## Helpful First Work Areas
 
@@ -50,6 +53,8 @@ direction are part of the product.
 - Firmware/local protocol checks for the physical prototype.
 - Hardware profile capture for board, motor driver, battery, wiring, fuse,
   power switch, and readiness status.
+- Bench checklist capture for power, robot Wi-Fi, protocol checks,
+  raised-wheel movement, emergency stop, and floor readiness.
 
 ## Ask When Needed
 

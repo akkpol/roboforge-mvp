@@ -1,8 +1,8 @@
 # RoboForge Robot Protocol v1
 
 This is the stable contract between RoboForge apps and a physical robot. The
-first implementation is the ESP32 Rover-01 firmware, but the product should not
-depend on one exact board as long as the robot speaks this protocol.
+first implementation is the ESP32 Rover-01 firmware. Future boards can join the
+same product path when they speak this protocol.
 
 ## Transport
 
@@ -167,5 +167,6 @@ Before changing motor or battery code for a new prototype, collect:
 - whether the prototype has an accessible power switch and fuse
 
 Store these fields in the SaaS `/admin` Hardware Profile panel for the unit.
-Do not treat a robot as ready for floor testing until the profile is filled and
-the raised-wheel protocol check has passed.
+Then record bench, raised-wheel, and floor test results in the `/admin` Bench
+Checklist panel. A robot is floor-ready after the profile is filled and the
+raised-wheel protocol check has passed.

@@ -36,6 +36,8 @@ connect, and drive like a game.
   config, local Wi-Fi details, and protocol check steps.
 - Admin/Ops hardware profile capture for the prototype board, motor driver,
   battery, wiring status, fuse/switch, and readiness gate.
+- Admin/Ops bench checklist for real prototype evidence: power, robot Wi-Fi,
+  protocol checks, raised-wheel movement, emergency stop, and floor readiness.
 - Claim robot by QR or code.
 - Robot profile with type, name, theme, device info, and progress.
 - Connection Quest for real robot setup.
@@ -61,9 +63,9 @@ Useful first jobs:
 
 ## Hardware Direction
 
-The first physical path can use ESP32 and local Wi-Fi, but RoboForge should not
-be locked to one exact board too early. The stable contract should be the robot
-protocol in `docs/ROBOT_PROTOCOL.md`:
+The first physical path can use ESP32 and local Wi-Fi. Hardware can evolve
+later. The stable contract should be the robot protocol in
+`docs/ROBOT_PROTOCOL.md`:
 
 - `status`
 - `arm`
@@ -85,6 +87,7 @@ Store:
 - Workspaces and members.
 - Robots and claim codes.
 - Robot device information.
+- Robot bench and raised-wheel test results.
 - Connection session summaries.
 - Control session summaries.
 - Important robot events.
@@ -99,6 +102,8 @@ stays usable during the first beta.
 - 1000 accounts can exist without confusing ownership or privacy problems.
 - 300 robots can be claimed or simulated for testing.
 - Users can understand the connection flow without knowing IoT.
+- The team can see which physical robots passed bench and raised-wheel checks
+  before floor testing.
 - The team can see where users fail: account, claim, Wi-Fi connection, Cockpit,
   safety check, control, or feedback.
 - The database does not grow mainly from noisy joystick commands.

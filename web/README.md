@@ -4,18 +4,16 @@ Next.js SaaS shell for RoboForge owner accounts.
 
 ## Current SaaS Direction
 
-Do not turn this into a generic dashboard. The original RoboForge demo is the
-source of truth for the product experience: Garage, Cockpit, fleet selection,
-Forge/Neo themes, robot controls, density, and visual tone.
+RoboForge Web is the logged-in owner version of the product. It should keep the
+core RoboForge experience people already understand from the demo: Garage,
+Cockpit, fleet selection, Forge/Neo themes, robot controls, density, and visual
+tone.
 
-`/dashboard` is the authenticated SaaS entry point and preserves the demo
-surface as native Next.js components. Future work should keep the existing
-Garage, Cockpit, fleet selection, Forge/Neo themes, robot controls, density,
-and visual tone while connecting more real hardware paths.
+`/dashboard` is the authenticated SaaS entry point. Future work should connect
+more real hardware paths behind that owner flow.
 
-New sessions should continue the SaaS integration here. Do not restart from a
-blank MVP shell or rebuild a plain admin control panel unless the product
-direction is explicitly changed.
+If the owner flow, hardware flow, or visual direction changes, write the new
+intent here before building on it.
 
 ## Started Work To Preserve
 
@@ -47,6 +45,7 @@ Create a Supabase project, enable Google auth and/or email/password auth, then a
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_APP_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
@@ -75,10 +74,27 @@ actual board model, motor driver, battery chemistry/cell count, wiring status,
 power switch, fuse/protected pack, and readiness status before changing
 firmware for that physical unit.
 
+Use the Bench Checklist panel in `/admin` to record the real kit test path:
+power, robot Wi-Fi, protocol checks, raised-wheel movement, emergency stop, and
+floor readiness evidence.
+
 For Google auth, add this app callback in Supabase Redirect URLs:
 
 ```text
-https://<your-domain>/auth/callback
+https://roboforge-saas.vercel.app/auth/callback
+http://localhost:3000/auth/callback
+```
+
+Set the Supabase Auth Site URL to the production app:
+
+```text
+https://roboforge-saas.vercel.app
+```
+
+In Vercel, set this public env var for production:
+
+```text
+NEXT_PUBLIC_APP_URL=https://roboforge-saas.vercel.app
 ```
 
 In Google Cloud, use the Supabase callback URL from the Google provider setup:
@@ -103,8 +119,8 @@ and the service role key.
 
 Use a new Vercel project with Root Directory set to `web`.
 
-The existing root `vercel.json` still deploys the Vite demo in `app`, so do not
-reuse that Vercel project for this SaaS app unless you intentionally migrate it.
+For the SaaS app, use a separate Vercel project or intentionally migrate the
+existing root project from the Vite demo in `app`.
 
 ## Checks
 
@@ -115,4 +131,4 @@ npm run build
 
 Known warning: `npm audit` reports a moderate `postcss` advisory through
 Next.js 16.2.9. The offered fix currently uses `--force` and downgrades Next to
-an old major version, so do not apply it blindly.
+an old major version. Review that fix manually before applying it.

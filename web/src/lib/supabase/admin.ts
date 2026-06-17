@@ -10,11 +10,14 @@ export type BetaHealth = {
   counts: {
     claimCodes: number;
     claimedRobots: number;
+    benchPassed: number;
+    benchTests: number;
     connectionSessions: number;
     controlSessions: number;
     feedbackReports: number;
     floorReadyRobots: number;
     ownerProfiles: number;
+    raisedWheelPassed: number;
     robotEvents: number;
     robots: number;
   };
@@ -43,6 +46,15 @@ export type BetaHealth = {
     message: string;
     problem_type: string | null;
     rating: number | null;
+  }>;
+  latestBenchTests: Array<{
+    checks: Record<string, unknown> | null;
+    created_at: string;
+    notes: string | null;
+    result: string;
+    robot_id: string;
+    stage: string;
+    unit_code: string | null;
   }>;
   topEvents: Array<{
     created_at: string;

@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export type ClaimKitState = {
   error: string | null;
@@ -28,6 +29,11 @@ export type HardwareProfileState = {
   ok: boolean;
 };
 
+export type BenchTestState = {
+  error: string | null;
+  ok: boolean;
+};
+
 const initialClaimKitState: ClaimKitState = {
   error: null,
   kit: null,
@@ -35,6 +41,11 @@ const initialClaimKitState: ClaimKitState = {
 };
 
 const initialHardwareProfileState: HardwareProfileState = {
+  error: null,
+  ok: false,
+};
+
+const initialBenchTestState: BenchTestState = {
   error: null,
   ok: false,
 };
@@ -49,6 +60,9 @@ function actionErrorMessage(message: string) {
 }
 
 async function getBaseUrl() {
+  const { appUrl } = getSupabaseEnv();
+  if (appUrl) return appUrl;
+
   const requestHeaders = await headers();
   const host =
     requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "";
@@ -89,6 +103,20 @@ function normalizeReadinessStatus(value: string) {
   ].includes(normalized)
     ? normalized
     : "needs_details";
+}
+
+function normalizeBenchStage(value: string) {
+  const normalized = value.trim();
+  return ["bench", "raised_wheels", "floor"].includes(normalized)
+    ? normalized
+    : "bench";
+}
+
+function normalizeBenchResult(value: string) {
+  const normalized = value.trim();
+  return ["pending", "passed", "failed", "blocked"].includes(normalized)
+    ? normalized
+    : "pending";
 }
 
 function sanitizeDefineValue(value: string) {
@@ -396,6 +424,183 @@ export async function saveHardwareProfileAction(
     metadata: hardwareProfile,
     robot_id: robotId,
     severity: readinessStatus === "blocked" ? "warning" : "info",
+    user_id: user.id,
+  });
+
+  revalidatePath("/admin");
+
+  return {
+    error: null,
+    ok: true,
+  };
+}
+
+const checkLabels = {
+  apVisible: "Robot Wi-Fi appears",
+  armOk: "Arm command works",
+  batteryVisible: "Battery/status is visible",
+  emergencyStopOk: "Emergency stop works",
+  floorClear: "Floor path is clear",
+  infoOk: "Info endpoint works",
+  lowSpeedDriveOk: "Low-speed drive works",
+  powerOn: "Robot powers on",
+  shortFloorDriveOk: "Short floor drive works",
+  statusOk: "Status endpoint works",
+  stopOk: "Stop endpoint works",
+  wheelsRaised: "Wheels are raised",
+  wifiJoined: "Phone/computer joins robot Wi-Fi",
+  zeroReleaseOk: "Release-to-zero stops the robot",
+} as const;
+
+const requiredBenchChecks = [
+  "powerOn",
+  "apVisible",
+  "wifiJoined",
+  "infoOk",
+  "statusOk",
+  "stopOk",
+] as const;
+
+const requiredRaisedWheelChecks = [
+  ...requiredBenchChecks,
+  "wheelsRaised",
+  "armOk",
+  "lowSpeedDriveOk",
+  "zeroReleaseOk",
+  "emergencyStopOk",
+] as const;
+
+const requiredFloorChecks = [
+  ...requiredRaisedWheelChecks,
+  "floorClear",
+  "shortFloorDriveOk",
+] as const;
+
+function buildBenchChecks(formData: FormData) {
+  return {
+    apVisible: formBoolean(formData, "apVisible"),
+    armOk: formBoolean(formData, "armOk"),
+    batteryVisible: formBoolean(formData, "batteryVisible"),
+    emergencyStopOk: formBoolean(formData, "emergencyStopOk"),
+    floorClear: formBoolean(formData, "floorClear"),
+    infoOk: formBoolean(formData, "infoOk"),
+    lowSpeedDriveOk: formBoolean(formData, "lowSpeedDriveOk"),
+    powerOn: formBoolean(formData, "powerOn"),
+    shortFloorDriveOk: formBoolean(formData, "shortFloorDriveOk"),
+    statusOk: formBoolean(formData, "statusOk"),
+    stopOk: formBoolean(formData, "stopOk"),
+    wheelsRaised: formBoolean(formData, "wheelsRaised"),
+    wifiJoined: formBoolean(formData, "wifiJoined"),
+    zeroReleaseOk: formBoolean(formData, "zeroReleaseOk"),
+  };
+}
+
+function requiredChecksForStage(stage: string) {
+  if (stage === "floor") return requiredFloorChecks;
+  if (stage === "raised_wheels") return requiredRaisedWheelChecks;
+  return requiredBenchChecks;
+}
+
+function readinessAfterBenchTest(stage: string, result: string) {
+  if (result === "blocked" || result === "failed") return "blocked";
+  if (result !== "passed") return null;
+  if (stage === "bench") return "ready_for_raised_wheels";
+  return "ready_for_floor";
+}
+
+export async function saveBenchTestAction(
+  _previousState: BenchTestState,
+  formData: FormData,
+): Promise<BenchTestState> {
+  const supabase = await createServerSupabaseClient();
+
+  if (!supabase) {
+    return {
+      ...initialBenchTestState,
+      error: "Supabase is not configured.",
+    };
+  }
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      ...initialBenchTestState,
+      error: "Login is required.",
+    };
+  }
+
+  const robotId = formValue(formData, "robotId");
+
+  if (!robotId) {
+    return {
+      ...initialBenchTestState,
+      error: "Choose a robot kit first.",
+    };
+  }
+
+  const stage = normalizeBenchStage(formValue(formData, "stage"));
+  const result = normalizeBenchResult(formValue(formData, "result"));
+  const checks = buildBenchChecks(formData);
+  const notes = formValue(formData, "notes") || null;
+
+  if (result === "passed") {
+    const missingChecks = requiredChecksForStage(stage).filter(
+      (check) => !checks[check],
+    );
+
+    if (missingChecks.length > 0) {
+      return {
+        ...initialBenchTestState,
+        error: `Before marking this as passed, complete: ${missingChecks
+          .map((check) => checkLabels[check] ?? check)
+          .join(", ")}.`,
+      };
+    }
+  }
+
+  const { error } = await supabase.from("robot_bench_tests").insert({
+    checks,
+    notes,
+    result,
+    robot_id: robotId,
+    stage,
+    user_id: user.id,
+  });
+
+  if (error) {
+    return {
+      ...initialBenchTestState,
+      error: error.message,
+    };
+  }
+
+  const readinessStatus = readinessAfterBenchTest(stage, result);
+
+  if (readinessStatus) {
+    await supabase
+      .from("robot_devices")
+      .update({
+        readiness_status: readinessStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("robot_id", robotId);
+  }
+
+  await supabase.from("robot_events").insert({
+    event_type: "bench_test_recorded",
+    message: `Ops recorded ${stage} test as ${result}.`,
+    metadata: {
+      checks,
+      notes,
+      result,
+      stage,
+    },
+    robot_id: robotId,
+    severity: result === "failed" || result === "blocked" ? "warning" : "info",
     user_id: user.id,
   });
 

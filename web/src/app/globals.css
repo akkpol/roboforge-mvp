@@ -323,6 +323,50 @@ textarea:focus-visible {
   min-height: auto;
 }
 
+.ops-check-sections {
+  display: grid;
+  gap: 8px;
+}
+
+.ops-check-section {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel-strong), transparent 22%);
+}
+
+.ops-check-section h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.ops-check-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ops-check-grid label {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: var(--panel-strong);
+  font-size: 12px;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.ops-check-grid input {
+  width: auto;
+  min-height: auto;
+}
+
 .ops-manifest-grid {
   display: grid;
   gap: 10px;
@@ -2009,6 +2053,7 @@ textarea:focus-visible {
   .ops-form-row,
   .ops-copy-row,
   .ops-claim-card,
+  .ops-check-grid,
   .ops-toggle-row {
     grid-template-columns: 1fr;
   }
