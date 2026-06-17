@@ -22,7 +22,10 @@ export async function GET(request: NextRequest) {
       (await supabase?.auth.exchangeCodeForSession(code)) ?? { error: null };
 
     if (error) {
-      return NextResponse.redirect(new URL("/login?error=oauth", appUrl || request.url));
+      const errorUrl = new URL("/login", appUrl || request.url);
+      errorUrl.searchParams.set("error", "oauth");
+      errorUrl.searchParams.set("error_description", error.message);
+      return NextResponse.redirect(errorUrl);
     }
   }
 

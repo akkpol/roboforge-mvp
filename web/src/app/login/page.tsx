@@ -21,7 +21,7 @@ function authMessage(params: { error?: string | string[]; error_description?: st
     ? params.error_description[0]
     : params.error_description;
 
-  if (rawDescription) return decodeURIComponent(rawDescription);
+  if (rawDescription) return rawDescription;
   if (rawError === "oauth") {
     return "Google login returned to RoboForge, but the session code could not be exchanged. Check Supabase and Google OAuth callback settings.";
   }
