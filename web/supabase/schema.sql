@@ -289,6 +289,11 @@ create table if not exists public.feedback_reports (
   metadata jsonb not null default '{}'::jsonb
 );
 
+create table if not exists public.app_admins (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
 alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
 alter table public.robot_claim_codes enable row level security;
@@ -298,6 +303,7 @@ alter table public.control_sessions enable row level security;
 alter table public.robot_events enable row level security;
 alter table public.lyra_sessions enable row level security;
 alter table public.feedback_reports enable row level security;
+alter table public.app_admins enable row level security;
 
 create or replace function public.is_workspace_member(target_workspace_id uuid)
 returns boolean
@@ -416,6 +422,92 @@ $$;
 
 revoke all on function public.claim_robot_by_code(text) from public;
 grant execute on function public.claim_robot_by_code(text) to authenticated;
+
+create or replace function public.is_app_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.app_admins
+    where app_admins.user_id = (select auth.uid())
+  );
+$$;
+
+create or replace function public.get_beta_health()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  health jsonb;
+begin
+  if not public.is_app_admin() then
+    raise exception 'admin_required' using errcode = 'P0001';
+  end if;
+
+  select jsonb_build_object(
+    'counts', jsonb_build_object(
+      'ownerProfiles', (select count(*) from public.owner_profiles),
+      'robots', (select count(*) from public.robots),
+      'claimedRobots', (
+        select count(*)
+        from public.robot_claim_codes
+        where claimed_by is not null
+      ),
+      'connectionSessions', (select count(*) from public.connection_sessions),
+      'controlSessions', (select count(*) from public.control_sessions),
+      'robotEvents', (select count(*) from public.robot_events),
+      'feedbackReports', (select count(*) from public.feedback_reports)
+    ),
+    'connectionResults', coalesce((
+      select jsonb_object_agg(result, total)
+      from (
+        select result, count(*) as total
+        from public.connection_sessions
+        group by result
+      ) results
+    ), '{}'::jsonb),
+    'controlSummary', (
+      select jsonb_build_object(
+        'commandCount', coalesce(sum(command_count), 0),
+        'completedSafely', count(*) filter (where completed_safely),
+        'emergencyStopCount', coalesce(sum(emergency_stop_count), 0)
+      )
+      from public.control_sessions
+    ),
+    'topEvents', coalesce((
+      select jsonb_agg(to_jsonb(events))
+      from (
+        select created_at, event_type, severity, message
+        from public.robot_events
+        order by created_at desc
+        limit 8
+      ) events
+    ), '[]'::jsonb),
+    'latestFeedback', coalesce((
+      select jsonb_agg(to_jsonb(feedback))
+      from (
+        select created_at, rating, problem_type, message
+        from public.feedback_reports
+        order by created_at desc
+        limit 6
+      ) feedback
+    ), '[]'::jsonb)
+  )
+  into health;
+
+  return health;
+end;
+$$;
+
+revoke all on function public.get_beta_health() from public;
+grant execute on function public.get_beta_health() to authenticated;
 
 drop policy if exists "Owners can manage own workspaces" on public.workspaces;
 create policy "Owners can manage own workspaces"
@@ -577,6 +669,11 @@ create policy "Users can insert own feedback"
     and (robot_id is null or public.can_access_robot(robot_id))
   );
 
+drop policy if exists "App admins can read own admin grant" on public.app_admins;
+create policy "App admins can read own admin grant"
+  on public.app_admins for select
+  using (user_id = (select auth.uid()));
+
 drop policy if exists "Workspace members can read robot progress" on public.robot_progress;
 create policy "Workspace members can read robot progress"
   on public.robot_progress for select
@@ -649,3 +746,6 @@ create index if not exists feedback_reports_user_created_idx
 
 create index if not exists feedback_reports_robot_created_idx
   on public.feedback_reports (robot_id, created_at desc);
+
+create index if not exists app_admins_user_id_idx
+  on public.app_admins (user_id);

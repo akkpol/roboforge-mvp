@@ -1,6 +1,6 @@
 import { Activity, AlertTriangle, Bot, RadioTower, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { getBetaHealth, getAdminEmails } from "@/lib/supabase/admin";
+import { getBetaHealth } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/supabase/server";
 
 function metric(label: string, value: number, detail: string) {
@@ -15,9 +15,6 @@ function metric(label: string, value: number, detail: string) {
 
 export default async function AdminPage() {
   const { configured, user } = await getCurrentUser();
-  const adminEmails = getAdminEmails();
-  const userEmail = user?.email?.toLowerCase() ?? "";
-  const isAllowed = Boolean(userEmail && adminEmails.includes(userEmail));
 
   if (!configured) {
     return (
@@ -38,23 +35,6 @@ export default async function AdminPage() {
           <p>Sign in before opening the beta Ops view.</p>
           <Link className="button" href="/login">
             Sign in
-          </Link>
-        </section>
-      </main>
-    );
-  }
-
-  if (adminEmails.length === 0 || !isAllowed) {
-    return (
-      <main className="ops-shell">
-        <section className="setup-alert">
-          <h1>Ops access is not enabled</h1>
-          <p>
-            Add this account to ROBOFORGE_ADMIN_EMAILS in Vercel to view beta
-            health.
-          </p>
-          <Link className="button button-secondary" href="/dashboard">
-            Back to Garage
           </Link>
         </section>
       </main>

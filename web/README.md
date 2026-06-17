@@ -47,15 +47,14 @@ Create a Supabase project, enable Google auth and/or email/password auth, then a
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-ROBOFORGE_ADMIN_EMAILS=
 ```
 
 Run `supabase/schema.sql` in the Supabase SQL editor to create the first
 multi-user tables with row-level security.
 
-`SUPABASE_SERVICE_ROLE_KEY` is server-only. Use it for `/admin` beta health
-metrics, never in client components. `ROBOFORGE_ADMIN_EMAILS` is a comma
-separated allowlist for the Ops view.
+`SUPABASE_SERVICE_ROLE_KEY` is server-only and only needed for the optional beta
+seed script. The `/admin` Ops view uses the authenticated user plus the
+`app_admins` table.
 
 For Google auth, add this app callback in Supabase Redirect URLs:
 
