@@ -9,8 +9,10 @@ import {
   Gauge,
   Hand,
   Home,
+  KeyRound,
   LogOut,
   Paintbrush,
+  QrCode,
   Radio,
   RadioTower,
   Rocket,
@@ -24,10 +26,17 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState, useTransition } from "react";
 import {
+  claimRobotByCode,
+  finishConnectionSession,
+  finishControlSession,
   saveBetaApplication,
+  saveFeedbackReport,
   saveRobotInterest,
+  startConnectionSession,
+  startControlSession,
   updateRobotProgress,
   updateRobotTheme,
 } from "@/app/dashboard/actions";
@@ -59,6 +68,7 @@ function completeProgress(progress: OwnerProgress): OwnerProgress {
   return {
     ...progress,
     ready_for_floor_test:
+      progress.first_connection_complete &&
       progress.setup_complete &&
       progress.first_drive_complete &&
       progress.battery_calibrated,
@@ -233,6 +243,7 @@ function ProgressPanel({
 }) {
   const items = [
     ["Setup complete", progress.setup_complete],
+    ["First connection complete", progress.first_connection_complete],
     ["First drive complete", progress.first_drive_complete],
     ["Battery calibrated", progress.battery_calibrated],
     ["Ready for floor test", progress.ready_for_floor_test],
@@ -261,13 +272,67 @@ function ProgressPanel({
   );
 }
 
+function ClaimRobotPanel({
+  disabled,
+  onClaim,
+}: {
+  disabled?: boolean;
+  onClaim: (claimCode: string) => void;
+}) {
+  const [claimCode, setClaimCode] = useState("");
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    onClaim(claimCode);
+  }
+
+  return (
+    <section aria-label="Claim robot" className="rf-claim-panel">
+      <div className="rf-claim-panel__copy">
+        <span className="eyebrow">
+          <QrCode size={15} /> CLAIM ROBOT
+        </span>
+        <h2>Link a physical unit to this Garage</h2>
+        <p>
+          Enter the code from a RoboForge QR card or beta kit. The robot will
+          become part of this owner workspace.
+        </p>
+      </div>
+      <form className="rf-claim-form" onSubmit={submit}>
+        <label>
+          Robot code
+          <span>
+            <KeyRound size={17} />
+            <input
+              autoComplete="off"
+              inputMode="text"
+              minLength={6}
+              onChange={(event) => setClaimCode(event.target.value)}
+              placeholder="RF-ROVER-XXXX"
+              required
+              value={claimCode}
+            />
+          </span>
+        </label>
+        <Button disabled={disabled} icon={QrCode} type="submit" variant="secondary">
+          Claim robot
+        </Button>
+      </form>
+    </section>
+  );
+}
+
 function Garage({
+  isPending,
+  onClaimRobot,
   onProgress,
   onScreen,
   progress,
   robotCode,
   theme,
 }: {
+  isPending?: boolean;
+  onClaimRobot: (claimCode: string) => void;
   onProgress: (progress: OwnerProgress) => void;
   onScreen: (screen: ConsoleScreen) => void;
   progress: OwnerProgress;
@@ -304,6 +369,7 @@ function Garage({
         <StatusPill />
       </section>
       <FleetRail selected={selectedFleet} setSelected={setSelectedFleet} />
+      <ClaimRobotPanel disabled={isPending} onClaim={onClaimRobot} />
       {selectedFleet === "rover" ? (
         <section className="rf-garage-feature">
           <RobotHero theme={theme} />
@@ -318,6 +384,9 @@ function Garage({
             <TelemetryGrid />
             <TruthStrip />
             <div className="rf-button-row">
+              <Button icon={RadioTower} onClick={() => onScreen("connect")}>
+                Connect Rover
+              </Button>
               <Button icon={Gamepad2} onClick={() => onScreen("cockpit")}>
                 Enter cockpit
               </Button>
@@ -346,6 +415,147 @@ function Garage({
         </section>
       )}
       <ProgressPanel onCompleteFirstDrive={completeFirstDrive} progress={progress} />
+    </main>
+  );
+}
+
+function ConnectionQuest({
+  connectionSessionId,
+  isPending,
+  onFail,
+  onFeedback,
+  onScreen,
+  onStart,
+  onSuccess,
+  progress,
+}: {
+  connectionSessionId: string | null;
+  isPending?: boolean;
+  onFail: (sessionId: string, reason: string) => void;
+  onFeedback: (input: { message: string; problemType?: string; rating?: number }) => void;
+  onScreen: (screen: ConsoleScreen) => void;
+  onStart: () => void;
+  onSuccess: (sessionId: string) => void;
+  progress: OwnerProgress;
+}) {
+  const [feedback, setFeedback] = useState("");
+  const [failureReason, setFailureReason] = useState("wifi_not_found");
+
+  function submitFeedback(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    onFeedback({
+      message: feedback,
+      problemType: failureReason,
+      rating: progress.first_connection_complete ? 4 : 2,
+    });
+    setFeedback("");
+  }
+
+  return (
+    <main className="rf-screen rf-connection-quest">
+      <section className="rf-screen-heading">
+        <div>
+          <span className="eyebrow">
+            <RadioTower size={15} /> CONNECTION QUEST
+          </span>
+          <h1>Connect Rover-01</h1>
+          <p>
+            Lyra guides the owner from power-on to the local Cockpit without
+            needing IoT knowledge.
+          </p>
+        </div>
+        <StatusPill />
+      </section>
+      <section className="rf-quest-layout">
+        <article className="rf-quest-card">
+          <span className="eyebrow">LYRA NAVIGATOR</span>
+          <h2>Spirit Link checklist</h2>
+          <ol>
+            <li className="is-done">Power on Rover-01</li>
+            <li className={connectionSessionId ? "is-done" : ""}>
+              Start a connection session
+            </li>
+            <li>Join Wi-Fi: RoboForge-Rover-XXXX</li>
+            <li>Open the local device page</li>
+            <li className={progress.first_connection_complete ? "is-done" : ""}>
+              Confirm Rover status is visible
+            </li>
+          </ol>
+          <div className="rf-button-row">
+            <Button
+              disabled={Boolean(connectionSessionId) || isPending}
+              icon={RadioTower}
+              onClick={onStart}
+            >
+              Start quest
+            </Button>
+            <Link
+              className="button rf-button rf-button--secondary"
+              href="http://192.168.4.1"
+              target="_blank"
+            >
+              <Radio size={18} />
+              <span>Open local cockpit</span>
+            </Link>
+          </div>
+        </article>
+        <article className="rf-quest-card rf-quest-card--actions">
+          <span className="eyebrow">BETA SIGNAL</span>
+          <h2>What happened?</h2>
+          <p>
+            Mark the result so RoboForge can learn where early users get stuck.
+          </p>
+          <div className="rf-button-row">
+            <Button
+              disabled={!connectionSessionId || isPending}
+              icon={CheckCircle}
+              onClick={() => connectionSessionId && onSuccess(connectionSessionId)}
+            >
+              Rover found
+            </Button>
+            <Button
+              disabled={!connectionSessionId || isPending}
+              icon={Wrench}
+              onClick={() =>
+                connectionSessionId && onFail(connectionSessionId, failureReason)
+              }
+              variant="secondary"
+            >
+              Still stuck
+            </Button>
+          </div>
+          <label className="rf-select-label">
+            Problem type
+            <select
+              onChange={(event) => setFailureReason(event.target.value)}
+              value={failureReason}
+            >
+              <option value="wifi_not_found">Wi-Fi not found</option>
+              <option value="cannot_open_local_page">Cannot open 192.168.4.1</option>
+              <option value="no_telemetry">No telemetry</option>
+              <option value="safety_unclear">Safety step unclear</option>
+              <option value="not_sure">Not sure</option>
+            </select>
+          </label>
+          <form className="rf-feedback-form" onSubmit={submitFeedback}>
+            <label>
+              Feedback
+              <textarea
+                onChange={(event) => setFeedback(event.target.value)}
+                placeholder="Tell Lyra what was confusing..."
+                required
+                value={feedback}
+              />
+            </label>
+            <Button disabled={isPending} icon={Send} type="submit" variant="quiet">
+              Send feedback
+            </Button>
+          </form>
+          <Button icon={Gamepad2} onClick={() => onScreen("cockpit")} variant="quiet">
+            Continue to Cockpit
+          </Button>
+        </article>
+      </section>
     </main>
   );
 }
@@ -419,20 +629,33 @@ function Profile({
 }
 
 function Cockpit({
+  isPending,
   onProgress,
+  onStartControl,
+  onStopControl,
   onScreen,
   progress,
 }: {
+  isPending?: boolean;
   onProgress: (progress: OwnerProgress) => void;
+  onStartControl: () => void;
+  onStopControl: (summary: {
+    commandCount: number;
+    completedSafely: boolean;
+    emergencyStopCount: number;
+  }) => void;
   onScreen: (screen: ConsoleScreen) => void;
   progress: OwnerProgress;
 }) {
   const [armed, setArmed] = useState(false);
   const [movementSent, setMovementSent] = useState(progress.first_drive_complete);
+  const [commandCount, setCommandCount] = useState(0);
+  const [emergencyStopCount, setEmergencyStopCount] = useState(0);
   const missionComplete = armed && movementSent;
 
   function sendDemoDrive() {
     setMovementSent(true);
+    setCommandCount((current) => current + 1);
     onProgress(
       completeProgress({
         ...progress,
@@ -441,6 +664,26 @@ function Cockpit({
         setup_complete: true,
       }),
     );
+  }
+
+  function emergencyStop() {
+    setArmed(false);
+    setMovementSent(false);
+    setEmergencyStopCount((current) => current + 1);
+    onStopControl({
+      commandCount,
+      completedSafely: false,
+      emergencyStopCount: emergencyStopCount + 1,
+    });
+  }
+
+  function finishSafely() {
+    setArmed(false);
+    onStopControl({
+      commandCount,
+      completedSafely: true,
+      emergencyStopCount,
+    });
   }
 
   return (
@@ -468,7 +711,14 @@ function Cockpit({
             </span>
             <button
               className={`rf-arm-switch ${armed ? "is-on" : ""}`}
-              onClick={() => setArmed((current) => !current)}
+              disabled={isPending}
+              onClick={() => {
+                setArmed((current) => {
+                  const next = !current;
+                  if (next) onStartControl();
+                  return next;
+                });
+              }}
               type="button"
             >
               <span />
@@ -511,13 +761,18 @@ function Cockpit({
           </ol>
           <Button
             icon={Hand}
-            onClick={() => {
-              setArmed(false);
-              setMovementSent(false);
-            }}
+            onClick={emergencyStop}
             variant="danger"
           >
             Emergency stop
+          </Button>
+          <Button
+            disabled={!movementSent || isPending}
+            icon={CheckCircle}
+            onClick={finishSafely}
+            variant="secondary"
+          >
+            End safely
           </Button>
           {missionComplete ? (
             <div className="rf-mission-success">
@@ -793,6 +1048,7 @@ function BottomNav({
 }
 
 export function OwnerConsole({ workspace }: OwnerConsoleProps) {
+  const router = useRouter();
   const activeRobot = workspace.robots[0];
   const initialTheme = safeTheme(activeRobot?.theme);
   const [screen, setScreen] = useState<ConsoleScreen>("garage");
@@ -803,6 +1059,8 @@ export function OwnerConsole({ workspace }: OwnerConsoleProps) {
   const [betaInterest, setBetaInterest] =
     useState<UpgradeInterest>("Build and control Rover-01");
   const [betaOpen, setBetaOpen] = useState(false);
+  const [connectionSessionId, setConnectionSessionId] = useState<string | null>(null);
+  const [controlSessionId, setControlSessionId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
   const robotCode = activeRobot?.unit_code ?? "ROVER-01";
@@ -865,6 +1123,132 @@ export function OwnerConsole({ workspace }: OwnerConsoleProps) {
           setMessage("Beta application saved.");
         } else {
           setMessage(result.error ?? "Could not save beta application.");
+        }
+      });
+    });
+  }
+
+  function claimRobot(claimCode: string) {
+    setMessage("");
+    startTransition(() => {
+      void claimRobotByCode(claimCode).then((result) => {
+        if (result.ok) {
+          setMessage("Robot claimed. Garage data refreshed.");
+          router.refresh();
+        } else {
+          setMessage(result.error ?? "Could not claim robot.");
+        }
+      });
+    });
+  }
+
+  function startConnectionQuest() {
+    setMessage("");
+    startTransition(() => {
+      void startConnectionSession().then((result) => {
+        if (result.ok && result.id) {
+          setConnectionSessionId(result.id);
+          setMessage("Connection quest started.");
+        } else {
+          setMessage(result.error ?? "Could not start connection quest.");
+        }
+      });
+    });
+  }
+
+  function completeConnectionQuest(sessionId: string) {
+    setMessage("");
+    const nextProgress = completeProgress({
+      ...progress,
+      first_connection_complete: true,
+      setup_complete: true,
+    });
+    setProgress(nextProgress);
+    startTransition(() => {
+      void finishConnectionSession({ sessionId, success: true }).then((result) => {
+        if (result.ok) {
+          setConnectionSessionId(null);
+          setMessage("Connection saved. Rover is ready for Cockpit.");
+          router.refresh();
+        } else {
+          setMessage(result.error ?? "Could not save connection result.");
+        }
+      });
+    });
+  }
+
+  function failConnectionQuest(sessionId: string, reason: string) {
+    setMessage("");
+    startTransition(() => {
+      void finishConnectionSession({
+        failureReason: reason,
+        sessionId,
+        success: false,
+      }).then((result) => {
+        if (result.ok) {
+          setConnectionSessionId(null);
+          setMessage("Connection issue saved for beta review.");
+        } else {
+          setMessage(result.error ?? "Could not save connection issue.");
+        }
+      });
+    });
+  }
+
+  function submitFeedbackReport(input: {
+    message: string;
+    problemType?: string;
+    rating?: number;
+  }) {
+    setMessage("");
+    startTransition(() => {
+      void saveFeedbackReport(input).then((result) => {
+        setMessage(
+          result.ok ? "Feedback saved." : result.error ?? "Could not save feedback.",
+        );
+      });
+    });
+  }
+
+  function startDemoControlSession() {
+    if (controlSessionId) return;
+    setMessage("");
+    startTransition(() => {
+      void startControlSession({
+        connectionSessionId,
+        mode: "demo",
+      }).then((result) => {
+        if (result.ok && result.id) {
+          setControlSessionId(result.id);
+          setMessage("Control session started.");
+        } else {
+          setMessage(result.error ?? "Could not start control session.");
+        }
+      });
+    });
+  }
+
+  function finishDemoControlSession(summary: {
+    commandCount: number;
+    completedSafely: boolean;
+    emergencyStopCount: number;
+  }) {
+    if (!controlSessionId) {
+      setMessage("Control summary is local until a session starts.");
+      return;
+    }
+
+    setMessage("");
+    startTransition(() => {
+      void finishControlSession({
+        ...summary,
+        sessionId: controlSessionId,
+      }).then((result) => {
+        if (result.ok) {
+          setControlSessionId(null);
+          setMessage("Control session summary saved.");
+        } else {
+          setMessage(result.error ?? "Could not save control summary.");
         }
       });
     });
@@ -936,6 +1320,8 @@ export function OwnerConsole({ workspace }: OwnerConsoleProps) {
       ) : null}
       {screen === "garage" ? (
         <Garage
+          isPending={isPending}
+          onClaimRobot={claimRobot}
           onProgress={persistProgress}
           onScreen={setScreen}
           progress={progress}
@@ -943,11 +1329,26 @@ export function OwnerConsole({ workspace }: OwnerConsoleProps) {
           theme={theme}
         />
       ) : null}
+      {screen === "connect" ? (
+        <ConnectionQuest
+          connectionSessionId={connectionSessionId}
+          isPending={isPending}
+          onFail={failConnectionQuest}
+          onFeedback={submitFeedbackReport}
+          onScreen={setScreen}
+          onStart={startConnectionQuest}
+          onSuccess={completeConnectionQuest}
+          progress={progress}
+        />
+      ) : null}
       {screen === "profile" ? <Profile onScreen={setScreen} theme={theme} /> : null}
       {screen === "cockpit" ? (
         <Cockpit
+          isPending={isPending}
           onProgress={persistProgress}
           onScreen={setScreen}
+          onStartControl={startDemoControlSession}
+          onStopControl={finishDemoControlSession}
           progress={progress}
         />
       ) : null}

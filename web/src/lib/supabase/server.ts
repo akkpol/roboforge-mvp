@@ -21,6 +21,7 @@ export type OwnerRobot = {
   theme: string;
   unit_code: string;
   updated_at: string;
+  workspace_id: string | null;
 };
 
 export type RobotProgress = OwnerProgress & {
@@ -47,9 +48,9 @@ export type OwnerWorkspace = {
 
 const profileSelect = "id, display_name, created_at, updated_at";
 const robotSelect =
-  "id, owner_id, unit_code, robot_type, display_name, theme, status, created_at, updated_at";
+  "id, owner_id, workspace_id, unit_code, robot_type, display_name, theme, status, created_at, updated_at";
 const progressSelect =
-  "robot_id, setup_complete, first_drive_complete, battery_calibrated, ready_for_floor_test, created_at, updated_at";
+  "robot_id, setup_complete, first_connection_complete, first_drive_complete, first_mission_complete, battery_calibrated, ready_for_floor_test, created_at, updated_at";
 const interestSelect = "id, robot_id, interest, created_at";
 
 export async function createServerSupabaseClient() {
@@ -171,7 +172,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     .from("robots")
     .select(robotSelect)
     .eq("owner_id", user.id)
-    .order("created_at", { ascending: true });
+    .order("updated_at", { ascending: false });
 
   if (robotsReadError) {
     return {

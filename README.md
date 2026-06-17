@@ -14,6 +14,9 @@ For SaaS work, do not replace that experience with a plain admin dashboard. Cont
 
 Future sessions should continue the SaaS integration from the existing demo experience, not restart or simplify the project back into a generic MVP.
 
+For the current beta direction, read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md).
+For a short prompt to start future work, read [SESSION_BRIEF.md](SESSION_BRIEF.md).
+
 ## Live Demo
 
 https://roboforge-mvp.vercel.app

@@ -1,6 +1,7 @@
 export type ThemeId = "forge" | "neo";
 export type RobotType = "rover" | "tracked" | "drone" | "arm";
 export type ConsoleScreen =
+  | "connect"
   | "garage"
   | "profile"
   | "cockpit"
@@ -26,7 +27,9 @@ export type RoverSupportCode =
 
 export type OwnerProgress = {
   battery_calibrated: boolean;
+  first_connection_complete: boolean;
   first_drive_complete: boolean;
+  first_mission_complete: boolean;
   ready_for_floor_test: boolean;
   setup_complete: boolean;
 };
@@ -102,7 +105,9 @@ export const fleet: Array<{
 
 export const defaultProgress: OwnerProgress = {
   battery_calibrated: false,
+  first_connection_complete: false,
   first_drive_complete: false,
+  first_mission_complete: false,
   ready_for_floor_test: false,
   setup_complete: false,
 };

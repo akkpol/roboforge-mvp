@@ -9,6 +9,21 @@ type ActionResult = {
   ok: boolean;
 };
 
+type ActionResultWithId = ActionResult & {
+  id: string | null;
+};
+
+function claimErrorMessage(message: string) {
+  if (message.includes("login_required")) return "Login is required.";
+  if (message.includes("invalid_or_expired_claim_code")) {
+    return "That robot code is invalid, already used, or expired.";
+  }
+  if (message.includes("claim_code_missing_robot")) {
+    return "That code is not attached to a robot yet.";
+  }
+  return message;
+}
+
 async function getActiveRobot() {
   const supabase = await createServerSupabaseClient();
 
@@ -41,7 +56,12 @@ async function getActiveRobot() {
     };
   }
 
-  return { error: null, robot: robot as { id: string; owner_id: string }, supabase };
+  return {
+    error: null,
+    robot: robot as { id: string; owner_id: string },
+    supabase,
+    userId: user.id,
+  };
 }
 
 export async function updateRobotTheme(theme: ThemeId): Promise<ActionResult> {
@@ -72,6 +92,7 @@ export async function updateRobotProgress(
     ready_for_floor_test:
       patch.ready_for_floor_test ??
       Boolean(
+        patch.first_connection_complete &&
         patch.setup_complete &&
           patch.first_drive_complete &&
           patch.battery_calibrated,
@@ -128,6 +149,210 @@ export async function saveBetaApplication(input: {
   });
 
   if (insertError) return { error: insertError.message, ok: false };
+
+  revalidatePath("/dashboard");
+  return { error: null, ok: true };
+}
+
+export async function claimRobotByCode(claimCode: string): Promise<ActionResult> {
+  const supabase = await createServerSupabaseClient();
+
+  if (!supabase) return { error: "Supabase is not configured.", ok: false };
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) return { error: "Login is required.", ok: false };
+
+  const normalizedCode = claimCode.trim();
+
+  if (normalizedCode.length < 6) {
+    return { error: "Enter the robot claim code from the kit or QR card.", ok: false };
+  }
+
+  const { error: claimError } = await supabase.rpc("claim_robot_by_code", {
+    raw_claim_code: normalizedCode,
+  });
+
+  if (claimError) {
+    return { error: claimErrorMessage(claimError.message), ok: false };
+  }
+
+  revalidatePath("/dashboard");
+  return { error: null, ok: true };
+}
+
+export async function startConnectionSession(): Promise<ActionResultWithId> {
+  const { error, robot, supabase, userId } = await getActiveRobot();
+  if (error || !robot || !supabase || !userId) return { error, id: null, ok: false };
+
+  const { data, error: insertError } = await supabase
+    .from("connection_sessions")
+    .insert({
+      device_mode: "local_wifi",
+      robot_id: robot.id,
+      user_id: userId,
+    })
+    .select("id")
+    .single();
+
+  if (insertError) return { error: insertError.message, id: null, ok: false };
+
+  await supabase.from("robot_events").insert({
+    event_type: "connection_quest_started",
+    message: "Owner started the local Wi-Fi connection quest.",
+    robot_id: robot.id,
+    severity: "info",
+    user_id: userId,
+    connection_session_id: data.id,
+  });
+
+  revalidatePath("/dashboard");
+  return { error: null, id: data.id as string, ok: true };
+}
+
+export async function finishConnectionSession(input: {
+  failureReason?: string;
+  sessionId: string;
+  success: boolean;
+}): Promise<ActionResult> {
+  const { error, robot, supabase, userId } = await getActiveRobot();
+  if (error || !robot || !supabase || !userId) return { error, ok: false };
+
+  const result = input.success ? "success" : "failed";
+  const failureReason = input.success
+    ? null
+    : input.failureReason?.trim() || "not_sure";
+
+  const { error: updateError } = await supabase
+    .from("connection_sessions")
+    .update({
+      ended_at: new Date().toISOString(),
+      failure_reason: failureReason,
+      result,
+    })
+    .eq("id", input.sessionId)
+    .eq("user_id", userId);
+
+  if (updateError) return { error: updateError.message, ok: false };
+
+  await supabase.from("robot_events").insert({
+    connection_session_id: input.sessionId,
+    event_type: input.success ? "connection_success" : "connection_failed",
+    message: input.success
+      ? "Owner marked the robot connection as successful."
+      : `Owner reported connection failure: ${failureReason}`,
+    robot_id: robot.id,
+    severity: input.success ? "info" : "warning",
+    user_id: userId,
+  });
+
+  if (input.success) {
+    await supabase.from("robot_progress").upsert(
+      {
+        first_connection_complete: true,
+        robot_id: robot.id,
+        setup_complete: true,
+      },
+      { onConflict: "robot_id" },
+    );
+  }
+
+  revalidatePath("/dashboard");
+  return { error: null, ok: true };
+}
+
+export async function startControlSession(input?: {
+  connectionSessionId?: string | null;
+  mode?: "demo" | "local_device";
+}): Promise<ActionResultWithId> {
+  const { error, robot, supabase, userId } = await getActiveRobot();
+  if (error || !robot || !supabase || !userId) return { error, id: null, ok: false };
+
+  const { data, error: insertError } = await supabase
+    .from("control_sessions")
+    .insert({
+      connection_session_id: input?.connectionSessionId ?? null,
+      mode: input?.mode ?? "demo",
+      robot_id: robot.id,
+      user_id: userId,
+    })
+    .select("id")
+    .single();
+
+  if (insertError) return { error: insertError.message, id: null, ok: false };
+
+  revalidatePath("/dashboard");
+  return { error: null, id: data.id as string, ok: true };
+}
+
+export async function finishControlSession(input: {
+  commandCount: number;
+  completedSafely: boolean;
+  emergencyStopCount: number;
+  sessionId: string;
+}): Promise<ActionResult> {
+  const { error, robot, supabase, userId } = await getActiveRobot();
+  if (error || !robot || !supabase || !userId) return { error, ok: false };
+
+  const { error: updateError } = await supabase
+    .from("control_sessions")
+    .update({
+      command_count: Math.max(0, Math.round(input.commandCount)),
+      completed_safely: input.completedSafely,
+      emergency_stop_count: Math.max(0, Math.round(input.emergencyStopCount)),
+      ended_at: new Date().toISOString(),
+    })
+    .eq("id", input.sessionId)
+    .eq("user_id", userId);
+
+  if (updateError) return { error: updateError.message, ok: false };
+
+  await supabase.from("robot_events").insert({
+    control_session_id: input.sessionId,
+    event_type: input.completedSafely ? "control_session_safe" : "control_session_stopped",
+    message: input.completedSafely
+      ? "Owner completed a control session safely."
+      : "Owner ended a control session with stop or incomplete status.",
+    robot_id: robot.id,
+    severity: input.completedSafely ? "info" : "warning",
+    user_id: userId,
+  });
+
+  revalidatePath("/dashboard");
+  return { error: null, ok: true };
+}
+
+export async function saveFeedbackReport(input: {
+  message: string;
+  problemType?: string;
+  rating?: number;
+}): Promise<ActionResult> {
+  const { error, robot, supabase, userId } = await getActiveRobot();
+  if (error || !robot || !supabase || !userId) return { error, ok: false };
+
+  const message = input.message.trim();
+  if (message.length < 4) return { error: "Tell us what happened first.", ok: false };
+
+  const { error: insertError } = await supabase.from("feedback_reports").insert({
+    message,
+    problem_type: input.problemType?.trim() || null,
+    rating: input.rating ?? null,
+    robot_id: robot.id,
+    user_id: userId,
+  });
+
+  if (insertError) return { error: insertError.message, ok: false };
+
+  await supabase.from("robot_events").insert({
+    event_type: "feedback_reported",
+    message: "Owner submitted beta feedback.",
+    robot_id: robot.id,
+    severity: "info",
+    user_id: userId,
+  });
 
   revalidatePath("/dashboard");
   return { error: null, ok: true };

@@ -43,7 +43,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -55,6 +57,12 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+select:focus-visible,
+textarea:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
@@ -731,6 +739,72 @@ input:focus-visible {
   border-color: color-mix(in srgb, var(--success), transparent 58%);
 }
 
+.rf-claim-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 13px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(120deg, var(--accent-soft), transparent 48%),
+    var(--panel);
+}
+
+.rf-claim-panel__copy h2 {
+  margin: 5px 0 5px;
+  font-size: clamp(24px, 6vw, 36px);
+  line-height: 1;
+}
+
+.rf-claim-panel__copy p {
+  color: var(--muted);
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.rf-claim-form {
+  display: grid;
+  gap: 9px;
+}
+
+.rf-claim-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-claim-form label > span {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 11px;
+  border: 1px solid var(--line-bright);
+  background: var(--panel-strong);
+}
+
+.rf-claim-form svg {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.rf-claim-form input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  color: var(--text);
+  background: transparent;
+  text-transform: uppercase;
+}
+
+.rf-claim-form input::placeholder {
+  color: #6f8290;
+}
+
 .rf-fleet-rail {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -982,6 +1056,16 @@ input:focus-visible {
 
 .rf-button {
   border-radius: 0;
+}
+
+.rf-button--secondary {
+  border-color: var(--line-bright);
+  color: var(--text);
+  background: var(--panel);
+}
+
+.rf-button--secondary:hover {
+  box-shadow: 0 14px 35px rgba(102, 228, 196, 0.12);
 }
 
 .rf-button--danger {
@@ -1248,6 +1332,103 @@ input:focus-visible {
   font-size: 17px;
 }
 
+.rf-quest-layout {
+  display: grid;
+  gap: 10px;
+}
+
+.rf-quest-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-quest-card--actions {
+  background:
+    linear-gradient(120deg, var(--accent-soft), transparent 50%),
+    var(--panel);
+}
+
+.rf-quest-card h2 {
+  font-size: clamp(28px, 7vw, 48px);
+  line-height: 1;
+}
+
+.rf-quest-card p,
+.rf-feedback-form label,
+.rf-select-label {
+  color: var(--muted);
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.rf-quest-card ol {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  counter-reset: quest;
+}
+
+.rf-quest-card li {
+  min-height: 42px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel-strong);
+  counter-increment: quest;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rf-quest-card li::before {
+  margin-right: 9px;
+  color: var(--line-bright);
+  content: "0" counter(quest);
+}
+
+.rf-quest-card li.is-done {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success), transparent 62%);
+}
+
+.rf-select-label,
+.rf-feedback-form,
+.rf-feedback-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.rf-select-label {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-select-label select,
+.rf-feedback-form textarea {
+  width: 100%;
+  border: 1px solid var(--line-bright);
+  color: var(--text);
+  background: var(--panel-strong);
+}
+
+.rf-select-label select {
+  min-height: 45px;
+  padding: 0 11px;
+}
+
+.rf-feedback-form textarea {
+  min-height: 96px;
+  resize: vertical;
+  padding: 11px;
+}
+
+.rf-feedback-form textarea::placeholder {
+  color: #6f8290;
+}
+
 .rf-mission-panel h2 {
   margin: 5px 0 13px;
   font-size: 31px;
@@ -1493,6 +1674,11 @@ input:focus-visible {
     align-items: center;
   }
 
+  .rf-claim-panel {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+    align-items: end;
+  }
+
   .rf-owner-progress__items,
   .rf-mission-cards,
   .rf-upgrade-grid,
@@ -1505,7 +1691,8 @@ input:focus-visible {
   .rf-garage-feature,
   .rf-profile-hero,
   .rf-cockpit-grid,
-  .rf-engineer-layout {
+  .rf-engineer-layout,
+  .rf-quest-layout {
     grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
   }
 
