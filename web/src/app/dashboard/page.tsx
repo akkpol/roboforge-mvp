@@ -1,6 +1,5 @@
-import { LogOut } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { OwnerConsole } from "@/components/owner-console";
 import { getCurrentUser, getOwnerWorkspace } from "@/lib/supabase/server";
 
 const setupItems = [
@@ -21,7 +20,7 @@ export default async function DashboardPage() {
 
   const workspace = user
     ? await getOwnerWorkspace(user)
-    : { error: null, profile: null, robots: [] };
+    : { error: null, interests: [], profile: null, progress: null, robots: [] };
 
   if (!configured) {
     return (
@@ -65,16 +64,5 @@ export default async function DashboardPage() {
     );
   }
 
-  return (
-    <main className="demo-dashboard">
-      <iframe
-        className="demo-frame"
-        src="/demo/index.html?screen=garage"
-        title="RoboForge owner console"
-      />
-      <Link className="demo-sign-out" href="/auth/sign-out" title="Sign out">
-        <LogOut size={18} />
-      </Link>
-    </main>
-  );
+  return <OwnerConsole workspace={workspace} />;
 }
