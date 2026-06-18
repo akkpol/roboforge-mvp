@@ -44,7 +44,7 @@ async function getActiveRobot() {
     .from("robots")
     .select("id, owner_id")
     .eq("owner_id", user.id)
-    .order("created_at", { ascending: true })
+    .order("updated_at", { ascending: false })
     .limit(1)
     .single();
 
