@@ -23,11 +23,14 @@ function getStoredNext(request: NextRequest) {
   }
 }
 
-function redirectAndClearOAuthCookie(location: string | URL) {
+function redirectAndClearOAuthCookie(request: NextRequest, location: string | URL) {
   const response = NextResponse.redirect(location);
   response.cookies.set(oauthNextCookieName, "", {
+    expires: new Date(0),
     maxAge: 0,
     path: "/",
+    sameSite: "lax",
+    secure: request.nextUrl.protocol === "https:",
   });
   return response;
 }
@@ -48,20 +51,23 @@ export async function GET(request: NextRequest) {
       errorUrl.searchParams.set("error", "oauth");
       errorUrl.searchParams.set("error_description", error.message);
       errorUrl.searchParams.set("redirect", next);
-      return redirectAndClearOAuthCookie(errorUrl);
+      return redirectAndClearOAuthCookie(request, errorUrl);
     }
   }
 
   if (appUrl) {
-    return redirectAndClearOAuthCookie(new URL(next, appUrl));
+    return redirectAndClearOAuthCookie(request, new URL(next, appUrl));
   }
 
   const forwardedHost = request.headers.get("x-forwarded-host");
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
 
   if (forwardedHost) {
-    return redirectAndClearOAuthCookie(`${forwardedProto}://${forwardedHost}${next}`);
+    return redirectAndClearOAuthCookie(
+      request,
+      `${forwardedProto}://${forwardedHost}${next}`,
+    );
   }
 
-  return redirectAndClearOAuthCookie(new URL(next, request.url));
+  return redirectAndClearOAuthCookie(request, new URL(next, request.url));
 }
