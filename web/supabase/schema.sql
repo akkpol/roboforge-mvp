@@ -629,9 +629,13 @@ create or replace function public.create_robot_claim_kit(
   input_unit_code text,
   input_robot_type text default 'rover',
   input_display_name text default null,
-  input_board_type text default 'esp32',
+  input_board_type text default null,
   input_firmware_version text default null,
-  input_expires_at timestamptz default null
+  input_expires_at timestamptz default null,
+  input_ap_ssid text default null,
+  input_battery_config jsonb default '{}'::jsonb,
+  input_hardware_profile jsonb default '{}'::jsonb,
+  input_readiness_status text default 'needs_details'
 )
 returns jsonb
 language plpgsql
@@ -643,6 +647,7 @@ declare
   created_robot_id uuid;
   display_name text;
   raw_code text;
+  readiness_status text;
   robot_type text;
   target_user uuid := (select auth.uid());
   token text;
@@ -659,7 +664,8 @@ begin
   normalized_unit_code := upper(regexp_replace(coalesce(input_unit_code, ''), '[^A-Za-z0-9-]', '', 'g'));
   robot_type := lower(coalesce(nullif(trim(input_robot_type), ''), 'rover'));
   display_name := coalesce(nullif(trim(input_display_name), ''), normalized_unit_code);
-  board_type := lower(coalesce(nullif(trim(input_board_type), ''), 'esp32'));
+  board_type := coalesce(nullif(trim(input_board_type), ''), '');
+  readiness_status := coalesce(nullif(trim(input_readiness_status), ''), 'needs_details');
 
   if length(normalized_unit_code) < 3 then
     raise exception 'invalid_unit_code' using errcode = 'P0001';
@@ -667,6 +673,29 @@ begin
 
   if robot_type not in ('rover', 'tracked', 'drone', 'arm') then
     raise exception 'invalid_robot_type' using errcode = 'P0001';
+  end if;
+
+  if readiness_status not in (
+    'needs_details',
+    'ready_for_bench',
+    'ready_for_raised_wheels',
+    'ready_for_floor',
+    'blocked'
+  ) then
+    raise exception 'invalid_readiness_status' using errcode = 'P0001';
+  end if;
+
+  if board_type = ''
+    or coalesce(input_hardware_profile->>'motorDriver', '') = ''
+    or coalesce(input_hardware_profile->>'motorChannels', '') = ''
+    or coalesce(input_hardware_profile->>'wiringStatus', '') = ''
+    or coalesce(input_hardware_profile->>'notes', '') = ''
+    or coalesce(input_battery_config->>'chemistry', '') = ''
+    or coalesce(input_battery_config->>'cells', '') = ''
+    or coalesce(input_hardware_profile->>'hasPowerSwitch', 'false') <> 'true'
+    or coalesce(input_hardware_profile->>'hasFuse', 'false') <> 'true'
+  then
+    raise exception 'hardware_profile_required' using errcode = 'P0001';
   end if;
 
   if exists (
@@ -700,21 +729,25 @@ begin
   on conflict (robot_id) do nothing;
 
   insert into public.robot_devices (
+    ap_ssid,
+    battery_config,
     board_type,
     firmware_version,
+    hardware_profile,
     protocol_version,
+    readiness_status,
     robot_id
   )
   values (
+    nullif(trim(input_ap_ssid), ''),
+    input_battery_config,
     board_type,
     nullif(trim(input_firmware_version), ''),
+    input_hardware_profile,
     'v1',
+    readiness_status,
     created_robot_id
-  )
-  on conflict (robot_id) do update
-  set board_type = excluded.board_type,
-      firmware_version = excluded.firmware_version,
-      updated_at = now();
+  );
 
   for attempt in 1..5 loop
     token := upper(encode(gen_random_bytes(6), 'hex'));
@@ -757,8 +790,9 @@ begin
 end;
 $$;
 
-revoke all on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) from public, anon;
-grant execute on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) to authenticated;
+revoke all on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz, text, jsonb, jsonb, text) from public, anon;
+grant execute on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz, text, jsonb, jsonb, text) to authenticated;
+drop function if exists public.create_robot_claim_kit(text, text, text, text, text, timestamptz);
 
 drop policy if exists "Owners can manage own workspaces" on public.workspaces;
 drop policy if exists "Members can read workspaces" on public.workspaces;

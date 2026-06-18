@@ -53,6 +53,10 @@ const initialBenchTestState: BenchTestState = {
 function actionErrorMessage(message: string) {
   if (message.includes("admin_required")) return "This account is not in app_admins yet.";
   if (message.includes("duplicate_unit_code")) return "This unit code already has a claim kit.";
+  if (message.includes("hardware_profile_required")) {
+    return "Hardware facts are required before creating a physical kit.";
+  }
+  if (message.includes("invalid_readiness_status")) return "Choose a supported readiness status.";
   if (message.includes("invalid_robot_type")) return "Choose a supported robot type.";
   if (message.includes("invalid_unit_code")) return "Enter a unit code such as RF-RV-0001.";
   if (message.includes("login_required")) return "Login is required.";
@@ -79,6 +83,10 @@ function formValue(formData: FormData, key: string) {
 
 function formBoolean(formData: FormData, key: string) {
   return formData.get(key) === "on";
+}
+
+function normalizeUnitCode(value: string) {
+  return value.replace(/[^A-Za-z0-9-]/g, "").toUpperCase();
 }
 
 function normalizeRobotType(value: string) {
@@ -263,6 +271,7 @@ export async function createClaimKitAction(
   }
 
   const expiresAt = expiresAtDate ? expiresAtDate.toISOString() : null;
+  const unitCode = normalizeUnitCode(formValue(formData, "unitCode"));
   const boardType = formValue(formData, "boardType");
   const batteryCells = Number(formValue(formData, "batteryCells") || "2");
   const batteryChemistry = normalizeBatteryChemistry(
@@ -319,13 +328,36 @@ export async function createClaimKitAction(
     };
   }
 
+  const apPassword = requestedApPassword || generateApPassword(unitCode);
+  const apSsid = `RoboForge-${unitCode}`.slice(0, 31);
+  const batteryConfig = {
+    calibration: 1,
+    chemistry: batteryChemistry,
+    cells: batteryCells,
+  };
+  const hardwareProfile = {
+    batteryCells,
+    batteryChemistry,
+    boardModel: boardType,
+    hasFuse,
+    hasPowerSwitch,
+    motorChannels,
+    motorDriver,
+    notes: wiringNotes,
+    wiringStatus,
+  };
+
   const { data, error } = await supabase.rpc("create_robot_claim_kit", {
+    input_ap_ssid: apSsid,
+    input_battery_config: batteryConfig,
     input_board_type: boardType,
     input_display_name: formValue(formData, "displayName") || null,
     input_expires_at: expiresAt,
     input_firmware_version: firmwareVersion,
+    input_hardware_profile: hardwareProfile,
+    input_readiness_status: "ready_for_bench",
     input_robot_type: robotType,
-    input_unit_code: formValue(formData, "unitCode"),
+    input_unit_code: unitCode,
   });
 
   if (error) {
@@ -341,8 +373,6 @@ export async function createClaimKitAction(
     robotId: string;
     unitCode: string;
   };
-  const apPassword = requestedApPassword || generateApPassword(kit.unitCode);
-  const apSsid = `RoboForge-${kit.unitCode}`.slice(0, 31);
   const claimUrl = `${await getBaseUrl()}/dashboard?claim=${encodeURIComponent(
     kit.claimCode,
   )}`;
@@ -382,42 +412,10 @@ export async function createClaimKitAction(
     wiringStatus,
   });
 
-  const hardwareProfile = {
-    batteryCells,
-    batteryChemistry,
-    boardModel: boardType,
-    hasFuse,
-    hasPowerSwitch,
-    motorChannels,
-    motorDriver,
-    notes: wiringNotes,
-    wiringStatus,
-  };
-
-  const { error: deviceUpdateError } = await supabase
-    .from("robot_devices")
-    .update({
-      ap_ssid: apSsid,
-      battery_config: {
-        calibration: 1,
-        chemistry: batteryChemistry,
-        cells: batteryCells,
-      },
-      board_type: boardType,
-      firmware_version: firmwareVersion,
-      hardware_profile: hardwareProfile,
-      protocol_version: "v1",
-      readiness_status: "ready_for_bench",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("robot_id", kit.robotId);
-
   revalidatePath("/admin");
 
   return {
-    error: deviceUpdateError
-      ? `Claim kit was created, but device metadata did not update: ${deviceUpdateError.message}`
-      : null,
+    error: null,
     kit: {
       ...kit,
       claimUrl,
