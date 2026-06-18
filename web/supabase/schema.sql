@@ -509,12 +509,27 @@ begin
     'counts', jsonb_build_object(
       'ownerProfiles', (select count(*) from public.owner_profiles),
       'robots', (select count(*) from public.robots),
+      'physicalRobots', (
+        select count(distinct robot_id)
+        from public.robot_claim_codes
+        where robot_id is not null
+      ),
+      'digitalRobots', (
+        select count(*)
+        from public.robots
+        where not exists (
+          select 1
+          from public.robot_claim_codes
+          where robot_claim_codes.robot_id = robots.id
+        )
+      ),
       'claimCodes', (select count(*) from public.robot_claim_codes),
       'claimedRobots', (
         select count(*)
         from public.robot_claim_codes
         where claimed_by is not null
       ),
+      'deviceProfiles', (select count(*) from public.robot_devices),
       'floorReadyRobots', (
         select count(*)
         from public.robot_devices

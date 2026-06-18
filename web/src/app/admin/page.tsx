@@ -82,6 +82,7 @@ function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealt
   const profiledKits = data.claimKits.filter(
     (kit) => kit.readiness_status && kit.readiness_status !== "needs_details",
   ).length;
+  const physicalRobots = data.counts.physicalRobots ?? data.counts.claimCodes;
 
   return [
     {
@@ -91,8 +92,8 @@ function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealt
       next: "Verify Google login with the founder account.",
     },
     {
-      complete: data.counts.claimCodes > 0,
-      detail: `${data.counts.claimCodes.toLocaleString()} claim kits issued`,
+      complete: physicalRobots > 0,
+      detail: `${physicalRobots.toLocaleString()} physical units issued`,
       label: "First physical claim kit",
       next: "Create one kit in Ops after choosing the unit code.",
     },
@@ -148,7 +149,7 @@ function BetaScaleDrill({
     betaScaleTargets.fullBetaUsers,
     betaScaleTargets.fullBetaRobots,
   );
-  const physicalKitCount = data.counts.claimCodes;
+  const physicalKitCount = data.counts.physicalRobots ?? data.counts.claimCodes;
   const startedConnections = data.connectionResults.started ?? 0;
   const failedConnections = data.connectionResults.failed ?? 0;
   const ownerSignals =
@@ -332,8 +333,9 @@ export default async function AdminPage() {
 
       <section className="ops-metric-grid">
         {metric("Users", data.counts.ownerProfiles, "owner profiles")}
-        {metric("Robots", data.counts.robots, "registered units")}
-        {metric("Codes", data.counts.claimCodes, "claim kits issued")}
+        {metric("Digital", data.counts.digitalRobots ?? data.counts.robots, "garage demo units")}
+        {metric("Physical", data.counts.physicalRobots ?? data.counts.claimCodes, "claim-kit units")}
+        {metric("Devices", data.counts.deviceProfiles ?? 0, "hardware profiles")}
         {metric("Claimed", data.counts.claimedRobots, "claimed robot codes")}
         {metric("Floor", data.counts.floorReadyRobots, "ready for floor")}
         {metric("Bench", data.counts.benchPassed, `${data.counts.raisedWheelPassed} raised-wheel`)}

@@ -14,9 +14,12 @@ export type BetaHealth = {
     benchTests: number;
     connectionSessions: number;
     controlSessions: number;
+    deviceProfiles: number;
+    digitalRobots: number;
     feedbackReports: number;
     floorReadyRobots: number;
     ownerProfiles: number;
+    physicalRobots: number;
     raisedWheelPassed: number;
     robotEvents: number;
     robots: number;
