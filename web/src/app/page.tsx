@@ -2,10 +2,14 @@ import {
   ArrowRight,
   Bot,
   CircuitBoard,
+  Gamepad2,
   Globe2,
   LockKeyhole,
+  QrCode,
+  RadioTower,
   ShieldCheck,
   Sparkles,
+  Wifi,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,6 +28,30 @@ type HomeProps = {
 function firstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
+
+const entryFlow = [
+  {
+    body:
+      "Use one account for Garage, beta sign-up, robot ownership, progress, and support.",
+    icon: LockKeyhole,
+    label: "01 Web Garage",
+    title: "Start here",
+  },
+  {
+    body:
+      "When a beta kit arrives, claim the QR code and let Lyra guide the Wi-Fi setup.",
+    icon: QrCode,
+    label: "02 Claim + connect",
+    title: "Add the physical unit",
+  },
+  {
+    body:
+      "Live joystick commands stay on the robot Wi-Fi page; RoboForge Web saves outcomes.",
+    icon: Gamepad2,
+    label: "03 Local Cockpit",
+    title: "Drive only after connection",
+  },
+];
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
@@ -64,7 +92,7 @@ export default async function Home({ searchParams }: HomeProps) {
             Login
           </Link>
           <Link className="button button-small" href="/dashboard">
-            Dashboard
+            Web Garage
           </Link>
         </div>
       </nav>
@@ -80,27 +108,27 @@ export default async function Home({ searchParams }: HomeProps) {
             <span>EVOLVED.</span>
           </h1>
           <p>
-            RoboForge turns every kit robot into an owned digital unit: profile,
-            garage, missions, support, and future AI-assisted upgrades in one
-            account.
+            The Web Garage is the main door: create an owner account, claim a
+            beta kit, follow Connection Quest, then open the robot local
+            Cockpit when real hardware is ready.
           </p>
           <div className="hero-actions">
             <Link className="button" href="/login">
-              <LockKeyhole size={18} /> Start with login
+              <LockKeyhole size={18} /> Enter Web Garage
             </Link>
-            <Link className="button button-secondary" href="/dashboard">
-              <Bot size={18} /> Open dashboard
-            </Link>
+            <a className="button button-secondary" href="/demo/index.html">
+              <Bot size={18} /> Try hosted demo
+            </a>
           </div>
           <div className="signal-strip">
             <span>
-              <Globe2 size={16} /> Global-first
+              <Globe2 size={16} /> One web entry
             </span>
             <span>
               <ShieldCheck size={16} /> Owner accounts
             </span>
             <span>
-              <CircuitBoard size={16} /> Hardware ready
+              <Wifi size={16} /> Local robot control
             </span>
           </div>
         </div>
@@ -110,14 +138,40 @@ export default async function Home({ searchParams }: HomeProps) {
             src={themes.forge.image}
             alt="AEGIS-01 RoboForge rover digital form"
             fill
-            priority
+            preload
             sizes="(min-width: 900px) 56vw, 100vw"
+            unoptimized
           />
           <div className="unit-badge">
             <span>ACTIVE UNIT</span>
             <strong>{themes.forge.robotName}</strong>
             <small>{themes.forge.robotClass} / ROVER-01</small>
           </div>
+        </div>
+      </section>
+
+      <section className="entry-flow" aria-label="RoboForge user path">
+        <div className="section-heading">
+          <span className="eyebrow">
+            <RadioTower size={15} /> START PATH
+          </span>
+          <h2>One website first. Local robot control only when a unit is ready.</h2>
+        </div>
+        <div className="entry-flow__grid">
+          {entryFlow.map((step) => {
+            const Icon = step.icon;
+
+            return (
+              <article className="entry-flow__card" key={step.label}>
+                <span>
+                  <Icon size={21} />
+                  {step.label}
+                </span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
 

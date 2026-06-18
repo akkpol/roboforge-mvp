@@ -15,6 +15,31 @@ more real hardware paths behind that owner flow.
 If the owner flow, hardware flow, or visual direction changes, write the new
 intent here before building on it.
 
+## UX Entry Flow
+
+Keep the public owner path simple:
+
+1. Web Garage is the main website entry.
+2. Claim Code links a beta kit to the owner account.
+3. Connection Quest guides the owner onto the robot Wi-Fi.
+4. Local Cockpit handles live robot control after hardware is ready.
+
+The hosted Cockpit can simulate the driving loop, but it must stay clear that
+real motor commands belong on the robot local Wi-Fi page.
+
+## Language And Theme Direction
+
+Do not pause the MVP to translate every screen yet. Keep new UI copy grouped in
+small data objects or dictionaries when practical, so Thai and English can move
+into a full App Router `[lang]` dictionary later without rewriting screens.
+
+The app already has theme custom properties in `globals.css`. New UI should use
+semantic CSS variables such as `--bg`, `--panel`, `--text`, `--muted`,
+`--accent`, `--accent-2`, `--accent-3`, `--line`, `--success`, and `--danger`
+instead of literal colors. Add a new token before hardcoding a new reusable
+color. This keeps future Forge/Neo or market-specific themes editable from the
+global theme layer instead of each component.
+
 ## Started Work To Preserve
 
 - Supabase auth helpers, middleware, login, callback, and sign-out routes are in

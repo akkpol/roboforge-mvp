@@ -12,6 +12,7 @@ import {
   Hand,
   Home,
   KeyRound,
+  LockKeyhole,
   LogOut,
   Paintbrush,
   QrCode,
@@ -139,9 +140,10 @@ function RobotHero({
       <Image
         alt={`${selected.robotName} ${selected.robotClass} digital form`}
         fill
-        priority={!compact}
+        preload={!compact}
         sizes={compact ? "(min-width: 900px) 45vw, 100vw" : "100vw"}
         src={selected.image}
+        unoptimized
       />
       <div className="rf-robot-identity">
         <strong>{selected.robotName}</strong>
@@ -284,6 +286,68 @@ function ProgressPanel({
   );
 }
 
+function GarageNextStep({
+  onScreen,
+  progress,
+}: {
+  onScreen: (screen: ConsoleScreen) => void;
+  progress: OwnerProgress;
+}) {
+  const nextStep = progress.first_connection_complete
+    ? progress.first_drive_complete
+      ? {
+          action: "Open missions",
+          body:
+            "The first hosted loop is saved. Missions and upgrade votes are the next beta signals.",
+          icon: Rocket,
+          screen: "missions" as ConsoleScreen,
+          title: "Next: build the habit loop",
+        }
+      : {
+          action: "Enter demo Cockpit",
+          body:
+            "This Cockpit is hosted simulation. Real motors still open from the robot local Wi-Fi page.",
+          icon: Gamepad2,
+          screen: "cockpit" as ConsoleScreen,
+          title: "Next: finish First Drive",
+        }
+    : {
+        action: "Start Connection Quest",
+        body:
+          "Use this path after a beta kit is powered on. No kit yet? Stay in the hosted demo while hardware is prepared.",
+        icon: RadioTower,
+        screen: "connect" as ConsoleScreen,
+        title: "Next: connect the rover",
+      };
+  const Icon = nextStep.icon;
+
+  return (
+    <section aria-label="Next step" className="rf-next-step">
+      <div>
+        <span className="eyebrow">
+          <Rocket size={15} /> START HERE
+        </span>
+        <h2>{nextStep.title}</h2>
+        <p>{nextStep.body}</p>
+      </div>
+      <div className="rf-next-step__path" aria-label="Owner path">
+        <span className="is-done">
+          <LockKeyhole size={16} /> Web Garage
+        </span>
+        <span className={progress.first_connection_complete ? "is-done" : ""}>
+          <Wifi size={16} /> Connection Quest
+        </span>
+        <span className={progress.first_drive_complete ? "is-done" : ""}>
+          <Gamepad2 size={16} /> Cockpit
+        </span>
+      </div>
+      <Button icon={Icon} onClick={() => onScreen(nextStep.screen)}>
+        {nextStep.action}
+      </Button>
+    </section>
+  );
+}
+
 function ClaimRobotPanel({
   disabled,
   onClaim,
@@ -380,6 +444,7 @@ function Garage({
         </div>
         <StatusPill />
       </section>
+      <GarageNextStep onScreen={onScreen} progress={progress} />
       <FleetRail selected={selectedFleet} setSelected={setSelectedFleet} />
       <ClaimRobotPanel disabled={isPending} onClaim={onClaimRobot} />
       {selectedFleet === "rover" ? (
