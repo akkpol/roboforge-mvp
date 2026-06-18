@@ -60,6 +60,7 @@ export type BetaHealth = {
     stage: string;
     unit_code: string | null;
   }>;
+  readinessBreakdown?: Record<string, number>;
   topEvents: Array<{
     created_at: string;
     event_type: string;

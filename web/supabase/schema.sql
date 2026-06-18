@@ -572,6 +572,16 @@ begin
         group by 1
       ) failures
     ), '{}'::jsonb),
+    'readinessBreakdown', coalesce((
+      select jsonb_object_agg(readiness_status, total)
+      from (
+        select
+          coalesce(nullif(readiness_status, ''), 'needs_details') as readiness_status,
+          count(*) as total
+        from public.robot_devices
+        group by 1
+      ) readiness
+    ), '{}'::jsonb),
     'controlSummary', (
       select jsonb_build_object(
         'commandCount', coalesce(sum(command_count), 0),

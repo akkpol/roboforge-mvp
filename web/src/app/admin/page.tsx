@@ -31,6 +31,41 @@ const betaScaleTargets = {
   fullBetaRobots: 300,
 } as const;
 
+type BetaHealthData = NonNullable<Awaited<ReturnType<typeof getBetaHealth>>["data"]>;
+
+const readinessStatuses = [
+  {
+    detail: "Board, battery, wiring, switch, or fuse still needs a real answer.",
+    key: "needs_details",
+    label: "Needs details",
+    next: "Collect hardware facts.",
+  },
+  {
+    detail: "The kit has enough facts to power on and run non-driving checks.",
+    key: "ready_for_bench",
+    label: "Ready for bench",
+    next: "Run power, Wi-Fi, info, status, and stop checks.",
+  },
+  {
+    detail: "Bench checks passed and the next safe movement test is raised wheels.",
+    key: "ready_for_raised_wheels",
+    label: "Ready for raised wheels",
+    next: "Raise wheels before arming or driving.",
+  },
+  {
+    detail: "Raised-wheel checks passed and the kit can move toward floor testing.",
+    key: "ready_for_floor",
+    label: "Ready for floor",
+    next: "Use only a cleared floor path and low-speed run.",
+  },
+  {
+    detail: "A real issue is blocking the kit from moving forward.",
+    key: "blocked",
+    label: "Blocked",
+    next: "Fix the recorded blocker before inviting testers.",
+  },
+] as const;
+
 function estimateBetaRows(users: number, robots: number) {
   return {
     betaApplications: Math.round(users * 0.35),
@@ -80,7 +115,7 @@ function ScaleProgress({
   );
 }
 
-function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealth>>["data"]>) {
+function readinessItems(data: BetaHealthData) {
   const profiledKits = data.claimKits.filter(
     (kit) => kit.readiness_status && kit.readiness_status !== "needs_details",
   ).length;
@@ -141,7 +176,7 @@ function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealt
 function BetaScaleDrill({
   data,
 }: {
-  data: NonNullable<Awaited<ReturnType<typeof getBetaHealth>>["data"]>;
+  data: BetaHealthData;
 }) {
   const firstBatchEstimate = estimateBetaRows(
     betaScaleTargets.firstBatchUsers,
@@ -215,6 +250,67 @@ function BetaScaleDrill({
           <strong>{failedConnections.toLocaleString()}</strong>
           <small>failed connection attempts to review</small>
         </span>
+      </div>
+    </section>
+  );
+}
+
+function HardwareRunway({
+  data,
+}: {
+  data: BetaHealthData;
+}) {
+  const breakdown = data.readinessBreakdown ?? {};
+  const knownTotal = readinessStatuses.reduce(
+    (sum, status) => sum + (breakdown[status.key] ?? 0),
+    0,
+  );
+  const total = knownTotal || data.counts.deviceProfiles || 0;
+  const floorReady = breakdown["ready_for_floor"] ?? data.counts.floorReadyRobots;
+  const blocked = breakdown["blocked"] ?? 0;
+
+  return (
+    <section className="ops-panel ops-runway">
+      <div className="ops-runway__summary">
+        <span className="eyebrow">
+          <ShieldCheck size={15} /> HARDWARE RUNWAY
+        </span>
+        <h2>Know which physical kits can move forward.</h2>
+        <p>
+          This is the operational gate before inviting more testers. A kit should
+          move from facts to bench, raised wheels, and floor only when the
+          evidence exists.
+        </p>
+      </div>
+      <div className="ops-runway__headline">
+        <span>
+          <strong>{floorReady.toLocaleString()}</strong>
+          <small>floor-ready kits</small>
+        </span>
+        <span className={blocked > 0 ? "is-blocked" : ""}>
+          <strong>{blocked.toLocaleString()}</strong>
+          <small>blocked kits</small>
+        </span>
+      </div>
+      <div className="ops-runway__list">
+        {readinessStatuses.map((status) => {
+          const count = breakdown[status.key] ?? 0;
+          const percent = targetPercent(count, total);
+
+          return (
+            <span
+              className={status.key === "blocked" && count > 0 ? "is-blocked" : ""}
+              key={status.key}
+            >
+              <strong>{status.label}</strong>
+              <small>{count.toLocaleString()} kits</small>
+              <i aria-hidden="true">
+                <b style={{ width: `${percent}%` }} />
+              </i>
+              <p>{count > 0 ? status.next : status.detail}</p>
+            </span>
+          );
+        })}
       </div>
     </section>
   );
@@ -376,6 +472,7 @@ export default async function AdminPage() {
       </section>
 
       <BetaScaleDrill data={data} />
+      <HardwareRunway data={data} />
 
       <section className="ops-grid">
         <FirstKitIntake claimKitCount={data.counts.claimCodes} />
