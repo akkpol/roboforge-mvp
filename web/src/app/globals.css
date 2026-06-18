@@ -1885,6 +1885,63 @@ textarea:focus-visible {
   border-color: color-mix(in srgb, var(--success), transparent 62%);
 }
 
+.rf-quest-card li code {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.rf-connection-details {
+  display: grid;
+  gap: 8px;
+}
+
+.rf-connection-details div {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr) auto;
+  min-height: 54px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: rgba(5, 8, 13, 0.35);
+}
+
+.rf-connection-details span,
+.rf-connection-details button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.rf-connection-details span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-connection-details svg {
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.rf-connection-details strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.rf-connection-details button {
+  min-height: 34px;
+  justify-content: center;
+  border: 1px solid var(--line-bright);
+  color: var(--text);
+  background: var(--panel-strong);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .rf-select-label,
 .rf-feedback-form,
 .rf-feedback-form label {
@@ -2236,6 +2293,11 @@ textarea:focus-visible {
 
   .rf-theme-switch button {
     padding: 0 9px;
+  }
+
+  .rf-connection-details div {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .rf-fleet-card {

@@ -5,6 +5,8 @@ import {
   Bot,
   CheckCircle,
   CircuitBoard,
+  Clipboard,
+  ExternalLink,
   Gamepad2,
   Gauge,
   Hand,
@@ -21,6 +23,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   Sparkles,
+  Wifi,
   Wrench,
   X,
 } from "lucide-react";
@@ -437,6 +440,7 @@ function ConnectionQuest({
   onStart,
   onSuccess,
   progress,
+  robotCode,
 }: {
   connectionSessionId: string | null;
   isPending?: boolean;
@@ -446,9 +450,28 @@ function ConnectionQuest({
   onStart: () => void;
   onSuccess: (sessionId: string) => void;
   progress: OwnerProgress;
+  robotCode: string;
 }) {
+  const localCockpitUrl = "http://192.168.4.1";
+  const robotSsid = useMemo(
+    () => `RoboForge-${robotCode.trim().toUpperCase() || "ROVER-01"}`.slice(0, 31),
+    [robotCode],
+  );
   const [feedback, setFeedback] = useState("");
   const [failureReason, setFailureReason] = useState("wifi_not_found");
+  const [copied, setCopied] = useState<"ssid" | "url" | null>(null);
+
+  async function copyConnectionValue(value: string, key: "ssid" | "url") {
+    if (!navigator.clipboard) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(key);
+      window.setTimeout(() => setCopied(null), 1400);
+    } catch {
+      setCopied(null);
+    }
+  }
 
   function submitFeedback(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -484,12 +507,47 @@ function ConnectionQuest({
             <li className={connectionSessionId ? "is-done" : ""}>
               Start a connection session
             </li>
-            <li>Join Wi-Fi: RoboForge-Rover-XXXX</li>
-            <li>Open the local device page</li>
+            <li>
+              Join Wi-Fi: <code>{robotSsid}</code>
+            </li>
+            <li>
+              Open: <code>{localCockpitUrl}</code>
+            </li>
             <li className={progress.first_connection_complete ? "is-done" : ""}>
               Confirm Rover status is visible
             </li>
           </ol>
+          <div
+            aria-label="Robot local connection details"
+            className="rf-connection-details"
+          >
+            <div>
+              <span>
+                <Wifi size={17} /> Wi-Fi name
+              </span>
+              <strong>{robotSsid}</strong>
+              <button
+                onClick={() => void copyConnectionValue(robotSsid, "ssid")}
+                type="button"
+              >
+                <Clipboard size={16} />
+                {copied === "ssid" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div>
+              <span>
+                <Radio size={17} /> Local page
+              </span>
+              <strong>{localCockpitUrl}</strong>
+              <button
+                onClick={() => void copyConnectionValue(localCockpitUrl, "url")}
+                type="button"
+              >
+                <Clipboard size={16} />
+                {copied === "url" ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
           <div className="rf-button-row">
             <Button
               disabled={Boolean(connectionSessionId) || isPending}
@@ -500,10 +558,11 @@ function ConnectionQuest({
             </Button>
             <Link
               className="button rf-button rf-button--secondary"
-              href="http://192.168.4.1"
+              href={localCockpitUrl}
+              rel="noreferrer"
               target="_blank"
             >
-              <Radio size={18} />
+              <ExternalLink size={18} />
               <span>Open local cockpit</span>
             </Link>
           </div>
@@ -1371,6 +1430,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
           onStart={startConnectionQuest}
           onSuccess={completeConnectionQuest}
           progress={progress}
+          robotCode={robotCode}
         />
       ) : null}
       {screen === "profile" ? <Profile onScreen={setScreen} theme={theme} /> : null}
