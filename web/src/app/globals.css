@@ -148,6 +148,89 @@ textarea:focus-visible {
   line-height: 1;
 }
 
+.ops-readiness {
+  grid-template-columns: minmax(0, 1fr);
+  margin: 10px 0;
+  background:
+    linear-gradient(120deg, var(--accent-soft), transparent 48%),
+    var(--panel);
+}
+
+.ops-readiness__summary,
+.ops-readiness__score,
+.ops-readiness__list {
+  min-width: 0;
+}
+
+.ops-readiness__summary h2 {
+  margin-top: 6px;
+}
+
+.ops-readiness__score {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-height: 104px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.ops-readiness__score strong {
+  color: var(--text);
+  font-size: clamp(40px, 10vw, 64px);
+  line-height: 1;
+}
+
+.ops-readiness__score span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ops-readiness__list {
+  display: grid;
+  gap: 8px;
+}
+
+.ops-readiness__list span {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 8px;
+  align-items: center;
+  min-height: 54px;
+  padding: 10px;
+  border: 1px solid rgba(255, 92, 88, 0.42);
+  color: #ffb0ad;
+  background: #241011;
+}
+
+.ops-readiness__list span.is-complete {
+  border-color: color-mix(in srgb, var(--success), transparent 56%);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success), transparent 92%);
+}
+
+.ops-readiness__list strong,
+.ops-readiness__list small {
+  min-width: 0;
+}
+
+.ops-readiness__list strong {
+  color: var(--text);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.ops-readiness__list small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .ops-list,
 .ops-feed {
   display: grid;
@@ -2032,6 +2115,11 @@ textarea:focus-visible {
 @media (min-width: 900px) {
   .ops-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ops-readiness {
+    grid-template-columns: minmax(0, 0.9fr) minmax(150px, 0.22fr) minmax(0, 1.2fr);
+    align-items: stretch;
   }
 
   .rf-garage-feature,

@@ -2,6 +2,7 @@ import {
   Activity,
   AlertTriangle,
   Bot,
+  CheckCircle,
   ClipboardCheck,
   RadioTower,
   ShieldCheck,
@@ -21,6 +22,63 @@ function metric(label: string, value: number, detail: string) {
       <small>{detail}</small>
     </article>
   );
+}
+
+function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealth>>["data"]>) {
+  const profiledKits = data.claimKits.filter(
+    (kit) => kit.readiness_status && kit.readiness_status !== "needs_details",
+  ).length;
+
+  return [
+    {
+      complete: data.counts.ownerProfiles > 0,
+      detail: `${data.counts.ownerProfiles.toLocaleString()} owner profiles`,
+      label: "Login and owner account",
+      next: "Verify Google login with the founder account.",
+    },
+    {
+      complete: data.counts.claimCodes > 0,
+      detail: `${data.counts.claimCodes.toLocaleString()} claim kits issued`,
+      label: "First physical claim kit",
+      next: "Create one kit in Ops after choosing the unit code.",
+    },
+    {
+      complete: profiledKits > 0,
+      detail: `${profiledKits.toLocaleString()} kits have hardware status`,
+      label: "Prototype hardware profile",
+      next: "Fill board, motor driver, battery, wiring, switch, and fuse.",
+    },
+    {
+      complete: data.counts.benchPassed > 0,
+      detail: `${data.counts.benchPassed.toLocaleString()} bench passes`,
+      label: "Bench power and protocol check",
+      next: "Record power, robot Wi-Fi, info, status, and stop checks.",
+    },
+    {
+      complete: data.counts.raisedWheelPassed > 0,
+      detail: `${data.counts.raisedWheelPassed.toLocaleString()} raised-wheel passes`,
+      label: "Raised-wheel safety pass",
+      next: "Raise wheels, arm, drive low-speed, release to zero, and stop.",
+    },
+    {
+      complete: data.counts.connectionSessions > 0,
+      detail: `${data.counts.connectionSessions.toLocaleString()} connection sessions`,
+      label: "Connection quest telemetry",
+      next: "Run one owner setup attempt and save the result.",
+    },
+    {
+      complete: data.counts.controlSessions > 0,
+      detail: `${data.counts.controlSessions.toLocaleString()} control summaries`,
+      label: "Control session summary",
+      next: "Start a Cockpit session and end safely or with stop evidence.",
+    },
+    {
+      complete: data.counts.feedbackReports > 0,
+      detail: `${data.counts.feedbackReports.toLocaleString()} beta reports`,
+      label: "Feedback loop",
+      next: "Submit one setup or control feedback report after a dry run.",
+    },
+  ];
 }
 
 export default async function AdminPage() {
@@ -75,6 +133,9 @@ export default async function AdminPage() {
     totalFinishedConnections > 0
       ? Math.round((successCount / totalFinishedConnections) * 100)
       : 0;
+  const gates = readinessItems(data);
+  const clearedGates = gates.filter((item) => item.complete).length;
+  const nextGate = gates.find((item) => !item.complete);
 
   return (
     <main className="ops-shell">
@@ -104,6 +165,34 @@ export default async function AdminPage() {
         {metric("Connect", data.counts.connectionSessions, `${successRate}% success`)}
         {metric("Control", data.counts.controlSessions, "session summaries")}
         {metric("Feedback", data.counts.feedbackReports, "beta reports")}
+      </section>
+      <section className="ops-panel ops-readiness">
+        <div className="ops-readiness__summary">
+          <span className="eyebrow">
+            <ClipboardCheck size={15} /> BETA READINESS
+          </span>
+          <h2>{nextGate ? "Next gate is clear and specific." : "Small beta path is ready to rehearse."}</h2>
+          <p>
+            {nextGate
+              ? nextGate.next
+              : "Run one more founder dry run, then invite the smallest tester batch."}
+          </p>
+        </div>
+        <div className="ops-readiness__score">
+          <strong>
+            {clearedGates}/{gates.length}
+          </strong>
+          <span>gates clear</span>
+        </div>
+        <div className="ops-readiness__list">
+          {gates.map((item) => (
+            <span className={item.complete ? "is-complete" : ""} key={item.label}>
+              {item.complete ? <CheckCircle size={17} /> : <AlertTriangle size={17} />}
+              <strong>{item.label}</strong>
+              <small>{item.detail}</small>
+            </span>
+          ))}
+        </div>
       </section>
 
       <section className="ops-grid">
