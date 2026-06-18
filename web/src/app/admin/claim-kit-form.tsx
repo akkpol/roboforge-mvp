@@ -100,10 +100,14 @@ export function ClaimKitForm() {
             </select>
           </label>
           <label>
-            Board
-            <input defaultValue="esp32" name="boardType" />
+            Board model
+            <input name="boardType" placeholder="ESP32 DevKit V1" required />
           </label>
         </div>
+        <label>
+          Motor driver
+          <input name="motorDriver" placeholder="L298N / TB6612FNG / BTS7960" required />
+        </label>
         <div className="ops-form-row">
           <label>
             Firmware
@@ -116,12 +120,70 @@ export function ClaimKitForm() {
         </div>
         <div className="ops-form-row">
           <label>
+            Battery
+            <select defaultValue="" name="batteryChemistry" required>
+              <option disabled value="">
+                Choose chemistry
+              </option>
+              <option value="li-ion">Li-ion</option>
+              <option value="lipo">LiPo</option>
+              <option value="nimh">NiMH</option>
+              <option value="alkaline">AA/alkaline</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </label>
+          <label>
             Battery cells
             <select defaultValue="2" name="batteryCells">
               <option value="1">1S</option>
               <option value="2">2S</option>
             </select>
           </label>
+        </div>
+        <div className="ops-form-row">
+          <label>
+            Motor channels
+            <select defaultValue="" name="motorChannels" required>
+              <option disabled value="">
+                Choose drive type
+              </option>
+              <option value="differential_drive">Differential drive</option>
+              <option value="tracked_drive">Tracked drive</option>
+              <option value="single_motor">Single motor</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label>
+            Wiring status
+            <select defaultValue="" name="wiringStatus" required>
+              <option disabled value="">
+                Choose status
+              </option>
+              <option value="draft">Pin list drafted</option>
+              <option value="photo_received">Photo received</option>
+              <option value="bench_verified">Bench verified</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Wiring notes
+          <textarea
+            name="wiringNotes"
+            placeholder="Paste a wiring photo link, pin list, or left/right motor mapping"
+            required
+          />
+        </label>
+        <div className="ops-toggle-row">
+          <label>
+            <input name="hasPowerSwitch" required type="checkbox" />
+            Power switch present
+          </label>
+          <label>
+            <input name="hasFuse" required type="checkbox" />
+            Fuse or protected pack present
+          </label>
+        </div>
+        <div className="ops-form-row">
           <label>
             AP password
             <input

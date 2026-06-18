@@ -63,6 +63,11 @@ physical robot. The action creates a robot, device row, progress row, hashed
 claim code, QR link, printable card data, and a firmware kit manifest in one
 flow.
 
+Claim kit creation intentionally asks for the real board, motor driver, battery
+chemistry/cell count, motor channel mapping, wiring note/photo, power switch,
+and fuse/protected pack before it writes the kit. Do not create a physical kit
+from defaults when those facts are unknown.
+
 The QR opens `/dashboard?claim=<code>`. After login, the owner Garage claims the
 robot and removes the code from the URL.
 

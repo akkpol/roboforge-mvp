@@ -92,6 +92,32 @@ function normalizeFirmwareVersion(value: string) {
   return value.trim() || "0.1.0";
 }
 
+function normalizeBatteryChemistry(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return ["li-ion", "lipo", "nimh", "alkaline", "unknown"].includes(normalized)
+    ? normalized
+    : "";
+}
+
+function normalizeMotorChannels(value: string) {
+  const normalized = value.trim();
+  return [
+    "differential_drive",
+    "tracked_drive",
+    "single_motor",
+    "custom",
+  ].includes(normalized)
+    ? normalized
+    : "";
+}
+
+function normalizeWiringStatus(value: string) {
+  const normalized = value.trim();
+  return ["draft", "photo_received", "bench_verified"].includes(normalized)
+    ? normalized
+    : "";
+}
+
 function normalizeReadinessStatus(value: string) {
   const normalized = value.trim();
   return [
@@ -163,21 +189,36 @@ function buildKitManifest(input: {
   apPassword: string;
   apSsid: string;
   batteryCells: number;
+  batteryChemistry: string;
+  boardType: string;
   claimCode: string;
   claimUrl: string;
   firmwareVersion: string;
+  hasFuse: boolean;
+  hasPowerSwitch: boolean;
+  motorChannels: string;
+  motorDriver: string;
   robotId: string;
   robotType: string;
   unitCode: string;
+  wiringNotes: string;
+  wiringStatus: string;
 }) {
   return [
     `RoboForge Beta Kit: ${input.unitCode}`,
     "",
     `Robot ID: ${input.robotId}`,
     `Robot type: ${input.robotType}`,
+    `Board: ${input.boardType}`,
+    `Motor driver: ${input.motorDriver}`,
+    `Motor channels: ${input.motorChannels}`,
     `Firmware: ${input.firmwareVersion}`,
     "Protocol: v1",
-    `Battery cells: ${input.batteryCells}S`,
+    `Battery: ${input.batteryChemistry} / ${input.batteryCells}S`,
+    `Wiring status: ${input.wiringStatus}`,
+    `Wiring notes: ${input.wiringNotes}`,
+    `Power switch: ${input.hasPowerSwitch ? "present" : "missing"}`,
+    `Fuse/protected pack: ${input.hasFuse ? "present" : "missing"}`,
     `Local Wi-Fi SSID: ${input.apSsid}`,
     `Local Wi-Fi password: ${input.apPassword}`,
     "",
@@ -191,6 +232,10 @@ function buildKitManifest(input: {
     "3. From firmware/, run pio run --target upload and pio run --target uploadfs.",
     "4. Join the robot Wi-Fi and run the non-driving protocol check.",
     "5. Raise the wheels before running the drive check.",
+    "",
+    "Note: the generated config is for the current ESP32 Rover firmware. If this",
+    "kit uses another board, keep the claim code but implement docs/ROBOT_PROTOCOL.md",
+    "on that board before running the Cockpit.",
   ].join("\n");
 }
 
@@ -218,14 +263,47 @@ export async function createClaimKitAction(
   }
 
   const expiresAt = expiresAtDate ? expiresAtDate.toISOString() : null;
+  const boardType = formValue(formData, "boardType");
   const batteryCells = Number(formValue(formData, "batteryCells") || "2");
+  const batteryChemistry = normalizeBatteryChemistry(
+    formValue(formData, "batteryChemistry"),
+  );
+  const motorChannels = normalizeMotorChannels(formValue(formData, "motorChannels"));
+  const motorDriver = formValue(formData, "motorDriver");
   const robotType = normalizeRobotType(formValue(formData, "robotType") || "rover");
   const firmwareVersion = normalizeFirmwareVersion(formValue(formData, "firmwareVersion"));
+  const wiringNotes = formValue(formData, "wiringNotes");
+  const wiringStatus = normalizeWiringStatus(formValue(formData, "wiringStatus"));
+  const hasFuse = formBoolean(formData, "hasFuse");
+  const hasPowerSwitch = formBoolean(formData, "hasPowerSwitch");
 
   if (![1, 2].includes(batteryCells)) {
     return {
       ...initialClaimKitState,
       error: "Choose 1S or 2S for the first Rover beta firmware.",
+    };
+  }
+
+  if (!boardType || !motorDriver || !batteryChemistry || !motorChannels || !wiringStatus) {
+    return {
+      ...initialClaimKitState,
+      error:
+        "Board, motor driver, battery, motor channels, and wiring status are required before creating a physical kit.",
+    };
+  }
+
+  if (!wiringNotes) {
+    return {
+      ...initialClaimKitState,
+      error: "Add a wiring photo link or pin list before creating a physical kit.",
+    };
+  }
+
+  if (!hasPowerSwitch || !hasFuse) {
+    return {
+      ...initialClaimKitState,
+      error:
+        "Add an accessible power switch and a fuse or protected battery pack before creating a physical kit.",
     };
   }
 
@@ -242,7 +320,7 @@ export async function createClaimKitAction(
   }
 
   const { data, error } = await supabase.rpc("create_robot_claim_kit", {
-    input_board_type: formValue(formData, "boardType") || "esp32",
+    input_board_type: boardType,
     input_display_name: formValue(formData, "displayName") || null,
     input_expires_at: expiresAt,
     input_firmware_version: firmwareVersion,
@@ -288,13 +366,33 @@ export async function createClaimKitAction(
     apPassword,
     apSsid,
     batteryCells,
+    batteryChemistry,
+    boardType,
     claimCode: kit.claimCode,
     claimUrl,
     firmwareVersion,
+    hasFuse,
+    hasPowerSwitch,
+    motorChannels,
+    motorDriver,
     robotId: kit.robotId,
     robotType,
     unitCode: kit.unitCode,
+    wiringNotes,
+    wiringStatus,
   });
+
+  const hardwareProfile = {
+    batteryCells,
+    batteryChemistry,
+    boardModel: boardType,
+    hasFuse,
+    hasPowerSwitch,
+    motorChannels,
+    motorDriver,
+    notes: wiringNotes,
+    wiringStatus,
+  };
 
   const { error: deviceUpdateError } = await supabase
     .from("robot_devices")
@@ -302,10 +400,15 @@ export async function createClaimKitAction(
       ap_ssid: apSsid,
       battery_config: {
         calibration: 1,
+        chemistry: batteryChemistry,
         cells: batteryCells,
       },
+      board_type: boardType,
       firmware_version: firmwareVersion,
+      hardware_profile: hardwareProfile,
       protocol_version: "v1",
+      readiness_status: "ready_for_bench",
+      updated_at: new Date().toISOString(),
     })
     .eq("robot_id", kit.robotId);
 
