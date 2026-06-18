@@ -368,6 +368,9 @@ as $$
   );
 $$;
 
+revoke all on function public.is_workspace_member(uuid) from public, anon;
+grant execute on function public.is_workspace_member(uuid) to authenticated;
+
 create or replace function public.can_access_robot(target_robot_id uuid)
 returns boolean
 language sql
@@ -391,6 +394,9 @@ as $$
       )
   );
 $$;
+
+revoke all on function public.can_access_robot(uuid) from public, anon;
+grant execute on function public.can_access_robot(uuid) to authenticated;
 
 create or replace function public.can_manage_robot(target_robot_id uuid)
 returns boolean
@@ -416,6 +422,9 @@ as $$
       )
   );
 $$;
+
+revoke all on function public.can_manage_robot(uuid) from public, anon;
+grant execute on function public.can_manage_robot(uuid) to authenticated;
 
 create or replace function public.claim_robot_by_code(raw_claim_code text)
 returns uuid
@@ -462,7 +471,7 @@ begin
 end;
 $$;
 
-revoke all on function public.claim_robot_by_code(text) from public;
+revoke all on function public.claim_robot_by_code(text) from public, anon;
 grant execute on function public.claim_robot_by_code(text) to authenticated;
 
 create or replace function public.is_app_admin()
@@ -478,6 +487,9 @@ as $$
     where app_admins.user_id = (select auth.uid())
   );
 $$;
+
+revoke all on function public.is_app_admin() from public, anon;
+grant execute on function public.is_app_admin() to authenticated;
 
 create or replace function public.get_beta_health()
 returns jsonb
@@ -610,7 +622,7 @@ begin
 end;
 $$;
 
-revoke all on function public.get_beta_health() from public;
+revoke all on function public.get_beta_health() from public, anon;
 grant execute on function public.get_beta_health() to authenticated;
 
 create or replace function public.create_robot_claim_kit(
@@ -745,7 +757,7 @@ begin
 end;
 $$;
 
-revoke all on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) from public;
+revoke all on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) from public, anon;
 grant execute on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) to authenticated;
 
 drop policy if exists "Owners can manage own workspaces" on public.workspaces;
@@ -964,6 +976,9 @@ create index if not exists robot_claim_codes_robot_id_idx
 create index if not exists robot_claim_codes_claimed_by_idx
   on public.robot_claim_codes (claimed_by);
 
+create index if not exists robot_claim_codes_created_by_idx
+  on public.robot_claim_codes (created_by);
+
 create index if not exists robot_devices_robot_id_idx
   on public.robot_devices (robot_id);
 
@@ -1017,3 +1032,11 @@ create index if not exists feedback_reports_robot_created_idx
 
 create index if not exists app_admins_user_id_idx
   on public.app_admins (user_id);
+
+do $$
+begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    execute 'revoke all on function public.rls_auto_enable() from public, anon, authenticated';
+    execute 'grant execute on function public.rls_auto_enable() to service_role';
+  end if;
+end $$;
