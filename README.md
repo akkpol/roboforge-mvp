@@ -23,6 +23,24 @@ starts from the latest intent.
 For the current beta direction, read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md).
 For a short prompt to start future work, read [SESSION_BRIEF.md](SESSION_BRIEF.md).
 
+## App Surface Architecture
+
+RoboForge should feel like one product, not two separate apps.
+
+- The **SaaS Web** app is the internet-side home for login, Garage ownership,
+  claim kits, missions, admin visibility, and beta health.
+- The **Device Mode** app is the lightweight control surface served near the
+  robot. It talks to the robot local API over the robot Wi-Fi so live joystick
+  commands do not depend on Supabase or a round trip through the cloud.
+
+Keep Supabase as the beta system of record. Store ownership, setup progress,
+session summaries, important events, and feedback there. Keep high-frequency
+drive commands local to the user's device and the robot during the session.
+
+Hardware can change later. The product boundary is the robot protocol, not a
+specific board, as long as the robot can answer status checks and accept the
+RoboForge control commands.
+
 ## Live Demo
 
 https://roboforge-mvp.vercel.app
