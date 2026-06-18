@@ -8,6 +8,19 @@ import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 
 type Mode = "sign-in" | "sign-up";
 type BusyAction = "email" | "google" | null;
+const oauthNextCookieName = "roboforge_oauth_next";
+
+function cleanRedirectTarget(value: string) {
+  if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  return value;
+}
+
+function rememberOAuthRedirect(value: string) {
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${oauthNextCookieName}=${encodeURIComponent(
+    cleanRedirectTarget(value),
+  )}; Max-Age=600; Path=/; SameSite=Lax${secure}`;
+}
 
 export function AuthForm({
   initialMessage = "",
@@ -36,6 +49,7 @@ export function AuthForm({
     }
 
     setBusyAction("google");
+    rememberOAuthRedirect(redirectTo);
     const { appUrl } = getSupabaseEnv();
     const callbackUrl = new URL(
       "/auth/callback",
