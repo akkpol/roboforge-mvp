@@ -204,8 +204,10 @@ function buildKitManifest(input: {
   firmwareVersion: string;
   hasFuse: boolean;
   hasPowerSwitch: boolean;
+  localCheckCommand: string;
   motorChannels: string;
   motorDriver: string;
+  raisedWheelCheckCommand: string;
   robotId: string;
   robotType: string;
   unitCode: string;
@@ -238,8 +240,12 @@ function buildKitManifest(input: {
     "1. Paste the generated config into firmware/include/config.h.",
     "2. From app/, run npm run build:device.",
     "3. From firmware/, run pio run --target upload and pio run --target uploadfs.",
-    "4. Join the robot Wi-Fi and run the non-driving protocol check.",
-    "5. Raise the wheels before running the drive check.",
+    "4. Join the robot Wi-Fi and run the non-driving protocol check:",
+    input.localCheckCommand,
+    "5. Paste the evidence JSON summary into the SaaS /admin Bench Checklist notes.",
+    "6. Raise the wheels before running the drive check:",
+    input.raisedWheelCheckCommand,
+    "7. Save the raised-wheel evidence in /admin before any floor test.",
     "",
     "Note: the generated config is for the current ESP32 Rover firmware. If this",
     "kit uses another board, keep the claim code but implement docs/ROBOT_PROTOCOL.md",
@@ -390,8 +396,9 @@ export async function createClaimKitAction(
     unitCode: kit.unitCode,
   });
   const localCheckCommand =
-    "node scripts/rover-protocol-check.mjs --base-url=http://192.168.4.1";
-  const raisedWheelCheckCommand = "node scripts/rover-protocol-check.mjs --raised-wheels";
+    `node scripts/rover-protocol-check.mjs --base-url=http://192.168.4.1 --evidence-out=evidence/${kit.unitCode}-bench.json`;
+  const raisedWheelCheckCommand =
+    `node scripts/rover-protocol-check.mjs --raised-wheels --evidence-out=evidence/${kit.unitCode}-raised-wheels.json`;
   const kitManifest = buildKitManifest({
     apPassword,
     apSsid,
@@ -403,8 +410,10 @@ export async function createClaimKitAction(
     firmwareVersion,
     hasFuse,
     hasPowerSwitch,
+    localCheckCommand,
     motorChannels,
     motorDriver,
+    raisedWheelCheckCommand,
     robotId: kit.robotId,
     robotType,
     unitCode: kit.unitCode,

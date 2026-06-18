@@ -72,7 +72,8 @@ The QR opens `/dashboard?claim=<code>`. After login, the owner Garage claims the
 robot and removes the code from the URL.
 
 The generated manifest includes the `firmware/include/config.h` block, local
-Wi-Fi SSID/password, claim URL, and the protocol check commands for that unit.
+Wi-Fi SSID/password, claim URL, and protocol check commands that write evidence
+JSON for that unit.
 
 After the kit exists, use the Hardware Profile panel in `/admin` to store the
 actual board model, motor driver, battery chemistry/cell count, wiring status,
