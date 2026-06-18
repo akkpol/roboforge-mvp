@@ -120,6 +120,11 @@ The script defaults to dry-run. Only use `--execute` against a disposable
 Supabase branch or test project after setting `ROBOFORGE_ALLOW_PROD_SEED=true`
 and the service role key.
 
+The estimate includes owner accounts, physical claim kits, robot device
+profiles, bench and raised-wheel test records, connection summaries, control
+summaries, events, and feedback. It intentionally does not model live joystick
+commands as cloud rows.
+
 ## Deploy
 
 Use a new Vercel project with Root Directory set to `web`.

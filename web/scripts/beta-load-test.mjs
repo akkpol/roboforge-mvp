@@ -23,6 +23,8 @@ function estimateRows() {
     feedback_reports: Math.round(users * 0.25),
     owner_profiles: users,
     robot_claim_codes: robots,
+    robot_bench_tests: robots * 2,
+    robot_devices: robots,
     robot_events: users * 5,
     robot_progress: robots,
     robots,
@@ -129,6 +131,40 @@ async function main() {
   const robotIds = createdRobots ?? [];
 
   await insertChunks(
+    "robot_devices",
+    robotIds.map((robot, index) => ({
+      ap_ssid: `RoboForge-${robot.unit_code}`.slice(0, 31),
+      battery_config: {
+        calibration: 1,
+        cells: index % 5 === 0 ? 1 : 2,
+        chemistry: index % 4 === 0 ? "lipo" : "li-ion",
+      },
+      board_type: "esp32",
+      firmware_version: "0.1.0",
+      hardware_profile: {
+        batteryCells: index % 5 === 0 ? 1 : 2,
+        batteryChemistry: index % 4 === 0 ? "lipo" : "li-ion",
+        boardModel: "ESP32 DevKit V1",
+        hasFuse: true,
+        hasPowerSwitch: true,
+        motorChannels: "differential_drive",
+        motorDriver: index % 3 === 0 ? "TB6612FNG" : "L298N",
+        notes: `Seeded hardware profile for ${robot.unit_code}.`,
+        wiringStatus: index % 6 === 0 ? "photo_received" : "bench_verified",
+      },
+      last_seen_at: index % 4 === 0 ? null : new Date().toISOString(),
+      protocol_version: "v1",
+      readiness_status:
+        index % 7 === 0
+          ? "blocked"
+          : index % 3 === 0
+            ? "ready_for_raised_wheels"
+            : "ready_for_floor",
+      robot_id: robot.id,
+    })),
+  );
+
+  await insertChunks(
     "robot_progress",
     robotIds.map((robot, index) => ({
       battery_calibrated: index % 3 !== 0,
@@ -151,6 +187,44 @@ async function main() {
       unit_code: robot.unit_code,
     })),
   );
+
+  const benchChecks = {
+    apVisible: true,
+    batteryVisible: true,
+    infoOk: true,
+    powerOn: true,
+    statusOk: true,
+    stopOk: true,
+    wifiJoined: true,
+  };
+  const raisedWheelChecks = {
+    ...benchChecks,
+    armOk: true,
+    emergencyStopOk: true,
+    lowSpeedDriveOk: true,
+    wheelsRaised: true,
+    zeroReleaseOk: true,
+  };
+  const benchRows = robotIds.flatMap((robot, index) => [
+    {
+      checks: benchChecks,
+      notes: `Seeded bench check for ${robot.unit_code}.`,
+      result: index % 7 === 0 ? "blocked" : "passed",
+      robot_id: robot.id,
+      stage: "bench",
+      user_id: robot.owner_id,
+    },
+    {
+      checks: raisedWheelChecks,
+      notes: `Seeded raised-wheel check for ${robot.unit_code}.`,
+      result: index % 7 === 0 ? "blocked" : "passed",
+      robot_id: robot.id,
+      stage: "raised_wheels",
+      user_id: robot.owner_id,
+    },
+  ]);
+
+  await insertChunks("robot_bench_tests", benchRows);
 
   const connectionRows = Array.from({ length: users * 2 }, (_, index) => {
     const robot = robotIds[index % robotIds.length];
