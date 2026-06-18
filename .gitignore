@@ -17,6 +17,7 @@ firmware/.pio/
 firmware/.venv/
 firmware/data/
 .vercel/
+.playwright-mcp/
 .npm-cache/
 .DS_Store
 Thumbs.db
