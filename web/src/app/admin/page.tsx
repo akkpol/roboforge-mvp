@@ -24,6 +24,60 @@ function metric(label: string, value: number, detail: string) {
   );
 }
 
+const betaScaleTargets = {
+  firstBatchUsers: 100,
+  firstPhysicalRobots: 10,
+  fullBetaUsers: 1000,
+  fullBetaRobots: 300,
+} as const;
+
+function estimateBetaRows(users: number, robots: number) {
+  return {
+    betaApplications: Math.round(users * 0.35),
+    connectionSessions: users * 2,
+    controlSessions: Math.round(users * 1.2),
+    feedbackReports: Math.round(users * 0.25),
+    ownerProfiles: users,
+    robotClaimCodes: robots,
+    robotEvents: users * 5,
+    robotProgress: robots,
+    robots,
+  };
+}
+
+function totalRows(rows: Record<string, number>) {
+  return Object.values(rows).reduce((sum, value) => sum + value, 0);
+}
+
+function targetPercent(value: number, target: number) {
+  if (target <= 0) return 0;
+  return Math.min(100, Math.round((value / target) * 100));
+}
+
+function ScaleProgress({
+  current,
+  label,
+  target,
+}: {
+  current: number;
+  label: string;
+  target: number;
+}) {
+  const percent = targetPercent(current, target);
+
+  return (
+    <span>
+      <strong>{label}</strong>
+      <small>
+        {current.toLocaleString()} / {target.toLocaleString()}
+      </small>
+      <i aria-hidden="true">
+        <b style={{ width: `${percent}%` }} />
+      </i>
+    </span>
+  );
+}
+
 function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealth>>["data"]>) {
   const profiledKits = data.claimKits.filter(
     (kit) => kit.readiness_status && kit.readiness_status !== "needs_details",
@@ -79,6 +133,88 @@ function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealt
       next: "Submit one setup or control feedback report after a dry run.",
     },
   ];
+}
+
+function BetaScaleDrill({
+  data,
+}: {
+  data: NonNullable<Awaited<ReturnType<typeof getBetaHealth>>["data"]>;
+}) {
+  const firstBatchEstimate = estimateBetaRows(
+    betaScaleTargets.firstBatchUsers,
+    betaScaleTargets.firstPhysicalRobots,
+  );
+  const fullBetaEstimate = estimateBetaRows(
+    betaScaleTargets.fullBetaUsers,
+    betaScaleTargets.fullBetaRobots,
+  );
+  const physicalKitCount = data.counts.claimCodes;
+  const startedConnections = data.connectionResults.started ?? 0;
+  const failedConnections = data.connectionResults.failed ?? 0;
+  const ownerSignals =
+    data.counts.connectionSessions +
+    data.counts.controlSessions +
+    data.counts.feedbackReports;
+
+  return (
+    <section className="ops-panel ops-scale-drill">
+      <div className="ops-scale-drill__copy">
+        <span className="eyebrow">
+          <Activity size={15} /> 100-1000 BETA DRILL
+        </span>
+        <h2>Test the backend with summaries, not joystick spam.</h2>
+        <p>
+          Use this as the release gate before inviting testers. The cloud should
+          collect accounts, claims, outcomes, events, and feedback while live
+          drive commands stay on the robot Wi-Fi.
+        </p>
+      </div>
+      <div className="ops-scale-drill__targets">
+        <ScaleProgress
+          current={data.counts.ownerProfiles}
+          label="First user batch"
+          target={betaScaleTargets.firstBatchUsers}
+        />
+        <ScaleProgress
+          current={data.counts.ownerProfiles}
+          label="Full beta accounts"
+          target={betaScaleTargets.fullBetaUsers}
+        />
+        <ScaleProgress
+          current={physicalKitCount}
+          label="Physical kits"
+          target={betaScaleTargets.fullBetaRobots}
+        />
+        <ScaleProgress
+          current={ownerSignals}
+          label="Owner outcome signals"
+          target={
+            firstBatchEstimate.connectionSessions +
+            firstBatchEstimate.controlSessions +
+            firstBatchEstimate.feedbackReports
+          }
+        />
+      </div>
+      <div className="ops-scale-drill__notes">
+        <span>
+          <strong>{totalRows(firstBatchEstimate).toLocaleString()}</strong>
+          <small>estimated rows for 100 users / 10 robots</small>
+        </span>
+        <span>
+          <strong>{totalRows(fullBetaEstimate).toLocaleString()}</strong>
+          <small>estimated rows for 1000 users / 300 robots</small>
+        </span>
+        <span>
+          <strong>{startedConnections.toLocaleString()}</strong>
+          <small>open connection quests to follow up</small>
+        </span>
+        <span>
+          <strong>{failedConnections.toLocaleString()}</strong>
+          <small>failed connection attempts to review</small>
+        </span>
+      </div>
+    </section>
+  );
 }
 
 const firstKitFacts = [
@@ -233,6 +369,8 @@ export default async function AdminPage() {
           ))}
         </div>
       </section>
+
+      <BetaScaleDrill data={data} />
 
       <section className="ops-grid">
         <FirstKitIntake claimKitCount={data.counts.claimCodes} />

@@ -231,6 +231,76 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
+.ops-scale-drill {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 10px;
+  background:
+    linear-gradient(120deg, rgba(102, 228, 196, 0.1), transparent 46%),
+    var(--panel);
+}
+
+.ops-scale-drill__copy,
+.ops-scale-drill__targets,
+.ops-scale-drill__notes {
+  min-width: 0;
+}
+
+.ops-scale-drill__copy h2 {
+  margin-top: 6px;
+}
+
+.ops-scale-drill__targets,
+.ops-scale-drill__notes {
+  display: grid;
+  gap: 8px;
+}
+
+.ops-scale-drill__targets span,
+.ops-scale-drill__notes span {
+  display: grid;
+  gap: 6px;
+  min-height: 72px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.ops-scale-drill__targets strong,
+.ops-scale-drill__notes strong {
+  color: var(--text);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.ops-scale-drill__targets small,
+.ops-scale-drill__notes small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ops-scale-drill__targets i {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  height: 8px;
+  border: 1px solid var(--line-bright);
+  background: rgba(5, 8, 13, 0.7);
+}
+
+.ops-scale-drill__targets b {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+}
+
+.ops-scale-drill__notes strong {
+  color: var(--accent-2);
+  font-size: clamp(26px, 6vw, 38px);
+  line-height: 1;
+}
+
 .ops-list,
 .ops-feed {
   display: grid;
@@ -2119,6 +2189,11 @@ textarea:focus-visible {
 
   .ops-readiness {
     grid-template-columns: minmax(0, 0.9fr) minmax(150px, 0.22fr) minmax(0, 1.2fr);
+    align-items: stretch;
+  }
+
+  .ops-scale-drill {
+    grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.7fr) minmax(260px, 0.7fr);
     align-items: stretch;
   }
 
