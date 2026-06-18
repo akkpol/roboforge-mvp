@@ -503,8 +503,35 @@ function DeviceSetupWizard({
     "roboforge-device-setup-checks",
     initialSetupChecks,
   );
-  const complete = Object.values(checks).every(Boolean);
   const checking = telemetry.firmwareVersion === "loading";
+  const roverLinkReady =
+    telemetry.connected &&
+    !checking &&
+    telemetry.firmwareVersion !== "link-lost" &&
+    telemetry.protocolVersion === "v1";
+  const batteryTelemetryReady = roverLinkReady && telemetry.batteryVoltage > 0;
+  const automaticChecks: Record<SetupCheck, boolean> = {
+    power: roverLinkReady,
+    wifi: roverLinkReady,
+    battery: batteryTelemetryReady,
+    wheels: false,
+    motor: false,
+  };
+  const stepComplete = (key: SetupCheck) => automaticChecks[key] || checks[key];
+  const complete =
+    roverLinkReady &&
+    batteryTelemetryReady &&
+    checks.wheels &&
+    checks.motor;
+  const blockedReason = !roverLinkReady
+    ? "Waiting for Rover Wi-Fi and local API."
+    : !batteryTelemetryReady
+      ? "Waiting for battery telemetry."
+      : !checks.wheels
+        ? "Lift the wheels before motor testing."
+        : !checks.motor
+          ? "Confirm you are ready for the raised-wheel motor test."
+          : "Ready for Cockpit.";
   const batteryLabel =
     telemetry.batteryVoltage > 0
       ? `${Math.round(telemetry.batteryPercent)}% / ${telemetry.batteryVoltage.toFixed(2)} V`
@@ -545,18 +572,25 @@ function DeviceSetupWizard({
   ];
 
   const toggle = (key: SetupCheck) => {
+    if (automaticChecks[key]) return;
+
     setChecks((current) => {
       const next = { ...current, [key]: !current[key] };
       onProgress({
-        batteryCalibrated: next.battery,
-        setupComplete: Object.values(next).every(Boolean),
+        batteryCalibrated: batteryTelemetryReady,
+        setupComplete:
+          roverLinkReady &&
+          batteryTelemetryReady &&
+          next.wheels &&
+          next.motor,
       });
       return next;
     });
   };
 
   const enterCockpit = () => {
-    onProgress({ setupComplete: true, batteryCalibrated: checks.battery });
+    if (!complete) return;
+    onProgress({ setupComplete: true, batteryCalibrated: batteryTelemetryReady });
     onCockpit();
   };
 
@@ -579,12 +613,27 @@ function DeviceSetupWizard({
               <small>{telemetry.connected ? `${telemetry.firmwareVersion} / ${telemetry.wifiStrength}` : "Join RoboForge-Rover-XXXX Wi-Fi and keep this page open."}</small>
             </div>
           </div>
+          <div class="setup-signal-list" aria-label="Rover link checks">
+            <span class={roverLinkReady ? "is-done" : ""}>
+              <strong>Local API</strong>
+              <small>{roverLinkReady ? "/api/v1/status OK" : "waiting for Rover"}</small>
+            </span>
+            <span class={batteryTelemetryReady ? "is-done" : ""}>
+              <strong>Battery</strong>
+              <small>{batteryLabel}</small>
+            </span>
+            <span class={roverLinkReady ? "is-done" : ""}>
+              <strong>Unit</strong>
+              <small>{roverLinkReady ? telemetry.unitCode : "waiting for unit code"}</small>
+            </span>
+          </div>
           <div class="setup-steps">
             {steps.map((step, index) => (
-              <label class={`setup-step ${checks[step.key] ? "is-done" : ""}`}>
+              <label class={`setup-step ${stepComplete(step.key) ? "is-done" : ""} ${automaticChecks[step.key] ? "is-auto" : ""}`}>
                 <input
                   type="checkbox"
-                  checked={checks[step.key]}
+                  checked={stepComplete(step.key)}
+                  disabled={automaticChecks[step.key]}
                   onChange={() => toggle(step.key)}
                 />
                 <span>{String(index + 1).padStart(2, "0")}</span>
@@ -595,6 +644,7 @@ function DeviceSetupWizard({
           <div class="setup-actions">
             <Button icon={GameController} disabled={!complete} onClick={enterCockpit}>Enter cockpit</Button>
             <Button icon={House} variant="secondary" onClick={onGarage}>Open garage</Button>
+            <small>{blockedReason}</small>
           </div>
         </article>
         <OwnerProgressPanel

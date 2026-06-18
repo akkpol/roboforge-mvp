@@ -669,6 +669,49 @@ select:focus-visible {
   line-height: 1.5;
 }
 
+.setup-signal-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.setup-signal-list span {
+  display: grid;
+  gap: 4px;
+  min-height: 62px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: rgba(5, 8, 13, 0.42);
+}
+
+.setup-signal-list span.is-done {
+  border-color: color-mix(in srgb, var(--success), transparent 62%);
+}
+
+.setup-signal-list strong,
+.setup-signal-list small {
+  display: block;
+  min-width: 0;
+}
+
+.setup-signal-list strong {
+  color: var(--text);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.setup-signal-list small {
+  color: var(--muted);
+  font-family: "Noto Sans Thai", sans-serif;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.setup-signal-list span.is-done strong {
+  color: var(--success);
+}
+
 .setup-steps {
   display: grid;
   gap: 8px;
@@ -728,11 +771,27 @@ select:focus-visible {
   color: var(--success);
 }
 
+.setup-step.is-auto {
+  cursor: default;
+}
+
+.setup-step input:disabled {
+  cursor: default;
+}
+
 .setup-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 9px;
   margin-top: 14px;
+}
+
+.setup-actions small {
+  color: var(--muted);
+  font-family: "Noto Sans Thai", sans-serif;
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .fleet-rail {
@@ -1990,6 +2049,10 @@ select:focus-visible {
 
   .button-row .button {
     flex: 1 1 150px;
+  }
+
+  .setup-signal-list {
+    grid-template-columns: 1fr;
   }
 }
 
