@@ -67,10 +67,16 @@ With your computer connected to the robot Wi-Fi, run the non-driving check:
 node ..\scripts\rover-protocol-check.mjs --base-url=http://192.168.4.1
 ```
 
+To save evidence for the SaaS `/admin` Bench Checklist notes:
+
+```powershell
+node ..\scripts\rover-protocol-check.mjs --base-url=http://192.168.4.1 --evidence-out=bench-evidence.json
+```
+
 Only after the wheels are raised, run the physical drive check:
 
 ```powershell
-node ..\scripts\rover-protocol-check.mjs --raised-wheels
+node ..\scripts\rover-protocol-check.mjs --raised-wheels --evidence-out=raised-wheel-evidence.json
 ```
 
 ## Safety Behavior

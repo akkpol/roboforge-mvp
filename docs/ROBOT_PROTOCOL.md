@@ -146,14 +146,18 @@ commands for that physical unit.
 With a phone or computer connected to the robot Wi-Fi:
 
 ```powershell
-node scripts/rover-protocol-check.mjs --base-url=http://192.168.4.1
+node scripts/rover-protocol-check.mjs --base-url=http://192.168.4.1 --evidence-out=bench-evidence.json
 ```
 
 Only after the wheels are raised:
 
 ```powershell
-node scripts/rover-protocol-check.mjs --raised-wheels
+node scripts/rover-protocol-check.mjs --raised-wheels --evidence-out=raised-wheel-evidence.json
 ```
+
+The evidence JSON includes the unit code, firmware/protocol versions, battery
+telemetry, check results, and the matching `/admin` Bench Checklist fields. It
+does not include Wi-Fi passwords or Supabase secrets.
 
 ## Hardware Info Still Needed
 
