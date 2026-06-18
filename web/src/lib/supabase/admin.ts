@@ -38,6 +38,7 @@ export type BetaHealth = {
     robot_type: string | null;
     unit_code: string;
   }>;
+  connectionFailures?: Record<string, number>;
   connectionResults: Record<string, number>;
   controlSummary: {
     commandCount: number;

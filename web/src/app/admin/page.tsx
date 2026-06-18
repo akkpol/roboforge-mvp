@@ -306,6 +306,7 @@ export default async function AdminPage() {
   const data = health.data;
   const successCount = data.connectionResults.success ?? 0;
   const failedCount = data.connectionResults.failed ?? 0;
+  const connectionFailureEntries = Object.entries(data.connectionFailures ?? {});
   const totalFinishedConnections = successCount + failedCount;
   const successRate =
     totalFinishedConnections > 0
@@ -429,6 +430,19 @@ export default async function AdminPage() {
               <p>No connection sessions yet.</p>
             ) : null}
           </div>
+          {connectionFailureEntries.length > 0 ? (
+            <>
+              <small className="ops-subhead">Failure reasons</small>
+              <div className="ops-list">
+                {connectionFailureEntries.map(([reason, count]) => (
+                  <span key={reason}>
+                    <strong>{reason.replaceAll("_", " ")}</strong>
+                    <small>{count.toLocaleString()}</small>
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : null}
         </article>
 
         <article className="ops-panel">

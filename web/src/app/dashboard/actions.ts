@@ -13,6 +13,13 @@ type ActionResultWithId = ActionResult & {
   id: string | null;
 };
 
+type ActiveRobot = {
+  id: string;
+  owner_id: string;
+  robot_type: string;
+  unit_code: string;
+};
+
 function claimErrorMessage(message: string) {
   if (message.includes("login_required")) return "Login is required.";
   if (message.includes("invalid_or_expired_claim_code")) {
@@ -22,6 +29,18 @@ function claimErrorMessage(message: string) {
     return "That code is not attached to a robot yet.";
   }
   return message;
+}
+
+function connectionMetadataForRobot(robot: ActiveRobot) {
+  const unitCode = robot.unit_code.trim().toUpperCase() || "ROVER-01";
+
+  return {
+    expected_ssid: `RoboForge-${unitCode}`.slice(0, 31),
+    local_cockpit_url: "http://192.168.4.1",
+    protocol_version: "v1",
+    robot_type: robot.robot_type || "rover",
+    unit_code: unitCode,
+  };
 }
 
 async function getActiveRobot() {
@@ -42,7 +61,7 @@ async function getActiveRobot() {
 
   const { data: robot, error: robotError } = await supabase
     .from("robots")
-    .select("id, owner_id")
+    .select("id, owner_id, robot_type, unit_code")
     .eq("owner_id", user.id)
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -58,7 +77,7 @@ async function getActiveRobot() {
 
   return {
     error: null,
-    robot: robot as { id: string; owner_id: string },
+    robot: robot as ActiveRobot,
     supabase,
     userId: user.id,
   };
@@ -188,10 +207,16 @@ export async function startConnectionSession(): Promise<ActionResultWithId> {
   const { error, robot, supabase, userId } = await getActiveRobot();
   if (error || !robot || !supabase || !userId) return { error, id: null, ok: false };
 
+  const metadata = {
+    ...connectionMetadataForRobot(robot),
+    started_from: "owner_connection_quest",
+  };
+
   const { data, error: insertError } = await supabase
     .from("connection_sessions")
     .insert({
       device_mode: "local_wifi",
+      metadata,
       robot_id: robot.id,
       user_id: userId,
     })
@@ -207,6 +232,7 @@ export async function startConnectionSession(): Promise<ActionResultWithId> {
     severity: "info",
     user_id: userId,
     connection_session_id: data.id,
+    metadata,
   });
 
   revalidatePath("/dashboard");
@@ -225,12 +251,20 @@ export async function finishConnectionSession(input: {
   const failureReason = input.success
     ? null
     : input.failureReason?.trim() || "not_sure";
+  const endedAt = new Date().toISOString();
+  const metadata = {
+    ...connectionMetadataForRobot(robot),
+    failure_reason: failureReason,
+    owner_reported_at: endedAt,
+    result,
+  };
 
   const { error: updateError } = await supabase
     .from("connection_sessions")
     .update({
-      ended_at: new Date().toISOString(),
+      ended_at: endedAt,
       failure_reason: failureReason,
+      metadata,
       result,
     })
     .eq("id", input.sessionId)
@@ -244,6 +278,7 @@ export async function finishConnectionSession(input: {
     message: input.success
       ? "Owner marked the robot connection as successful."
       : `Owner reported connection failure: ${failureReason}`,
+    metadata,
     robot_id: robot.id,
     severity: input.success ? "info" : "warning",
     user_id: userId,

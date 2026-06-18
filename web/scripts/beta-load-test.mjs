@@ -226,14 +226,32 @@ async function main() {
 
   await insertChunks("robot_bench_tests", benchRows);
 
+  const failureReasons = [
+    "wifi_not_found",
+    "cannot_open_local_page",
+    "no_telemetry",
+    "safety_unclear",
+  ];
   const connectionRows = Array.from({ length: users * 2 }, (_, index) => {
     const robot = robotIds[index % robotIds.length];
     const success = index % 4 !== 0;
+    const failureReason = success
+      ? null
+      : failureReasons[index % failureReasons.length];
+    const unitCode = robot.unit_code.toUpperCase();
     return {
       device_mode: "local_wifi",
       ended_at: new Date().toISOString(),
-      failure_reason: success ? null : "wifi_not_found",
-      metadata: { batchId },
+      failure_reason: failureReason,
+      metadata: {
+        batchId,
+        expected_ssid: `RoboForge-${unitCode}`.slice(0, 31),
+        failure_reason: failureReason,
+        local_cockpit_url: "http://192.168.4.1",
+        protocol_version: "v1",
+        result: success ? "success" : "failed",
+        unit_code: unitCode,
+      },
       result: success ? "success" : "failed",
       robot_id: robot.id,
       user_id: robot.owner_id,

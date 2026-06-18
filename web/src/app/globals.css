@@ -307,6 +307,15 @@ textarea:focus-visible {
   gap: 8px;
 }
 
+.ops-subhead {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .ops-list span,
 .ops-feed span {
   display: grid;

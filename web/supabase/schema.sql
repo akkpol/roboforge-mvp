@@ -561,6 +561,17 @@ begin
         group by result
       ) results
     ), '{}'::jsonb),
+    'connectionFailures', coalesce((
+      select jsonb_object_agg(failure_reason, total)
+      from (
+        select
+          coalesce(nullif(failure_reason, ''), 'not_sure') as failure_reason,
+          count(*) as total
+        from public.connection_sessions
+        where result = 'failed'
+        group by 1
+      ) failures
+    ), '{}'::jsonb),
     'controlSummary', (
       select jsonb_build_object(
         'commandCount', coalesce(sum(command_count), 0),
