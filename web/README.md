@@ -33,12 +33,17 @@ Do not pause the MVP to translate every screen yet. Keep new UI copy grouped in
 small data objects or dictionaries when practical, so Thai and English can move
 into a full App Router `[lang]` dictionary later without rewriting screens.
 
-The app already has theme custom properties in `globals.css`. New UI should use
+The app has a small theme token layer in `globals.css`. New UI should use
 semantic CSS variables such as `--bg`, `--panel`, `--text`, `--muted`,
 `--accent`, `--accent-2`, `--accent-3`, `--line`, `--success`, and `--danger`
-instead of literal colors. Add a new token before hardcoding a new reusable
-color. This keeps future Forge/Neo or market-specific themes editable from the
-global theme layer instead of each component.
+instead of literal colors.
+
+For broader theme work, prefer the `--color-*`, `--surface-*`,
+`--page-*`, and `--shadow-*` tokens, then map legacy aliases back to them. The
+global selectors `.theme-forge`, `[data-theme="forge"]`, `.theme-neo`, and
+`[data-theme="neo"]` are the intended extension points. Add a new token before
+hardcoding a reusable color. This keeps future Forge/Neo or market-specific
+themes editable from the global theme layer instead of each component.
 
 ## Started Work To Preserve
 
