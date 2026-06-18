@@ -81,6 +81,45 @@ function readinessItems(data: NonNullable<Awaited<ReturnType<typeof getBetaHealt
   ];
 }
 
+const firstKitFacts = [
+  ["Unit code", "Example: RF-RV-0001"],
+  ["Board", "ESP32, Pico W, Arduino, or the exact prototype board"],
+  ["Motor driver", "L298N, TB6612FNG, BTS7960, ESC, or custom driver"],
+  ["Battery", "Chemistry and cell count, such as 2S Li-ion or 1S LiPo"],
+  ["Motor wiring", "Left/right channel mapping or a wiring photo"],
+  ["Safety hardware", "Power switch plus fuse or protected battery pack"],
+] as const;
+
+function FirstKitIntake({
+  claimKitCount,
+}: {
+  claimKitCount: number;
+}) {
+  const hasKit = claimKitCount > 0;
+
+  return (
+    <section className="ops-panel">
+      <span className="eyebrow">
+        <Bot size={15} /> FIRST KIT INTAKE
+      </span>
+      <h2>{hasKit ? "Hardware facts still drive the next gate." : "Collect facts before the first real kit."}</h2>
+      <p>
+        {hasKit
+          ? "Use the Hardware Profile and Bench Checklist before changing firmware or moving to floor tests."
+          : "Defaults are fine for drafts, but the first physical claim kit needs real prototype facts before flashing."}
+      </p>
+      <div className="ops-list">
+        {firstKitFacts.map(([label, detail]) => (
+          <span key={label}>
+            <strong>{label}</strong>
+            <small>{detail}</small>
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default async function AdminPage() {
   const { configured, user } = await getCurrentUser();
 
@@ -196,6 +235,7 @@ export default async function AdminPage() {
       </section>
 
       <section className="ops-grid">
+        <FirstKitIntake claimKitCount={data.counts.claimCodes} />
         <ClaimKitForm />
         <HardwareProfileForm claimKits={data.claimKits} />
         <BenchTestForm
