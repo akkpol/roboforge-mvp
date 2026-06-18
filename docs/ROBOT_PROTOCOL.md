@@ -157,7 +157,9 @@ node scripts/rover-protocol-check.mjs --raised-wheels --evidence-out=raised-whee
 
 The evidence JSON includes the unit code, firmware/protocol versions, battery
 telemetry, check results, and the matching `/admin` Bench Checklist fields. It
-does not include Wi-Fi passwords or Supabase secrets.
+does not include Wi-Fi passwords or Supabase secrets. Open `/admin`, paste the
+file contents into the Bench Checklist `Evidence JSON` box, click `Import
+evidence`, review the selected kit/stage/result, then save the test result.
 
 ## Hardware Info Still Needed
 

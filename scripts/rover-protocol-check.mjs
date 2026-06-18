@@ -33,8 +33,9 @@ Usage:
 Default mode only checks info/status/stop. The --raised-wheels mode arms the
 rover and sends a tiny drive command, so use it only with wheels lifted.
 
-The optional --evidence-out path writes JSON that can be copied into the
-RoboForge Ops Bench Checklist notes. It does not include Wi-Fi passwords.`);
+The optional --evidence-out path writes JSON that can be imported in the
+RoboForge Ops Bench Checklist Evidence JSON field. It does not include Wi-Fi
+passwords.`);
 }
 
 function assert(condition, message) {

@@ -529,6 +529,32 @@ textarea:focus-visible {
   padding: 10px 11px;
 }
 
+.ops-evidence-import {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px dashed var(--line-bright);
+  background: var(--surface-glass-soft);
+}
+
+.ops-evidence-import textarea {
+  min-height: 132px;
+}
+
+.ops-evidence-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ops-evidence-actions span {
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .ops-form input::placeholder {
   color: #6f8290;
 }
