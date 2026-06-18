@@ -761,19 +761,60 @@ revoke all on function public.create_robot_claim_kit(text, text, text, text, tex
 grant execute on function public.create_robot_claim_kit(text, text, text, text, text, timestamptz) to authenticated;
 
 drop policy if exists "Owners can manage own workspaces" on public.workspaces;
-create policy "Owners can manage own workspaces"
-  on public.workspaces for all
+drop policy if exists "Members can read workspaces" on public.workspaces;
+drop policy if exists "Users can read accessible workspaces" on public.workspaces;
+create policy "Users can read accessible workspaces"
+  on public.workspaces for select
+  to authenticated
+  using (
+    (select auth.uid()) = owner_id
+    or public.is_workspace_member(id)
+  );
+
+drop policy if exists "Owners can insert own workspaces" on public.workspaces;
+create policy "Owners can insert own workspaces"
+  on public.workspaces for insert
+  to authenticated
+  with check ((select auth.uid()) = owner_id);
+
+drop policy if exists "Owners can update own workspaces" on public.workspaces;
+create policy "Owners can update own workspaces"
+  on public.workspaces for update
+  to authenticated
   using ((select auth.uid()) = owner_id)
   with check ((select auth.uid()) = owner_id);
 
-drop policy if exists "Members can read workspaces" on public.workspaces;
-create policy "Members can read workspaces"
-  on public.workspaces for select
-  using (public.is_workspace_member(id));
+drop policy if exists "Owners can delete own workspaces" on public.workspaces;
+create policy "Owners can delete own workspaces"
+  on public.workspaces for delete
+  to authenticated
+  using ((select auth.uid()) = owner_id);
 
 drop policy if exists "Workspace owners can manage members" on public.workspace_members;
-create policy "Workspace owners can manage members"
-  on public.workspace_members for all
+drop policy if exists "Members can read workspace members" on public.workspace_members;
+drop policy if exists "Users can read accessible workspace members" on public.workspace_members;
+create policy "Users can read accessible workspace members"
+  on public.workspace_members for select
+  to authenticated
+  using (public.is_workspace_member(workspace_id));
+
+drop policy if exists "Workspace owners can insert members" on public.workspace_members;
+create policy "Workspace owners can insert members"
+  on public.workspace_members for insert
+  to authenticated
+  with check (
+    exists (
+      select 1
+      from public.workspaces
+      where workspaces.id = workspace_members.workspace_id
+        and workspaces.owner_id = (select auth.uid())
+    )
+  );
+
+drop policy if exists "Workspace owners can update members" on public.workspace_members;
+create policy "Workspace owners can update members"
+  on public.workspace_members for update
+  to authenticated
   using (
     exists (
       select 1
@@ -791,19 +832,47 @@ create policy "Workspace owners can manage members"
     )
   );
 
-drop policy if exists "Members can read workspace members" on public.workspace_members;
-create policy "Members can read workspace members"
-  on public.workspace_members for select
-  using (public.is_workspace_member(workspace_id));
+drop policy if exists "Workspace owners can delete members" on public.workspace_members;
+create policy "Workspace owners can delete members"
+  on public.workspace_members for delete
+  to authenticated
+  using (
+    exists (
+      select 1
+      from public.workspaces
+      where workspaces.id = workspace_members.workspace_id
+        and workspaces.owner_id = (select auth.uid())
+    )
+  );
 
+drop policy if exists "Owners can read own robots" on public.robots;
 drop policy if exists "Workspace members can read shared robots" on public.robots;
-create policy "Workspace members can read shared robots"
+drop policy if exists "Users can read accessible robots" on public.robots;
+create policy "Users can read accessible robots"
   on public.robots for select
-  using (workspace_id is not null and public.is_workspace_member(workspace_id));
+  to authenticated
+  using (
+    (select auth.uid()) = owner_id
+    or (workspace_id is not null and public.is_workspace_member(workspace_id))
+  );
+
+drop policy if exists "Owners can insert own robots" on public.robots;
+create policy "Owners can insert own robots"
+  on public.robots for insert
+  to authenticated
+  with check ((select auth.uid()) = owner_id);
+
+drop policy if exists "Owners can update own robots" on public.robots;
+create policy "Owners can update own robots"
+  on public.robots for update
+  to authenticated
+  using ((select auth.uid()) = owner_id)
+  with check ((select auth.uid()) = owner_id);
 
 drop policy if exists "Owners can read robot claim codes" on public.robot_claim_codes;
 create policy "Owners can read robot claim codes"
   on public.robot_claim_codes for select
+  to authenticated
   using (
     (robot_id is not null and public.can_manage_robot(robot_id))
     or claimed_by = (select auth.uid())
@@ -812,6 +881,7 @@ create policy "Owners can read robot claim codes"
 drop policy if exists "Owners can insert robot claim codes" on public.robot_claim_codes;
 create policy "Owners can insert robot claim codes"
   on public.robot_claim_codes for insert
+  to authenticated
   with check (
     created_by = (select auth.uid())
     and (robot_id is null or public.can_manage_robot(robot_id))
@@ -820,19 +890,35 @@ create policy "Owners can insert robot claim codes"
 drop policy if exists "Owners can update robot claim codes" on public.robot_claim_codes;
 create policy "Owners can update robot claim codes"
   on public.robot_claim_codes for update
+  to authenticated
   using (robot_id is not null and public.can_manage_robot(robot_id))
   with check (robot_id is not null and public.can_manage_robot(robot_id));
 
 drop policy if exists "Owners can read robot devices" on public.robot_devices;
+drop policy if exists "Owners can manage robot devices" on public.robot_devices;
 create policy "Owners can read robot devices"
   on public.robot_devices for select
+  to authenticated
   using (public.can_access_robot(robot_id) or public.is_app_admin());
 
-drop policy if exists "Owners can manage robot devices" on public.robot_devices;
-create policy "Owners can manage robot devices"
-  on public.robot_devices for all
+drop policy if exists "Owners can insert robot devices" on public.robot_devices;
+create policy "Owners can insert robot devices"
+  on public.robot_devices for insert
+  to authenticated
+  with check (public.can_manage_robot(robot_id) or public.is_app_admin());
+
+drop policy if exists "Owners can update robot devices" on public.robot_devices;
+create policy "Owners can update robot devices"
+  on public.robot_devices for update
+  to authenticated
   using (public.can_manage_robot(robot_id) or public.is_app_admin())
   with check (public.can_manage_robot(robot_id) or public.is_app_admin());
+
+drop policy if exists "Owners can delete robot devices" on public.robot_devices;
+create policy "Owners can delete robot devices"
+  on public.robot_devices for delete
+  to authenticated
+  using (public.can_manage_robot(robot_id) or public.is_app_admin());
 
 drop policy if exists "Users can read robot bench tests" on public.robot_bench_tests;
 create policy "Users can read robot bench tests"
@@ -946,20 +1032,43 @@ create policy "App admins can read own admin grant"
   using (user_id = (select auth.uid()));
 
 drop policy if exists "Workspace members can read robot progress" on public.robot_progress;
-create policy "Workspace members can read robot progress"
+drop policy if exists "Owners can read own robot progress" on public.robot_progress;
+drop policy if exists "Users can read accessible robot progress" on public.robot_progress;
+create policy "Users can read accessible robot progress"
   on public.robot_progress for select
+  to authenticated
   using (public.can_access_robot(robot_id));
 
+drop policy if exists "Owners can insert own robot progress" on public.robot_progress;
+drop policy if exists "Robot managers can insert robot progress" on public.robot_progress;
+create policy "Robot managers can insert robot progress"
+  on public.robot_progress for insert
+  to authenticated
+  with check (public.can_manage_robot(robot_id));
+
 drop policy if exists "Workspace managers can update robot progress" on public.robot_progress;
-create policy "Workspace managers can update robot progress"
+drop policy if exists "Owners can update own robot progress" on public.robot_progress;
+drop policy if exists "Robot managers can update robot progress" on public.robot_progress;
+create policy "Robot managers can update robot progress"
   on public.robot_progress for update
+  to authenticated
   using (public.can_manage_robot(robot_id))
   with check (public.can_manage_robot(robot_id));
 
 drop policy if exists "Workspace members can read robot interests" on public.robot_interests;
-create policy "Workspace members can read robot interests"
+drop policy if exists "Owners can read own robot interests" on public.robot_interests;
+drop policy if exists "Users can read accessible robot interests" on public.robot_interests;
+create policy "Users can read accessible robot interests"
   on public.robot_interests for select
+  to authenticated
   using (public.can_access_robot(robot_id));
+
+drop policy if exists "Owners can insert own robot interests" on public.robot_interests;
+drop policy if exists "Robot managers can insert robot interests" on public.robot_interests;
+create policy "Robot managers can insert robot interests"
+  on public.robot_interests for insert
+  to authenticated
+  with check (public.can_manage_robot(robot_id));
 
 create index if not exists workspaces_owner_id_idx
   on public.workspaces (owner_id);
