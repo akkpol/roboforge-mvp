@@ -9,6 +9,20 @@ Garage ownership, and a simple path to connect a physical robot.
 The product should feel easy for non-IoT users: open the robot, follow the app,
 connect, and drive like a game.
 
+RoboForge should not feel like a technical control panel. It should feel like a
+guided robot platform for normal people: a Garage for ownership, missions for
+learning by doing, hardware lessons tied to the parts they actually have, and a
+safe upgrade path for code and firmware.
+
+In customer language, the promise is:
+
+> Own a robot, learn how it works, upgrade it safely, and play through setup
+> like a game.
+
+This means the product must explain what to do next before it exposes technical
+details. Technical detail still matters, but it should appear at the moment the
+user needs it.
+
 ## First Users
 
 - Individual robot builders and early adopters.
@@ -26,7 +40,30 @@ connect, and drive like a game.
 7. The user connects to the robot local Wi-Fi and opens the local Cockpit.
 8. The user checks safety, arms the robot, drives, releases to stop, and ends
    the session.
-9. The system records enough summary data to know whether the beta worked.
+9. The user sees simple missions that teach the hardware piece by piece.
+10. The user can see the robot's current code/firmware version and understand
+    whether an upgrade is available.
+11. The system records enough summary data to know whether the beta worked.
+
+## Customer Product Model
+
+The product should organize itself around five customer-facing areas:
+
+- **Web Garage:** the user's home base for owned robots, progress, claim codes,
+  status, and next steps.
+- **Connection Quest:** the guided setup path from power-on to robot Wi-Fi to
+  local Cockpit.
+- **Missions:** game-like tasks that teach and validate real behavior, such as
+  first connection, raised-wheel drive, battery check, and first floor test.
+- **Hardware Codex:** plain-language explanations for the actual parts in the
+  user's kit, starting with ESP32, motor driver, motors, battery, wiring, power
+  switch, and safety protection.
+- **Firmware Lab:** the safe code and firmware area. The first beta should show
+  versions, compatibility, release notes, and guarded instructions before it
+  allows one-click firmware updates.
+
+These names do not all need to be fully built in the first beta, but new work
+should fit this model so the product stays understandable as it grows.
 
 ## Entry Points
 
@@ -55,10 +92,32 @@ connect, and drive like a game.
 - Connection Quest for real robot setup.
 - Local Cockpit for live driving.
 - Lyra as setup and troubleshooting guide.
+- Hardware Codex foundation: each physical kit should have understandable
+  explanations for its board, motor driver, battery, motor layout, and safety
+  gates.
+- Firmware Lab foundation: show firmware/config identity and update guidance
+  before enabling any risky write-to-device update flow.
 - Session summaries for connection and control.
 - Important robot events and error logs.
 - Feedback reports from beta users.
 - Admin/Ops view for beta health.
+
+## Firmware Upgrade Boundary
+
+Firmware upgrade is a real hardware risk. A bad update can leave the robot
+unusable until the owner reconnects by USB or the team repairs it.
+
+For the first beta:
+
+- show firmware version, board profile, and compatibility status
+- show release notes in simple language
+- require hardware profile readiness before recommending firmware changes
+- keep live motor commands local to the robot Wi-Fi
+- do not promise one-click firmware upgrade until a real kit has passed bench
+  and raised-wheel recovery tests
+
+Later, Firmware Lab can add guided update flows, rollback instructions, signed
+firmware packages, and per-board compatibility checks.
 
 ## Lyra Direction
 

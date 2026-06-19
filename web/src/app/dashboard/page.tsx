@@ -14,20 +14,35 @@ export const dynamic = "force-dynamic";
 type DashboardPageProps = {
   searchParams?: Promise<{
     claim?: string | string[];
+    lang?: string | string[];
   }>;
 };
 
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function dashboardLocale(value?: string | string[]) {
+  return firstParam(value) === "th" ? "th" : "en";
+}
+
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = searchParams ? await searchParams : {};
-  const claimParam = Array.isArray(params.claim) ? params.claim[0] : params.claim;
+  const claimParam = firstParam(params.claim);
   const initialClaimCode = claimParam?.trim() || null;
+  const locale = dashboardLocale(params.lang);
   const { configured, user } = await getCurrentUser();
 
   if (configured && !user) {
-    const redirectTarget = initialClaimCode
-      ? `/dashboard?claim=${encodeURIComponent(initialClaimCode)}`
+    const dashboardParams = new URLSearchParams();
+    if (initialClaimCode) dashboardParams.set("claim", initialClaimCode);
+    if (locale === "th") dashboardParams.set("lang", "th");
+    const redirectTarget = dashboardParams.size
+      ? `/dashboard?${dashboardParams.toString()}`
       : "/dashboard";
-    redirect(`/login?redirect=${encodeURIComponent(redirectTarget)}`);
+    const loginParams = new URLSearchParams({ redirect: redirectTarget });
+    if (locale === "th") loginParams.set("lang", "th");
+    redirect(`/login?${loginParams.toString()}`);
   }
 
   const workspace = user
@@ -76,5 +91,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     );
   }
 
-  return <OwnerConsole initialClaimCode={initialClaimCode} workspace={workspace} />;
+  return (
+    <OwnerConsole
+      initialClaimCode={initialClaimCode}
+      locale={locale}
+      workspace={workspace}
+    />
+  );
 }

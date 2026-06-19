@@ -238,6 +238,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const next = firstParam(params.next);
   const copy = homeCopy[locale];
   const loginHref = localizePath("/login", locale);
+  const dashboardHref = localizePath("/dashboard", locale);
 
   if (code) {
     const callbackParams = new URLSearchParams({ code });
@@ -279,7 +280,7 @@ export default async function Home({ searchParams }: HomeProps) {
           <Link className="quiet-link" href={loginHref}>
             {copy.cta.login}
           </Link>
-          <Link className="button button-small" href="/dashboard">
+          <Link className="button button-small" href={dashboardHref}>
             {copy.cta.webGarage}
           </Link>
         </div>

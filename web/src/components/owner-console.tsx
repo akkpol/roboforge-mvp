@@ -70,8 +70,379 @@ import type { OwnerWorkspace } from "@/lib/supabase/server";
 
 type OwnerConsoleProps = {
   initialClaimCode?: string | null;
+  locale?: OwnerLocale;
   workspace: OwnerWorkspace;
 };
+
+type OwnerLocale = "en" | "th";
+
+const ownerCopy = {
+  en: {
+    connection: {
+      actions: {
+        continueCockpit: "Continue to Cockpit",
+        copy: "Copy",
+        copied: "Copied",
+        found: "Rover found",
+        openLocal: "Open local cockpit",
+        send: "Send feedback",
+        start: "Start quest",
+        stuck: "Still stuck",
+      },
+      aria: {
+        details: "Robot local connection details",
+        steps: "Connection steps",
+      },
+      body:
+        "Lyra guides the owner from power-on to the local Cockpit without needing IoT knowledge.",
+      checklistTitle: "Spirit Link checklist",
+      details: {
+        localPage: "Local page",
+        wifiName: "Wi-Fi name",
+      },
+      eyebrow: "CONNECTION QUEST",
+      feedback: {
+        label: "Feedback",
+        placeholder: "Tell Lyra what was confusing...",
+        problemLabel: "Problem type",
+      },
+      orderedSteps: {
+        confirm: "Confirm Rover status is visible",
+        join: "Join Wi-Fi:",
+        open: "Open:",
+        power: "Power on Rover-01",
+        start: "Start a connection session",
+      },
+      problemOptions: {
+        cannot_open_local_page: "Cannot open 192.168.4.1",
+        no_telemetry: "No telemetry",
+        not_sure: "Not sure",
+        safety_unclear: "Safety step unclear",
+        wifi_not_found: "Wi-Fi not found",
+      },
+      resultBody:
+        "Mark the result so RoboForge can learn where early users get stuck.",
+      resultEyebrow: "BETA SIGNAL",
+      resultTitle: "What happened?",
+      steps: {
+        confirm: {
+          detail: "If battery and status are visible, mark Rover found.",
+          label: "Confirm",
+        },
+        join: {
+          detail: (ssid: string) =>
+            `Pick ${ssid} in your phone or computer Wi-Fi list.`,
+          label: "Join",
+        },
+        open: {
+          detail: (url: string) =>
+            `Open ${url} after your device joins the rover Wi-Fi.`,
+          label: "Open",
+        },
+        power: {
+          detail:
+            "Turn the rover on and keep wheels off the floor for the first test.",
+          label: "Power",
+        },
+      },
+      title: "Connect Rover-01",
+      navigator: "LYRA NAVIGATOR",
+    },
+    garage: {
+      actions: {
+        cockpit: "Enter cockpit",
+        connect: "Connect Rover",
+        profile: "Profile",
+      },
+      activeUnit: "ACTIVE UNIT",
+      body:
+        "One command center for every machine you own and every machine you will build next.",
+      driveLabel: "DIFFERENTIAL DRIVE",
+      eyebrow: "DIGITAL HANGAR",
+      future: {
+        badge: "COMING SOON",
+        body:
+          "This robot class is part of the RoboForge platform roadmap. Control hardware is not included in this build.",
+        eyebrow: "FLEET EXPANSION",
+        unitSuffix: "UNIT",
+      },
+      title: "My Garage",
+    },
+    messages: {
+      betaError: "Could not save beta application.",
+      betaSaved: "Beta application saved.",
+      claimError: "Could not claim robot.",
+      claimingFromQr: "Claiming robot from QR card...",
+      connectionIssueError: "Could not save connection issue.",
+      connectionIssueSaved: "Connection issue saved for beta review.",
+      connectionSaved: "Connection saved. Rover is ready for Cockpit.",
+      connectionSaveError: "Could not save connection result.",
+      connectionStarted: "Connection quest started.",
+      connectionStartError: "Could not start connection quest.",
+      controlLocal: "Control summary is local until a session starts.",
+      controlSaved: "Control session summary saved.",
+      controlSaveError: "Could not save control summary.",
+      controlStarted: "Control session started.",
+      controlStartError: "Could not start control session.",
+      feedbackError: "Could not save feedback.",
+      feedbackSaved: "Feedback saved.",
+      interestError: "Could not save interest.",
+      interestSaved: (interest: string) => `${interest} interest saved.`,
+      progressSaved: "Mission progress saved.",
+      robotClaimed: "Robot claimed. Garage data refreshed.",
+      saving: "Saving...",
+      themeSaved: "Theme saved to owner workspace.",
+    },
+    nav: {
+      cockpit: "Cockpit",
+      engineer: "Engineer",
+      garage: "Garage",
+      missions: "Missions",
+      store: "Upgrades",
+    },
+    nextStep: {
+      aria: "Next step",
+      cockpit: {
+        action: "Enter demo Cockpit",
+        body:
+          "This Cockpit is hosted simulation. Real motors still open from the robot local Wi-Fi page.",
+        title: "Next: finish First Drive",
+      },
+      connect: {
+        action: "Start Connection Quest",
+        body:
+          "Use this path after a beta kit is powered on. No kit yet? Stay in the hosted demo while hardware is prepared.",
+        title: "Next: connect the rover",
+      },
+      eyebrow: "START HERE",
+      missions: {
+        action: "Open missions",
+        body:
+          "The first hosted loop is saved. Missions and upgrade votes are the next beta signals.",
+        title: "Next: build the habit loop",
+      },
+      path: {
+        aria: "Owner path",
+        cockpit: "Cockpit",
+        connect: "Connection Quest",
+        garage: "Web Garage",
+      },
+    },
+    progress: {
+      action: "Mark first drive",
+      aria: "Owner progress",
+      eyebrow: "OWNER PROGRESS",
+      items: {
+        batteryCalibrated: "Battery calibrated",
+        firstConnection: "First connection complete",
+        firstDrive: "First drive complete",
+        floorTest: "Ready for floor test",
+        setup: "Setup complete",
+      },
+      title: "Rover-01 readiness",
+    },
+    claim: {
+      action: "Claim robot",
+      aria: "Claim robot",
+      body:
+        "Enter the code from a RoboForge QR card or beta kit. The robot will become part of this owner workspace.",
+      eyebrow: "CLAIM ROBOT",
+      label: "Robot code",
+      title: "Link a physical unit to this Garage",
+    },
+    topbar: {
+      adminTitle: "Beta Ops",
+      back: "Garage",
+      brandSub: "OWNER GARAGE",
+      defaultOwner: "RoboForge Owner",
+      savedInterestPlural: "saved upgrade signals",
+      savedInterestSingular: "saved upgrade signal",
+      signOutTitle: "Sign out",
+    },
+  },
+  th: {
+    connection: {
+      actions: {
+        continueCockpit: "ไป Cockpit",
+        copy: "คัดลอก",
+        copied: "คัดลอกแล้ว",
+        found: "พบ Rover แล้ว",
+        openLocal: "เปิด Cockpit ในหุ่น",
+        send: "ส่งข้อมูล",
+        start: "เริ่มเชื่อมต่อ",
+        stuck: "ยังติดอยู่",
+      },
+      aria: {
+        details: "ข้อมูลสำหรับเชื่อมต่อหุ่น",
+        steps: "ขั้นตอนเชื่อมต่อหุ่น",
+      },
+      body:
+        "Lyra จะพาเปิดเครื่อง ต่อ Wi-Fi ของหุ่น และเข้า Cockpit ทีละขั้น โดยไม่ต้องรู้ IoT",
+      checklistTitle: "เช็กลิสต์ก่อนขับ",
+      details: {
+        localPage: "หน้าควบคุมในหุ่น",
+        wifiName: "ชื่อ Wi-Fi",
+      },
+      eyebrow: "เชื่อมต่อหุ่น",
+      feedback: {
+        label: "รายละเอียด",
+        placeholder: "บอก Lyra ว่าตรงไหนทำให้งง...",
+        problemLabel: "ปัญหาที่เจอ",
+      },
+      orderedSteps: {
+        confirm: "ยืนยันว่าเห็นสถานะ Rover",
+        join: "ต่อ Wi-Fi:",
+        open: "เปิด:",
+        power: "เปิด Rover-01",
+        start: "เริ่มการเชื่อมต่อ",
+      },
+      problemOptions: {
+        cannot_open_local_page: "เปิด 192.168.4.1 ไม่ได้",
+        no_telemetry: "ไม่เห็นข้อมูลจากหุ่น",
+        not_sure: "ไม่แน่ใจ",
+        safety_unclear: "ขั้นตอนความปลอดภัยไม่ชัด",
+        wifi_not_found: "หา Wi-Fi ไม่เจอ",
+      },
+      resultBody: "บันทึกผลเพื่อให้ทีมรู้ว่าผู้ใช้ติดตรงไหน",
+      resultEyebrow: "ผลทดสอบเบต้า",
+      resultTitle: "เกิดอะไรขึ้น",
+      steps: {
+        confirm: {
+          detail: "ถ้าเห็นแบตเตอรี่และสถานะ ให้กดพบ Rover แล้ว",
+          label: "ยืนยัน",
+        },
+        join: {
+          detail: (ssid: string) =>
+            `เลือก ${ssid} ในรายการ Wi-Fi ของมือถือหรือคอมพิวเตอร์`,
+          label: "ต่อ Wi-Fi",
+        },
+        open: {
+          detail: (url: string) =>
+            `เปิด ${url} หลังจากเครื่องของคุณต่อ Wi-Fi ของหุ่นแล้ว`,
+          label: "เปิดหน้า",
+        },
+        power: {
+          detail: "เปิด Rover แล้ววางให้ล้อไม่แตะพื้นก่อนทดสอบครั้งแรก",
+          label: "เปิดเครื่อง",
+        },
+      },
+      title: "เชื่อมต่อ Rover-01",
+      navigator: "LYRA",
+    },
+    garage: {
+      actions: {
+        cockpit: "เข้า Cockpit",
+        connect: "เชื่อมต่อ Rover",
+        profile: "โปรไฟล์",
+      },
+      activeUnit: "เครื่องที่ใช้งาน",
+      body: "ดูหุ่นที่เป็นของคุณ เชื่อมต่อเครื่องจริง และเก็บความคืบหน้าในที่เดียว",
+      driveLabel: "ขับเคลื่อนแยกซ้ายขวา",
+      eyebrow: "WEB GARAGE",
+      future: {
+        badge: "ยังไม่เปิดใช้",
+        body:
+          "รุ่นนี้ยังอยู่ในแผนของแพลตฟอร์ม RoboForge ฮาร์ดแวร์ควบคุมยังไม่รวมในชุดนี้",
+        eyebrow: "หุ่นรุ่นถัดไป",
+        unitSuffix: "UNIT",
+      },
+      title: "Garage ของฉัน",
+    },
+    messages: {
+      betaError: "บันทึกใบสมัครเบต้าไม่สำเร็จ",
+      betaSaved: "บันทึกใบสมัครเบต้าแล้ว",
+      claimError: "รับสิทธิ์หุ่นไม่สำเร็จ",
+      claimingFromQr: "กำลังรับสิทธิ์หุ่นจากการ์ด QR...",
+      connectionIssueError: "บันทึกปัญหาไม่สำเร็จ",
+      connectionIssueSaved: "บันทึกปัญหาไว้ให้ทีมรีวิวแล้ว",
+      connectionSaved: "บันทึกการเชื่อมต่อแล้ว Rover พร้อมเข้า Cockpit",
+      connectionSaveError: "บันทึกผลการเชื่อมต่อไม่สำเร็จ",
+      connectionStarted: "เริ่มการเชื่อมต่อแล้ว",
+      connectionStartError: "เริ่มการเชื่อมต่อไม่สำเร็จ",
+      controlLocal: "สรุปการควบคุมจะอยู่ในเครื่องนี้จนกว่าจะเริ่มเซสชัน",
+      controlSaved: "บันทึกสรุปการควบคุมแล้ว",
+      controlSaveError: "บันทึกสรุปการควบคุมไม่สำเร็จ",
+      controlStarted: "เริ่มเซสชันควบคุมแล้ว",
+      controlStartError: "เริ่มเซสชันควบคุมไม่สำเร็จ",
+      feedbackError: "บันทึกฟีดแบ็กไม่สำเร็จ",
+      feedbackSaved: "บันทึกฟีดแบ็กแล้ว",
+      interestError: "บันทึกความสนใจไม่สำเร็จ",
+      interestSaved: (interest: string) => `บันทึกความสนใจเรื่อง ${interest} แล้ว`,
+      progressSaved: "บันทึกความคืบหน้าแล้ว",
+      robotClaimed: "รับสิทธิ์หุ่นแล้ว กำลังโหลด Garage ใหม่",
+      saving: "กำลังบันทึก...",
+      themeSaved: "บันทึกสไตล์ของหุ่นแล้ว",
+    },
+    nav: {
+      cockpit: "Cockpit",
+      engineer: "Engineer",
+      garage: "Garage",
+      missions: "Missions",
+      store: "Upgrades",
+    },
+    nextStep: {
+      aria: "ขั้นต่อไป",
+      cockpit: {
+        action: "เข้า Cockpit เดโม",
+        body:
+          "หน้านี้เป็นเดโมบนเว็บ ส่วนการขับมอเตอร์จริงต้องเปิดจาก Wi-Fi ของหุ่น",
+        title: "ขั้นต่อไป: ลองขับครั้งแรก",
+      },
+      connect: {
+        action: "เริ่มเชื่อมต่อ",
+        body:
+          "เปิดหุ่นแล้วทำตามทีละขั้น ถ้ายังไม่มีชุดเบต้า ให้ใช้เดโมบนเว็บไปก่อน",
+        title: "ขั้นต่อไป: เชื่อมต่อหุ่น",
+      },
+      eyebrow: "เริ่มตรงนี้",
+      missions: {
+        action: "เปิด Missions",
+        body:
+          "ระบบบันทึกการเชื่อมต่อและการขับครั้งแรกแล้ว ต่อไปใช้ Missions เพื่อดูว่าผู้ใช้กลับมาเล่นต่อไหม",
+        title: "ขั้นต่อไป: ทำภารกิจแรก",
+      },
+      path: {
+        aria: "เส้นทางเจ้าของ",
+        cockpit: "Cockpit",
+        connect: "เชื่อมต่อหุ่น",
+        garage: "Web Garage",
+      },
+    },
+    progress: {
+      action: "บันทึกว่าขับครั้งแรกแล้ว",
+      aria: "ความคืบหน้าเจ้าของ",
+      eyebrow: "ความคืบหน้า",
+      items: {
+        batteryCalibrated: "ตรวจแบตเตอรี่แล้ว",
+        firstConnection: "เชื่อมต่อครั้งแรกแล้ว",
+        firstDrive: "ขับครั้งแรกแล้ว",
+        floorTest: "พร้อมทดสอบบนพื้น",
+        setup: "ตั้งค่าบัญชีแล้ว",
+      },
+      title: "ความพร้อมของ Rover-01",
+    },
+    claim: {
+      action: "รับสิทธิ์หุ่น",
+      aria: "รับสิทธิ์หุ่น",
+      body:
+        "กรอกรหัสจากการ์ด QR หรือชุดเบต้า หุ่นจะถูกเพิ่มเข้าบัญชีเจ้าของนี้",
+      eyebrow: "รับสิทธิ์หุ่น",
+      label: "รหัสหุ่น",
+      title: "ผูกหุ่นจริงเข้ากับ Web Garage นี้",
+    },
+    topbar: {
+      adminTitle: "ทีมเบต้า",
+      back: "Garage",
+      brandSub: "WEB GARAGE",
+      defaultOwner: "เจ้าของ RoboForge",
+      savedInterestPlural: "รายการความสนใจที่บันทึกไว้",
+      savedInterestSingular: "รายการความสนใจที่บันทึกไว้",
+      signOutTitle: "ออกจากระบบ",
+    },
+  },
+} as const;
+
+type OwnerCopy = (typeof ownerCopy)[OwnerLocale];
 
 function safeTheme(theme: string | null | undefined): ThemeId {
   return theme === "neo" ? "neo" : "forge";
@@ -249,27 +620,29 @@ function TruthStrip() {
 }
 
 function ProgressPanel({
+  copy,
   onCompleteFirstDrive,
   progress,
 }: {
+  copy: OwnerCopy;
   onCompleteFirstDrive: () => void;
   progress: OwnerProgress;
 }) {
   const items = [
-    ["Setup complete", progress.setup_complete],
-    ["First connection complete", progress.first_connection_complete],
-    ["First drive complete", progress.first_drive_complete],
-    ["Battery calibrated", progress.battery_calibrated],
-    ["Ready for floor test", progress.ready_for_floor_test],
+    [copy.progress.items.setup, progress.setup_complete],
+    [copy.progress.items.firstConnection, progress.first_connection_complete],
+    [copy.progress.items.firstDrive, progress.first_drive_complete],
+    [copy.progress.items.batteryCalibrated, progress.battery_calibrated],
+    [copy.progress.items.floorTest, progress.ready_for_floor_test],
   ] as const;
 
   return (
-    <section aria-label="Owner progress" className="rf-owner-progress">
+    <section aria-label={copy.progress.aria} className="rf-owner-progress">
       <div>
         <span className="eyebrow">
-          <ShieldCheck size={15} /> OWNER PROGRESS
+          <ShieldCheck size={15} /> {copy.progress.eyebrow}
         </span>
-        <h2>Rover-01 readiness</h2>
+        <h2>{copy.progress.title}</h2>
       </div>
       <div className="rf-owner-progress__items">
         {items.map(([label, complete]) => (
@@ -280,65 +653,58 @@ function ProgressPanel({
         ))}
       </div>
       <Button icon={Rocket} onClick={onCompleteFirstDrive} variant="secondary">
-        Mark first drive
+        {copy.progress.action}
       </Button>
     </section>
   );
 }
 
 function GarageNextStep({
+  copy,
   onScreen,
   progress,
 }: {
+  copy: OwnerCopy;
   onScreen: (screen: ConsoleScreen) => void;
   progress: OwnerProgress;
 }) {
   const nextStep = progress.first_connection_complete
     ? progress.first_drive_complete
       ? {
-          action: "Open missions",
-          body:
-            "The first hosted loop is saved. Missions and upgrade votes are the next beta signals.",
+          ...copy.nextStep.missions,
           icon: Rocket,
           screen: "missions" as ConsoleScreen,
-          title: "Next: build the habit loop",
         }
       : {
-          action: "Enter demo Cockpit",
-          body:
-            "This Cockpit is hosted simulation. Real motors still open from the robot local Wi-Fi page.",
+          ...copy.nextStep.cockpit,
           icon: Gamepad2,
           screen: "cockpit" as ConsoleScreen,
-          title: "Next: finish First Drive",
         }
     : {
-        action: "Start Connection Quest",
-        body:
-          "Use this path after a beta kit is powered on. No kit yet? Stay in the hosted demo while hardware is prepared.",
+        ...copy.nextStep.connect,
         icon: RadioTower,
         screen: "connect" as ConsoleScreen,
-        title: "Next: connect the rover",
       };
   const Icon = nextStep.icon;
 
   return (
-    <section aria-label="Next step" className="rf-next-step">
+    <section aria-label={copy.nextStep.aria} className="rf-next-step">
       <div>
         <span className="eyebrow">
-          <Rocket size={15} /> START HERE
+          <Rocket size={15} /> {copy.nextStep.eyebrow}
         </span>
         <h2>{nextStep.title}</h2>
         <p>{nextStep.body}</p>
       </div>
-      <div className="rf-next-step__path" aria-label="Owner path">
+      <div className="rf-next-step__path" aria-label={copy.nextStep.path.aria}>
         <span className="is-done">
-          <LockKeyhole size={16} /> Web Garage
+          <LockKeyhole size={16} /> {copy.nextStep.path.garage}
         </span>
         <span className={progress.first_connection_complete ? "is-done" : ""}>
-          <Wifi size={16} /> Connection Quest
+          <Wifi size={16} /> {copy.nextStep.path.connect}
         </span>
         <span className={progress.first_drive_complete ? "is-done" : ""}>
-          <Gamepad2 size={16} /> Cockpit
+          <Gamepad2 size={16} /> {copy.nextStep.path.cockpit}
         </span>
       </div>
       <Button icon={Icon} onClick={() => onScreen(nextStep.screen)}>
@@ -349,9 +715,11 @@ function GarageNextStep({
 }
 
 function ClaimRobotPanel({
+  copy,
   disabled,
   onClaim,
 }: {
+  copy: OwnerCopy;
   disabled?: boolean;
   onClaim: (claimCode: string) => void;
 }) {
@@ -363,20 +731,17 @@ function ClaimRobotPanel({
   }
 
   return (
-    <section aria-label="Claim robot" className="rf-claim-panel">
+    <section aria-label={copy.claim.aria} className="rf-claim-panel">
       <div className="rf-claim-panel__copy">
         <span className="eyebrow">
-          <QrCode size={15} /> CLAIM ROBOT
+          <QrCode size={15} /> {copy.claim.eyebrow}
         </span>
-        <h2>Link a physical unit to this Garage</h2>
-        <p>
-          Enter the code from a RoboForge QR card or beta kit. The robot will
-          become part of this owner workspace.
-        </p>
+        <h2>{copy.claim.title}</h2>
+        <p>{copy.claim.body}</p>
       </div>
       <form className="rf-claim-form" onSubmit={submit}>
         <label>
-          Robot code
+          {copy.claim.label}
           <span>
             <KeyRound size={17} />
             <input
@@ -391,7 +756,7 @@ function ClaimRobotPanel({
           </span>
         </label>
         <Button disabled={disabled} icon={QrCode} type="submit" variant="secondary">
-          Claim robot
+          {copy.claim.action}
         </Button>
       </form>
     </section>
@@ -399,6 +764,7 @@ function ClaimRobotPanel({
 }
 
 function Garage({
+  copy,
   isPending,
   onClaimRobot,
   onProgress,
@@ -407,6 +773,7 @@ function Garage({
   robotCode,
   theme,
 }: {
+  copy: OwnerCopy;
   isPending?: boolean;
   onClaimRobot: (claimCode: string) => void;
   onProgress: (progress: OwnerProgress) => void;
@@ -434,45 +801,42 @@ function Garage({
       <section className="rf-screen-heading">
         <div>
           <span className="eyebrow">
-            <Home size={15} /> DIGITAL HANGAR
+            <Home size={15} /> {copy.garage.eyebrow}
           </span>
-          <h1>My Garage</h1>
-          <p>
-            One command center for every machine you own and every machine you
-            will build next.
-          </p>
+          <h1>{copy.garage.title}</h1>
+          <p>{copy.garage.body}</p>
         </div>
         <StatusPill />
       </section>
-      <GarageNextStep onScreen={onScreen} progress={progress} />
+      <GarageNextStep copy={copy} onScreen={onScreen} progress={progress} />
       <FleetRail selected={selectedFleet} setSelected={setSelectedFleet} />
-      <ClaimRobotPanel disabled={isPending} onClaim={onClaimRobot} />
+      <ClaimRobotPanel copy={copy} disabled={isPending} onClaim={onClaimRobot} />
       {selectedFleet === "rover" ? (
         <section className="rf-garage-feature">
           <RobotHero theme={theme} />
           <div className="rf-garage-feature__info">
             <span className="rf-unit-label">
-              ACTIVE UNIT // {robotCode.toUpperCase()}
+              {copy.garage.activeUnit} / {robotCode.toUpperCase()}
             </span>
             <h2>{selectedTheme.robotName}</h2>
             <p className="rf-class-label">
-              {selectedTheme.robotClass} · DIFFERENTIAL DRIVE
+              {selectedTheme.robotClass} · {copy.garage.driveLabel}
             </p>
             <TelemetryGrid />
             <TruthStrip />
             <div className="rf-button-row">
               <Button icon={RadioTower} onClick={() => onScreen("connect")}>
-                Connect Rover
+                {copy.garage.actions.connect}
               </Button>
               <Button icon={Gamepad2} onClick={() => onScreen("cockpit")}>
-                Enter cockpit
+                {copy.garage.actions.cockpit}
               </Button>
               <Button
                 icon={Settings2}
                 onClick={() => onScreen("profile")}
                 variant="secondary"
               >
-                Profile
+                {copy.garage.actions.profile}
               </Button>
             </div>
           </div>
@@ -482,22 +846,26 @@ function Garage({
           <span className="rf-future-unit__icon">
             <Bot size={76} />
           </span>
-          <span className="eyebrow">FLEET EXPANSION</span>
-          <h2>{selectedFleet.toUpperCase()} UNIT</h2>
-          <p>
-            This robot class is part of the RoboForge platform roadmap. Control
-            hardware is not included in this build.
-          </p>
-          <span className="rf-concept-badge">COMING SOON</span>
+          <span className="eyebrow">{copy.garage.future.eyebrow}</span>
+          <h2>
+            {selectedFleet.toUpperCase()} {copy.garage.future.unitSuffix}
+          </h2>
+          <p>{copy.garage.future.body}</p>
+          <span className="rf-concept-badge">{copy.garage.future.badge}</span>
         </section>
       )}
-      <ProgressPanel onCompleteFirstDrive={completeFirstDrive} progress={progress} />
+      <ProgressPanel
+        copy={copy}
+        onCompleteFirstDrive={completeFirstDrive}
+        progress={progress}
+      />
     </main>
   );
 }
 
 function ConnectionQuest({
   connectionSessionId,
+  copy,
   isPending,
   onFail,
   onFeedback,
@@ -508,6 +876,7 @@ function ConnectionQuest({
   robotCode,
 }: {
   connectionSessionId: string | null;
+  copy: OwnerCopy;
   isPending?: boolean;
   onFail: (sessionId: string, reason: string) => void;
   onFeedback: (input: { message: string; problemType?: string; rating?: number }) => void;
@@ -529,28 +898,28 @@ function ConnectionQuest({
     Boolean(connectionSessionId) || progress.first_connection_complete;
   const connectionSteps = [
     {
-      detail: "Turn the rover on and keep wheels off the floor for the first test.",
+      detail: copy.connection.steps.power.detail,
       done: true,
       icon: BatteryCharging,
-      label: "Power",
+      label: copy.connection.steps.power.label,
     },
     {
-      detail: `Pick ${robotSsid} in your phone or computer Wi-Fi list.`,
+      detail: copy.connection.steps.join.detail(robotSsid),
       done: Boolean(connectionSessionId),
       icon: Wifi,
-      label: "Join",
+      label: copy.connection.steps.join.label,
     },
     {
-      detail: `Open ${localCockpitUrl} after your device joins the rover Wi-Fi.`,
+      detail: copy.connection.steps.open.detail(localCockpitUrl),
       done: localCockpitReady,
       icon: ExternalLink,
-      label: "Open",
+      label: copy.connection.steps.open.label,
     },
     {
-      detail: "If battery and status are visible, mark Rover found.",
+      detail: copy.connection.steps.confirm.detail,
       done: progress.first_connection_complete,
       icon: CheckCircle,
-      label: "Confirm",
+      label: copy.connection.steps.confirm.label,
     },
   ];
 
@@ -581,21 +950,21 @@ function ConnectionQuest({
       <section className="rf-screen-heading">
         <div>
           <span className="eyebrow">
-            <RadioTower size={15} /> CONNECTION QUEST
+            <RadioTower size={15} /> {copy.connection.eyebrow}
           </span>
-          <h1>Connect Rover-01</h1>
-          <p>
-            Lyra guides the owner from power-on to the local Cockpit without
-            needing IoT knowledge.
-          </p>
+          <h1>{copy.connection.title}</h1>
+          <p>{copy.connection.body}</p>
         </div>
         <StatusPill />
       </section>
       <section className="rf-quest-layout">
         <article className="rf-quest-card">
-          <span className="eyebrow">LYRA NAVIGATOR</span>
-          <h2>Spirit Link checklist</h2>
-          <div className="rf-connection-guide" aria-label="Connection steps">
+          <span className="eyebrow">{copy.connection.navigator}</span>
+          <h2>{copy.connection.checklistTitle}</h2>
+          <div
+            className="rf-connection-guide"
+            aria-label={copy.connection.aria.steps}
+          >
             {connectionSteps.map((step, index) => {
               const StepIcon = step.icon;
 
@@ -610,27 +979,27 @@ function ConnectionQuest({
             })}
           </div>
           <ol>
-            <li className="is-done">Power on Rover-01</li>
+            <li className="is-done">{copy.connection.orderedSteps.power}</li>
             <li className={connectionSessionId ? "is-done" : ""}>
-              Start a connection session
+              {copy.connection.orderedSteps.start}
             </li>
             <li>
-              Join Wi-Fi: <code>{robotSsid}</code>
+              {copy.connection.orderedSteps.join} <code>{robotSsid}</code>
             </li>
             <li>
-              Open: <code>{localCockpitUrl}</code>
+              {copy.connection.orderedSteps.open} <code>{localCockpitUrl}</code>
             </li>
             <li className={progress.first_connection_complete ? "is-done" : ""}>
-              Confirm Rover status is visible
+              {copy.connection.orderedSteps.confirm}
             </li>
           </ol>
           <div
-            aria-label="Robot local connection details"
+            aria-label={copy.connection.aria.details}
             className="rf-connection-details"
           >
             <div>
               <span>
-                <Wifi size={17} /> Wi-Fi name
+                <Wifi size={17} /> {copy.connection.details.wifiName}
               </span>
               <strong>{robotSsid}</strong>
               <button
@@ -638,12 +1007,14 @@ function ConnectionQuest({
                 type="button"
               >
                 <Clipboard size={16} />
-                {copied === "ssid" ? "Copied" : "Copy"}
+                {copied === "ssid"
+                  ? copy.connection.actions.copied
+                  : copy.connection.actions.copy}
               </button>
             </div>
             <div>
               <span>
-                <Radio size={17} /> Local page
+                <Radio size={17} /> {copy.connection.details.localPage}
               </span>
               <strong>{localCockpitUrl}</strong>
               <button
@@ -651,7 +1022,9 @@ function ConnectionQuest({
                 type="button"
               >
                 <Clipboard size={16} />
-                {copied === "url" ? "Copied" : "Copy"}
+                {copied === "url"
+                  ? copy.connection.actions.copied
+                  : copy.connection.actions.copy}
               </button>
             </div>
           </div>
@@ -661,7 +1034,7 @@ function ConnectionQuest({
               icon={RadioTower}
               onClick={onStart}
             >
-              Start quest
+              {copy.connection.actions.start}
             </Button>
             <Link
               aria-disabled={!localCockpitReady}
@@ -676,23 +1049,21 @@ function ConnectionQuest({
               target="_blank"
             >
               <ExternalLink size={18} />
-              <span>Open local cockpit</span>
+              <span>{copy.connection.actions.openLocal}</span>
             </Link>
           </div>
         </article>
         <article className="rf-quest-card rf-quest-card--actions">
-          <span className="eyebrow">BETA SIGNAL</span>
-          <h2>What happened?</h2>
-          <p>
-            Mark the result so RoboForge can learn where early users get stuck.
-          </p>
+          <span className="eyebrow">{copy.connection.resultEyebrow}</span>
+          <h2>{copy.connection.resultTitle}</h2>
+          <p>{copy.connection.resultBody}</p>
           <div className="rf-button-row">
             <Button
               disabled={!connectionSessionId || isPending}
               icon={CheckCircle}
               onClick={() => connectionSessionId && onSuccess(connectionSessionId)}
             >
-              Rover found
+              {copy.connection.actions.found}
             </Button>
             <Button
               disabled={!connectionSessionId || isPending}
@@ -702,38 +1073,48 @@ function ConnectionQuest({
               }
               variant="secondary"
             >
-              Still stuck
+              {copy.connection.actions.stuck}
             </Button>
           </div>
           <label className="rf-select-label">
-            Problem type
+            {copy.connection.feedback.problemLabel}
             <select
               onChange={(event) => setFailureReason(event.target.value)}
               value={failureReason}
             >
-              <option value="wifi_not_found">Wi-Fi not found</option>
-              <option value="cannot_open_local_page">Cannot open 192.168.4.1</option>
-              <option value="no_telemetry">No telemetry</option>
-              <option value="safety_unclear">Safety step unclear</option>
-              <option value="not_sure">Not sure</option>
+              <option value="wifi_not_found">
+                {copy.connection.problemOptions.wifi_not_found}
+              </option>
+              <option value="cannot_open_local_page">
+                {copy.connection.problemOptions.cannot_open_local_page}
+              </option>
+              <option value="no_telemetry">
+                {copy.connection.problemOptions.no_telemetry}
+              </option>
+              <option value="safety_unclear">
+                {copy.connection.problemOptions.safety_unclear}
+              </option>
+              <option value="not_sure">
+                {copy.connection.problemOptions.not_sure}
+              </option>
             </select>
           </label>
           <form className="rf-feedback-form" onSubmit={submitFeedback}>
             <label>
-              Feedback
+              {copy.connection.feedback.label}
               <textarea
                 onChange={(event) => setFeedback(event.target.value)}
-                placeholder="Tell Lyra what was confusing..."
+                placeholder={copy.connection.feedback.placeholder}
                 required
                 value={feedback}
               />
             </label>
             <Button disabled={isPending} icon={Send} type="submit" variant="quiet">
-              Send feedback
+              {copy.connection.actions.send}
             </Button>
           </form>
           <Button icon={Gamepad2} onClick={() => onScreen("cockpit")} variant="quiet">
-            Continue to Cockpit
+            {copy.connection.actions.continueCockpit}
           </Button>
         </article>
       </section>
@@ -1197,18 +1578,20 @@ function BetaModal({
 }
 
 function BottomNav({
+  copy,
   screen,
   setScreen,
 }: {
+  copy: OwnerCopy;
   screen: ConsoleScreen;
   setScreen: (screen: ConsoleScreen) => void;
 }) {
   const items: Array<[ConsoleScreen, string, React.ComponentType<{ size?: number }>]> = [
-    ["garage", "Garage", Home],
-    ["cockpit", "Cockpit", Gamepad2],
-    ["missions", "Missions", Rocket],
-    ["engineer", "Engineer", CircuitBoard],
-    ["store", "Upgrades", ShoppingBag],
+    ["garage", copy.nav.garage, Home],
+    ["cockpit", copy.nav.cockpit, Gamepad2],
+    ["missions", copy.nav.missions, Rocket],
+    ["engineer", copy.nav.engineer, CircuitBoard],
+    ["store", copy.nav.store, ShoppingBag],
   ];
 
   return (
@@ -1228,10 +1611,16 @@ function BottomNav({
   );
 }
 
-export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps) {
+export function OwnerConsole({
+  initialClaimCode,
+  locale = "en",
+  workspace,
+}: OwnerConsoleProps) {
+  const copy = ownerCopy[locale];
   const router = useRouter();
   const activeRobot = workspace.robots[0];
   const autoClaimedCode = useRef<string | null>(null);
+  const dashboardHref = locale === "th" ? "/dashboard?lang=th" : "/dashboard";
   const initialTheme = safeTheme(activeRobot?.theme);
   const [screen, setScreen] = useState<ConsoleScreen>("garage");
   const [theme, setTheme] = useState<ThemeId>(initialTheme);
@@ -1246,20 +1635,20 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
   const robotCode = activeRobot?.unit_code ?? "ROVER-01";
-  const ownerName = workspace.profile?.display_name ?? "RoboForge Owner";
+  const ownerName = workspace.profile?.display_name ?? copy.topbar.defaultOwner;
   const savedInterestCount = workspace.interests.length;
 
   const statusMessage = useMemo(() => {
-    if (isPending) return "Saving...";
+    if (isPending) return copy.messages.saving;
     return message;
-  }, [isPending, message]);
+  }, [copy.messages.saving, isPending, message]);
 
   function persistTheme(nextTheme: ThemeId) {
     setTheme(nextTheme);
     setMessage("");
     startTransition(() => {
       void updateRobotTheme(nextTheme).then((result) => {
-        setMessage(result.ok ? "Theme saved to owner workspace." : result.error ?? "");
+        setMessage(result.ok ? copy.messages.themeSaved : result.error ?? "");
       });
     });
   }
@@ -1269,7 +1658,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
     setMessage("");
     startTransition(() => {
       void updateRobotProgress(nextProgress).then((result) => {
-        setMessage(result.ok ? "Mission progress saved." : result.error ?? "");
+        setMessage(result.ok ? copy.messages.progressSaved : result.error ?? "");
       });
     });
   }
@@ -1280,8 +1669,8 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       void saveRobotInterest(interest).then((result) => {
         setMessage(
           result.ok
-            ? `${interest} interest saved.`
-            : result.error ?? "Could not save interest.",
+            ? copy.messages.interestSaved(interest)
+            : result.error ?? copy.messages.interestError,
         );
       });
     });
@@ -1302,9 +1691,9 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       void saveBetaApplication(input).then((result) => {
         if (result.ok) {
           setBetaOpen(false);
-          setMessage("Beta application saved.");
+          setMessage(copy.messages.betaSaved);
         } else {
-          setMessage(result.error ?? "Could not save beta application.");
+          setMessage(result.error ?? copy.messages.betaError);
         }
       });
     });
@@ -1313,14 +1702,19 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
   const finishClaim = useCallback(
     (result: { error: string | null; ok: boolean }) => {
       if (result.ok) {
-        setMessage("Robot claimed. Garage data refreshed.");
-        router.replace("/dashboard");
+        setMessage(copy.messages.robotClaimed);
+        router.replace(dashboardHref);
         router.refresh();
       } else {
-        setMessage(result.error ?? "Could not claim robot.");
+        setMessage(result.error ?? copy.messages.claimError);
       }
     },
-    [router],
+    [
+      copy.messages.claimError,
+      copy.messages.robotClaimed,
+      dashboardHref,
+      router,
+    ],
   );
 
   const claimRobot = useCallback((claimCode: string) => {
@@ -1337,11 +1731,11 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
 
     autoClaimedCode.current = claimCode;
     setScreen("garage");
-    setMessage("Claiming robot from QR card...");
+    setMessage(copy.messages.claimingFromQr);
     startTransition(() => {
       void claimRobotByCode(claimCode).then(finishClaim);
     });
-  }, [finishClaim, initialClaimCode]);
+  }, [copy.messages.claimingFromQr, finishClaim, initialClaimCode]);
 
   function startConnectionQuest() {
     setMessage("");
@@ -1349,9 +1743,9 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       void startConnectionSession().then((result) => {
         if (result.ok && result.id) {
           setConnectionSessionId(result.id);
-          setMessage("Connection quest started.");
+          setMessage(copy.messages.connectionStarted);
         } else {
-          setMessage(result.error ?? "Could not start connection quest.");
+          setMessage(result.error ?? copy.messages.connectionStartError);
         }
       });
     });
@@ -1369,10 +1763,10 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       void finishConnectionSession({ sessionId, success: true }).then((result) => {
         if (result.ok) {
           setConnectionSessionId(null);
-          setMessage("Connection saved. Rover is ready for Cockpit.");
+          setMessage(copy.messages.connectionSaved);
           router.refresh();
         } else {
-          setMessage(result.error ?? "Could not save connection result.");
+          setMessage(result.error ?? copy.messages.connectionSaveError);
         }
       });
     });
@@ -1388,9 +1782,9 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       }).then((result) => {
         if (result.ok) {
           setConnectionSessionId(null);
-          setMessage("Connection issue saved for beta review.");
+          setMessage(copy.messages.connectionIssueSaved);
         } else {
-          setMessage(result.error ?? "Could not save connection issue.");
+          setMessage(result.error ?? copy.messages.connectionIssueError);
         }
       });
     });
@@ -1405,7 +1799,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
     startTransition(() => {
       void saveFeedbackReport(input).then((result) => {
         setMessage(
-          result.ok ? "Feedback saved." : result.error ?? "Could not save feedback.",
+          result.ok ? copy.messages.feedbackSaved : result.error ?? copy.messages.feedbackError,
         );
       });
     });
@@ -1421,9 +1815,9 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       }).then((result) => {
         if (result.ok && result.id) {
           setControlSessionId(result.id);
-          setMessage("Control session started.");
+          setMessage(copy.messages.controlStarted);
         } else {
-          setMessage(result.error ?? "Could not start control session.");
+          setMessage(result.error ?? copy.messages.controlStartError);
         }
       });
     });
@@ -1435,7 +1829,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
     emergencyStopCount: number;
   }) {
     if (!controlSessionId) {
-      setMessage("Control summary is local until a session starts.");
+      setMessage(copy.messages.controlLocal);
       return;
     }
 
@@ -1447,9 +1841,9 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       }).then((result) => {
         if (result.ok) {
           setControlSessionId(null);
-          setMessage("Control session summary saved.");
+          setMessage(copy.messages.controlSaved);
         } else {
-          setMessage(result.error ?? "Could not save control summary.");
+          setMessage(result.error ?? copy.messages.controlSaveError);
         }
       });
     });
@@ -1468,7 +1862,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
           </span>
           <span>
             <strong>ROBOFORGE</strong>
-            <small>OWNER GARAGE</small>
+            <small>{copy.topbar.brandSub}</small>
           </span>
         </button>
         <div className="rf-console-actions">
@@ -1489,10 +1883,14 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
               Neo
             </button>
           </div>
-          <Link className="rf-sign-out" href="/admin" title="Beta Ops">
+          <Link className="rf-sign-out" href="/admin" title={copy.topbar.adminTitle}>
             <ShieldCheck size={18} />
           </Link>
-          <Link className="rf-sign-out" href="/auth/sign-out" title="Sign out">
+          <Link
+            className="rf-sign-out"
+            href="/auth/sign-out"
+            title={copy.topbar.signOutTitle}
+          >
             <LogOut size={18} />
           </Link>
         </div>
@@ -1503,7 +1901,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
           onClick={() => setScreen("garage")}
           type="button"
         >
-          Garage
+          {copy.topbar.back}
         </button>
       ) : null}
       {statusMessage ? (
@@ -1518,12 +1916,15 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       ) : null}
       {savedInterestCount > 0 ? (
         <div className="rf-interest-count">
-          {savedInterestCount} saved upgrade signal
-          {savedInterestCount === 1 ? "" : "s"}
+          {savedInterestCount}{" "}
+          {savedInterestCount === 1
+            ? copy.topbar.savedInterestSingular
+            : copy.topbar.savedInterestPlural}
         </div>
       ) : null}
       {screen === "garage" ? (
         <Garage
+          copy={copy}
           isPending={isPending}
           onClaimRobot={claimRobot}
           onProgress={persistProgress}
@@ -1536,6 +1937,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       {screen === "connect" ? (
         <ConnectionQuest
           connectionSessionId={connectionSessionId}
+          copy={copy}
           isPending={isPending}
           onFail={failConnectionQuest}
           onFeedback={submitFeedbackReport}
@@ -1562,7 +1964,7 @@ export function OwnerConsole({ initialClaimCode, workspace }: OwnerConsoleProps)
       {screen === "store" ? (
         <Store onBeta={openBeta} onInterest={persistInterest} />
       ) : null}
-      <BottomNav screen={screen} setScreen={setScreen} />
+      <BottomNav copy={copy} screen={screen} setScreen={setScreen} />
       {betaOpen ? (
         <BetaModal
           defaultInterest={betaInterest}

@@ -44,6 +44,9 @@ export async function updateSession(request: NextRequest) {
   if (pathname.startsWith("/dashboard") && !user) {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("redirect", `${pathname}${request.nextUrl.search}`);
+    if (request.nextUrl.searchParams.get("lang") === "th") {
+      redirectUrl.searchParams.set("lang", "th");
+    }
     return NextResponse.redirect(redirectUrl);
   }
 

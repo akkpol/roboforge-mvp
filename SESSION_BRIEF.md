@@ -10,6 +10,9 @@ without learning IoT first.
 The first target is a real beta with 100-1000 users, so we can learn whether the
 product and backend can handle early usage.
 
+In plain customer terms: RoboForge should let people own a robot, learn how the
+parts work, upgrade it safely, and move through setup like a game.
+
 ## Product Shape
 
 - Users can sign up and log in.
@@ -24,6 +27,10 @@ product and backend can handle early usage.
 - Users can connect to a robot in a simple guided flow that feels like a game.
 - Users can open a Cockpit and control the robot.
 - Lyra helps with setup, errors, and next steps.
+- Missions teach and validate each step, from first connection to safe driving.
+- Hardware Codex explains the real parts in the kit in plain language.
+- Firmware Lab should start by showing version, compatibility, and safe update
+  guidance before any one-click firmware upgrade is allowed.
 - The backend records enough data to know what worked, what failed, and where
   users got stuck.
 - Hardware details may change. The product should support the current prototype
@@ -58,6 +65,10 @@ controlling their own robot, not filling out technical forms.
   power switch, and readiness status.
 - Bench checklist capture for power, robot Wi-Fi, protocol checks,
   raised-wheel movement, emergency stop, and floor readiness.
+- Hardware Codex foundation for ESP32, motor driver, battery, motor layout, and
+  safety protection.
+- Firmware Lab foundation for version display, compatibility status, release
+  notes, and safe upgrade guidance.
 
 ## Ask When Needed
 
