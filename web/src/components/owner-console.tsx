@@ -171,6 +171,10 @@ const ownerCopy = {
       body:
         "Plain hardware notes and safe firmware guidance for the current beta kit.",
       eyebrow: "HARDWARE CODEX / FIRMWARE LAB",
+      map: {
+        body: "A visual route into the same lessons below.",
+        title: "Rover part map",
+      },
       firmware: {
         body: "Understand the code on the robot before changing it.",
         compatibility:
@@ -441,6 +445,10 @@ const ownerCopy = {
       body:
         "รู้จักชิ้นส่วนในชุดเบต้า และดูแนวทางอัปเดตเฟิร์มแวร์แบบไม่เสี่ยงเกินไป",
       eyebrow: "Hardware Codex / Firmware Lab",
+      map: {
+        body: "แผนที่ชิ้นส่วนที่พาไปบทเรียนด้านล่าง",
+        title: "แผนที่ชิ้นส่วน Rover",
+      },
       firmware: {
         body: "ดูโค้ดที่อยู่ในหุ่นให้เข้าใจก่อนเปลี่ยน",
         compatibility:
@@ -1639,18 +1647,77 @@ function deviceHardwareName(
 }
 
 const codexIcons = [CircuitBoard, Wrench, BatteryCharging, ShieldCheck] as const;
+const hardwarePartKeys = ["board", "motorDriver", "battery", "wiring"] as const;
+const hotspotPositions = [
+  { left: "49%", top: "39%" },
+  { left: "54%", top: "58%" },
+  { left: "40%", top: "70%" },
+  { left: "66%", top: "75%" },
+] as const;
+
+function RoverPartMap({
+  copy,
+  device,
+  theme,
+}: {
+  copy: OwnerCopy;
+  device: RobotDevice | null;
+  theme: ThemeId;
+}) {
+  const selectedTheme = themes[theme];
+
+  return (
+    <div className="rf-part-map">
+      <div>
+        <span className="eyebrow">{copy.engineer.map.title}</span>
+        <p>{copy.engineer.map.body}</p>
+      </div>
+      <div className="rf-part-map__visual">
+        <Image
+          alt={`${selectedTheme.robotName} hardware learning map`}
+          fill
+          sizes="(min-width: 900px) 48vw, 100vw"
+          src={selectedTheme.image}
+          unoptimized
+        />
+        {copy.engineer.hardware.parts.map((part, index) => {
+          const learnedName = deviceHardwareName(
+            device,
+            hardwarePartKeys[index] ?? "board",
+            part.name,
+          );
+
+          return (
+            <a
+              aria-label={`${part.label}: ${learnedName}`}
+              className="rf-part-hotspot"
+              href={`#${part.id}`}
+              key={part.id}
+              style={hotspotPositions[index]}
+            >
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{part.label}</strong>
+              <small>{learnedName}</small>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function Engineer({
   copy,
   device,
+  theme,
 }: {
   copy: OwnerCopy;
   device: RobotDevice | null;
+  theme: ThemeId;
 }) {
   const [selected, setSelected] = useState(0);
   const script =
     copy.engineer.support.scripts[selected] ?? copy.engineer.support.scripts[0];
-  const partKeys = ["board", "motorDriver", "battery", "wiring"] as const;
 
   return (
     <main className="rf-screen">
@@ -1668,6 +1735,7 @@ function Engineer({
         <article className="rf-codex-panel">
           <span className="eyebrow">{copy.engineer.hardware.title}</span>
           <p>{copy.engineer.hardware.body}</p>
+          <RoverPartMap copy={copy} device={device} theme={theme} />
           <nav className="rf-learning-map" aria-label={copy.engineer.hardware.title}>
             {copy.engineer.hardware.parts.map((part) => (
               <a href={`#${part.id}`} key={part.id}>
@@ -1680,7 +1748,7 @@ function Engineer({
               const Icon = codexIcons[index] ?? CircuitBoard;
               const learnedName = deviceHardwareName(
                 device,
-                partKeys[index] ?? "board",
+                hardwarePartKeys[index] ?? "board",
                 part.name,
               );
 
@@ -2267,7 +2335,7 @@ export function OwnerConsole({
       ) : null}
       {screen === "missions" ? <Missions progress={progress} /> : null}
       {screen === "engineer" ? (
-        <Engineer copy={copy} device={activeDevice} />
+        <Engineer copy={copy} device={activeDevice} theme={theme} />
       ) : null}
       {screen === "store" ? (
         <Store onBeta={openBeta} onInterest={persistInterest} />

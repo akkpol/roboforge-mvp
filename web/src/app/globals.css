@@ -2508,6 +2508,67 @@ textarea:focus-visible {
   gap: 8px;
 }
 
+.rf-part-map {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.rf-part-map > div:first-child p {
+  margin: 7px 0 0;
+}
+
+.rf-part-map__visual {
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.rf-part-map__visual img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.rf-part-hotspot {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  width: min(168px, 38vw);
+  min-height: 54px;
+  gap: 1px;
+  padding: 9px 11px;
+  border: 1px solid var(--accent);
+  color: var(--text);
+  background: var(--surface-glass-medium);
+  text-decoration: none;
+  transform: translate(-50%, -50%);
+}
+
+.rf-part-hotspot span,
+.rf-part-hotspot small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rf-part-hotspot strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rf-part-hotspot:hover,
+.rf-part-hotspot:focus-visible {
+  border-color: var(--accent-2);
+  color: var(--accent);
+  background: var(--panel-strong);
+}
+
 .rf-learning-map {
   display: flex;
   flex-wrap: wrap;
@@ -2881,6 +2942,20 @@ textarea:focus-visible {
 
   .rf-fleet-card img {
     height: 68px;
+  }
+
+  .rf-part-map__visual {
+    min-height: 320px;
+  }
+
+  .rf-part-hotspot {
+    width: min(140px, 44vw);
+    min-height: 46px;
+    padding: 7px 9px;
+  }
+
+  .rf-part-hotspot strong {
+    font-size: 12px;
   }
 
   .rf-garage-feature h2,
