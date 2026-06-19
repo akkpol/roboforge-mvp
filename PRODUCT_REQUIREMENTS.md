@@ -76,6 +76,11 @@ later. The stable contract should be the robot protocol in
 Hardware can change later if the robot still speaks the same RoboForge control
 language.
 
+The current candidate from the prototype photos is ESP32 DevKit /
+ESP32-WROOM-32, L298N, TT DC motors, and a 2S 18650 Li-ion pack. Keep the
+details in `docs/ROVER_01_CANDIDATE_HARDWARE_TH.md` and `/admin` Hardware
+Profile, but do not treat the exact board as the product boundary.
+
 ## Backend Direction
 
 Supabase should be used as the beta system of record, not as a live joystick

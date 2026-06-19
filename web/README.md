@@ -104,6 +104,13 @@ chemistry/cell count, motor channel mapping, wiring note/photo, power switch,
 and fuse/protected pack before it writes the kit. Do not create a physical kit
 from defaults when those facts are unknown.
 
+The current likely Rover-01 candidate from prototype photos is ESP32 DevKit /
+ESP32-WROOM-32, L298N, TT DC motors, and a 2S 18650 Li-ion pack. `/admin`
+includes a candidate preset for faster data entry, but the switch,
+fuse/protected pack, BMS, and motor polarity still need real-world verification.
+Keep the longer Thai hardware note in
+`docs/ROVER_01_CANDIDATE_HARDWARE_TH.md`.
+
 The QR opens `/dashboard?claim=<code>`. After login, the owner Garage claims the
 robot and removes the code from the URL.
 

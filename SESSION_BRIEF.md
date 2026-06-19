@@ -33,6 +33,8 @@ product and backend can handle early usage.
   lightweight.
 - The physical robot contract is `docs/ROBOT_PROTOCOL.md`; keep live motor
   commands local to the robot Wi-Fi.
+- The likely first hardware candidate from prototype photos is documented in
+  `docs/ROVER_01_CANDIDATE_HARDWARE_TH.md`.
 
 ## Current Direction
 

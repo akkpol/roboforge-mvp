@@ -574,6 +574,34 @@ textarea:focus-visible {
   line-height: 1.35;
 }
 
+.ops-preset-card {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-panel-glass-soft);
+}
+
+.ops-preset-card div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ops-preset-card strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.ops-preset-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .ops-form input::placeholder {
   color: var(--color-text-subtle);
 }

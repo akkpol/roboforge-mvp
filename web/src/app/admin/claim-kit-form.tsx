@@ -10,7 +10,7 @@ import {
   Terminal,
 } from "lucide-react";
 import Image from "next/image";
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import {
   createClaimKitAction,
   type ClaimKitState,
@@ -21,6 +21,27 @@ const initialState: ClaimKitState = {
   kit: null,
   ok: false,
 };
+
+const roverCandidateNotes = [
+  "Candidate from photos: ESP32 DevKit V1 / ESP32-WROOM-32, L298N dual H-bridge, 2S 18650 Li-ion holder, TT DC motors.",
+  "Firmware pin map: ENA=GPIO25, IN1=GPIO26, IN2=GPIO27, ENB=GPIO33, IN3=GPIO32, IN4=GPIO14, battery ADC=GPIO34.",
+  "Keep ENA/ENB jumpers removed for PWM speed control. Confirm left/right polarity with wheels raised.",
+  "Do not mark ready until power switch and fuse/protected pack are physically verified.",
+].join("\n");
+
+function setFormControl(form: HTMLFormElement, name: string, value: string) {
+  const field = form.elements.namedItem(name);
+
+  if (
+    field instanceof HTMLInputElement ||
+    field instanceof HTMLSelectElement ||
+    field instanceof HTMLTextAreaElement
+  ) {
+    field.value = value;
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -64,10 +85,24 @@ function CopyBlock({
 }
 
 export function ClaimKitForm() {
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(
     createClaimKitAction,
     initialState,
   );
+
+  function applyRoverCandidatePreset() {
+    if (!formRef.current) return;
+
+    setFormControl(formRef.current, "robotType", "rover");
+    setFormControl(formRef.current, "boardType", "ESP32 DevKit V1 (ESP32-WROOM-32)");
+    setFormControl(formRef.current, "motorDriver", "L298N dual H-bridge");
+    setFormControl(formRef.current, "batteryChemistry", "li-ion");
+    setFormControl(formRef.current, "batteryCells", "2");
+    setFormControl(formRef.current, "motorChannels", "differential_drive");
+    setFormControl(formRef.current, "wiringStatus", "photo_received");
+    setFormControl(formRef.current, "wiringNotes", roverCandidateNotes);
+  }
 
   return (
     <article className="ops-panel ops-claim-panel">
@@ -80,7 +115,24 @@ export function ClaimKitForm() {
         tester. The database stores only the hashed code.
       </p>
 
-      <form action={formAction} className="ops-form">
+      <form action={formAction} className="ops-form" ref={formRef}>
+        <section className="ops-preset-card" aria-label="Likely rover hardware preset">
+          <div>
+            <strong>Likely Rover-01 preset</strong>
+            <button
+              className="ops-copy-button"
+              onClick={applyRoverCandidatePreset}
+              type="button"
+            >
+              Use candidate
+            </button>
+          </div>
+          <p>
+            Fills ESP32 DevKit, L298N, 2S Li-ion, and differential drive from
+            the prototype photos. It does not verify switch, fuse, BMS, or motor
+            polarity.
+          </p>
+        </section>
         <label>
           Unit code
           <input name="unitCode" placeholder="RF-RV-0001" required />

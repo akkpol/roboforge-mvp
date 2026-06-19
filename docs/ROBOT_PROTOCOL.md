@@ -176,3 +176,7 @@ Store these fields in the SaaS `/admin` Hardware Profile panel for the unit.
 Then record bench, raised-wheel, and floor test results in the `/admin` Bench
 Checklist panel. A robot is floor-ready after the profile is filled and the
 raised-wheel protocol check has passed.
+
+For the current likely Rover-01 prototype profile from photos, use
+`docs/ROVER_01_CANDIDATE_HARDWARE_TH.md` as the starting assumption, then
+replace it with measured facts when the physical kit arrives.

@@ -4,6 +4,8 @@ ESP32 firmware for the local Rover-01 cockpit. The ESP32 creates a private Wi-Fi
 
 The stable app-to-robot contract is [RoboForge Robot Protocol v1](../docs/ROBOT_PROTOCOL.md).
 Hardware can change later if the robot still implements that contract.
+The current likely first hardware profile from prototype photos is documented in
+[Rover-01 Candidate Hardware](../docs/ROVER_01_CANDIDATE_HARDWARE_TH.md).
 
 ## Standard Wiring
 
