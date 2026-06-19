@@ -33,11 +33,11 @@ const authCopy = {
   },
   th: {
     configuredWarning:
-      "Supabase ยังไม่เชื่อมต่อ ต้องตั้ง NEXT_PUBLIC_SUPABASE_URL และ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ใน `.env.local` ก่อน",
+      "Supabase ยังไม่เชื่อมต่อ ต้องตั้งค่า NEXT_PUBLIC_SUPABASE_URL และ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ใน `.env.local` ก่อน",
     createAccount: "สร้างบัญชี",
     email: "อีเมล",
     emailAccess: "เข้าด้วยอีเมล",
-    envMissing: "เพิ่ม Supabase env vars ก่อน แล้ว restart dev server",
+    envMissing: "ตั้งค่าตัวแปร Supabase ก่อน แล้ว restart dev server",
     google: "เข้าสู่ระบบด้วย Google",
     googleBusy: "กำลังเปิด Google...",
     login: "เข้าสู่ระบบ",
@@ -47,7 +47,7 @@ const authCopy = {
     passwordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
     signUp: "สมัครบัญชี",
     signupNeedsConfirmation:
-      "สร้างบัญชีแล้ว ถ้าเปิดยืนยันอีเมลไว้ ให้เช็คกล่องอีเมลก่อนเข้าใช้งาน",
+      "สร้างบัญชีแล้ว ถ้าเปิดการยืนยันอีเมลไว้ ให้เช็คกล่องอีเมลก่อนเข้าใช้งาน",
     working: "กำลังทำงาน...",
   },
 } as const;

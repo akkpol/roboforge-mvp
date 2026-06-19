@@ -36,7 +36,7 @@ function authMessage(
   if (rawDescription) return rawDescription;
   if (rawError === "oauth") {
     if (locale === "th") {
-      return "Google login กลับมาที่ RoboForge แล้ว แต่แลก session code ไม่สำเร็จ ให้เช็ค Supabase และ Google OAuth callback settings";
+      return "Google ส่งกลับมาที่ RoboForge แล้ว แต่ระบบยังสร้าง session ไม่สำเร็จ ให้เช็คการตั้งค่า Supabase และ Google OAuth callback";
     }
     return "Google login returned to RoboForge, but the session code could not be exchanged. Check Supabase and Google OAuth callback settings.";
   }
@@ -61,7 +61,7 @@ const loginCopy = {
     fallback: "กำลังโหลดระบบเข้าสู่ระบบ...",
     title: "เข้าสู่ Web Garage ของคุณ",
     body:
-      "นี่คือทางเข้าจริงของ RoboForge สำหรับบัญชีเจ้าของ, claim คิตเบต้า, และดูความคืบหน้าของหุ่น ส่วนเดโมเก่ายังแยกไว้สำหรับลองเล่นโดยไม่ต้อง login",
+      "นี่คือทางเข้าจริงของ RoboForge สำหรับบัญชีเจ้าของ การรับสิทธิ์ชุดเบต้า และการดูความคืบหน้าของหุ่น ส่วนเดโมยังแยกไว้ให้ลองเล่นโดยไม่ต้องเข้าสู่ระบบ",
   },
 } as const;
 

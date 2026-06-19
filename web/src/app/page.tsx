@@ -56,7 +56,7 @@ const homeCopy = {
     },
     entry: {
       eyebrow: "START PATH",
-      title: "One website first. Local robot control only when a unit is ready.",
+      title: "Start on the web. Drive locally when the robot is ready.",
       steps: [
         {
           body:
@@ -72,7 +72,7 @@ const homeCopy = {
         },
         {
           body:
-            "Live joystick commands stay on the robot Wi-Fi page; RoboForge Web saves outcomes.",
+            "Live driving stays on the robot's Wi-Fi page; RoboForge Web saves outcomes.",
           label: "03 Local Cockpit",
           title: "Drive only after connection",
         },
@@ -80,11 +80,11 @@ const homeCopy = {
     },
     routes: {
       eyebrow: "WHERE TO GO",
-      title: "Four doors, one product flow.",
+      title: "Four entry points, one product flow.",
       items: [
         {
           body: "For owners creating an account before any robot is claimed.",
-          cta: "Open login",
+          cta: "Go to login",
           href: "/login",
           label: "/login",
           title: "New owner",
@@ -104,7 +104,7 @@ const homeCopy = {
           title: "Beta Ops",
         },
         {
-          body: "For anyone who only wants to feel the RoboForge concept without login.",
+          body: "For visitors who want to try the RoboForge concept without signing in.",
           cta: "Open demo",
           href: "/demo/index.html",
           label: "/demo/index.html",
@@ -124,7 +124,7 @@ const homeCopy = {
     },
     hero: {
       body:
-        "The Web Garage is the main door: create an owner account, claim a beta kit, follow Connection Quest, then open the robot local Cockpit when real hardware is ready.",
+        "Web Garage is the starting point: create an owner account, claim a beta kit, follow Connection Quest, then open the robot's local Cockpit when real hardware is ready.",
       eyebrow: "ROBOT IDENTITY PLATFORM",
       headline: "YOUR ROBOT.",
       headlineAccent: "EVOLVED.",
@@ -146,55 +146,55 @@ const homeCopy = {
     },
     entry: {
       eyebrow: "เส้นทางเริ่มต้น",
-      title: "เริ่มจากเว็บเดียว แล้วค่อยควบคุมหุ่นเมื่อเครื่องจริงพร้อม",
+      title: "เริ่มบนเว็บ แล้วค่อยขับหุ่นเมื่อเครื่องจริงพร้อม",
       steps: [
         {
           body:
-            "ใช้บัญชีเดียวสำหรับโรงรถดิจิทัล สมัครเบต้า ความเป็นเจ้าของ ความคืบหน้า และซัพพอร์ต",
+            "ใช้บัญชีเดียวสำหรับ Web Garage, การสมัครเบต้า, ความเป็นเจ้าของ, ความคืบหน้า และซัพพอร์ต",
           label: "01 Web Garage",
           title: "เริ่มตรงนี้",
         },
         {
           body:
-            "เมื่อได้คิตเบต้า สแกน QR เพื่อ claim แล้วให้ Lyra พาเชื่อมต่อ Wi-Fi ของหุ่นทีละขั้น",
-          label: "02 Claim + connect",
+            "เมื่อได้ชุดเบต้า สแกน QR เพื่อรับสิทธิ์ แล้วให้ Lyra พาเชื่อมต่อ Wi-Fi ของหุ่นทีละขั้น",
+          label: "02 รับสิทธิ์ + เชื่อมต่อ",
           title: "เพิ่มเครื่องจริง",
         },
         {
           body:
-            "คำสั่ง joystick จริงอยู่บนหน้า Wi-Fi ของหุ่น ส่วน RoboForge Web เก็บผลลัพธ์และความคืบหน้า",
-          label: "03 Local Cockpit",
+            "การขับหุ่นแบบสดอยู่บนหน้า Wi-Fi ของหุ่น ส่วน RoboForge Web เก็บผลลัพธ์และความคืบหน้า",
+          label: "03 Cockpit ในหุ่น",
           title: "ขับเมื่อเชื่อมต่อแล้ว",
         },
       ],
     },
     routes: {
       eyebrow: "ต้องเข้าเว็บไหน",
-      title: "มี 4 ประตู แต่ flow เดียวกัน",
+      title: "มี 4 ทางเข้า แต่ใช้เส้นทางเดียวกัน",
       items: [
         {
           body: "สำหรับเจ้าของที่เริ่มสมัครหรือเข้าสู่ระบบก่อนมีหุ่นจริง",
-          cta: "เปิด login",
+          cta: "เข้าสู่ระบบ",
           href: "/login",
           label: "/login",
           title: "เจ้าของใหม่",
         },
         {
-          body: "สำหรับคนที่ได้ QR card หรือ claim code มากับคิตเบต้า",
+          body: "สำหรับคนที่ได้การ์ด QR หรือรหัสรับสิทธิ์มากับชุดเบต้า",
           cta: "เปิด Garage",
           href: "/dashboard",
           label: "/dashboard?claim=CODE",
-          title: "Claim หุ่น",
+          title: "รับสิทธิ์หุ่น",
         },
         {
-          body: "สำหรับทีมที่สร้างคิต กรอก hardware profile และเก็บผล bench test",
-          cta: "เปิด Ops",
+          body: "สำหรับทีมที่สร้างคิต กรอกข้อมูลฮาร์ดแวร์ และเก็บผลทดสอบบนโต๊ะ",
+          cta: "เปิดหน้า Ops",
           href: "/admin",
           label: "/admin",
-          title: "ทีมเบต้า",
+          title: "ทีมดูแลเบต้า",
         },
         {
-          body: "สำหรับคนที่อยากลองฟีล RoboForge ก่อน โดยยังไม่ต้อง login",
+          body: "สำหรับคนที่อยากลองสัมผัส RoboForge ก่อน โดยยังไม่ต้องเข้าสู่ระบบ",
           cta: "เปิดเดโม",
           href: "/demo/index.html",
           label: "/demo/index.html",
@@ -210,11 +210,11 @@ const homeCopy = {
         coming: "กำลังมา",
         concept: "แนวคิด",
       },
-      title: "เริ่มจาก rover หนึ่งตัว แล้วเตรียมระบบไว้รองรับเจ้าของหลายคน",
+      title: "เริ่มจาก rover หนึ่งตัว แล้วเตรียมระบบให้รองรับเจ้าของหลายคน",
     },
     hero: {
       body:
-        "Web Garage คือประตูหลัก: สร้างบัญชีเจ้าของ claim คิตเบต้า ทำตาม Connection Quest แล้วเปิด Cockpit ของหุ่นเมื่อ hardware จริงพร้อม",
+        "Web Garage คือจุดเริ่มต้น: สร้างบัญชีเจ้าของ รับสิทธิ์ชุดเบต้า ทำตาม Connection Quest แล้วเปิด Cockpit ของหุ่นเมื่อฮาร์ดแวร์จริงพร้อม",
       eyebrow: "แพลตฟอร์มตัวตนหุ่นยนต์",
       headline: "หุ่นของคุณ.",
       headlineAccent: "พัฒนาได้.",
