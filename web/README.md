@@ -33,6 +33,10 @@ Do not pause the MVP to translate every screen yet. Keep new UI copy grouped in
 small data objects or dictionaries when practical, so Thai and English can move
 into a full App Router `[lang]` dictionary later without rewriting screens.
 
+The public landing page has the first lightweight locale switch through
+`/?lang=th`. Keep that page copy in its local dictionary until the product needs
+a full app-wide route strategy.
+
 The app has a small theme token layer in `globals.css`. New UI should use
 semantic CSS variables such as `--bg`, `--panel`, `--text`, `--muted`,
 `--accent`, `--accent-2`, `--accent-3`, `--line`, `--success`, and `--danger`
@@ -44,6 +48,8 @@ global selectors `.theme-forge`, `[data-theme="forge"]`, `.theme-neo`, and
 `[data-theme="neo"]` are the intended extension points. Add a new token before
 hardcoding a reusable color. This keeps future Forge/Neo or market-specific
 themes editable from the global theme layer instead of each component.
+Hex and rgba values should stay in the token blocks unless the value is truly
+one-off and not part of the product skin.
 
 ## Started Work To Preserve
 

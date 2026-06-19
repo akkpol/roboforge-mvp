@@ -18,15 +18,25 @@
   --color-danger: #ff5c58;
   --color-danger-bg: #241011;
   --color-danger-border: rgba(255, 92, 88, 0.42);
+  --color-danger-border-strong: rgba(255, 92, 88, 0.52);
   --color-danger-text: #ffb0ad;
+  --color-info-text: #c8f8ff;
   --color-success: #66e4c4;
   --color-warning-text: #ffd39d;
+  --color-warning-border: rgba(255, 157, 28, 0.42);
+  --color-warning-bg: rgba(255, 157, 28, 0.1);
   --color-white: #ffffff;
   --surface-glass: rgba(5, 8, 13, 0.7);
   --surface-glass-soft: rgba(5, 8, 13, 0.35);
+  --surface-glass-medium: rgba(5, 8, 13, 0.86);
+  --surface-glass-card: rgba(5, 8, 13, 0.88);
   --surface-glass-strong: rgba(5, 8, 13, 0.94);
   --surface-panel-glass: rgba(10, 17, 25, 0.86);
+  --surface-panel-glass-soft: rgba(10, 17, 25, 0.82);
   --surface-panel-glass-strong: rgba(10, 17, 25, 0.92);
+  --surface-code: #07111a;
+  --surface-topbar: rgba(5, 8, 13, 0.92);
+  --surface-mobile-nav: rgba(5, 8, 13, 0.96);
   --scrim: rgba(0, 0, 0, 0.78);
   --page-aura-primary: rgba(255, 157, 28, 0.08);
   --page-aura-secondary: rgba(102, 228, 196, 0.08);
@@ -65,8 +75,17 @@
   --color-accent-2: #86f7ff;
   --color-accent-3: #b890ff;
   --color-accent-soft: rgba(255, 111, 183, 0.14);
+  --color-info-text: #d9fbff;
+  --color-warning-border: rgba(255, 111, 183, 0.42);
+  --color-warning-bg: rgba(255, 111, 183, 0.1);
+  --surface-glass-medium: rgba(7, 7, 19, 0.86);
+  --surface-glass-card: rgba(7, 7, 19, 0.88);
   --surface-panel-glass: rgba(16, 13, 31, 0.86);
+  --surface-panel-glass-soft: rgba(16, 13, 31, 0.82);
   --surface-panel-glass-strong: rgba(16, 13, 31, 0.92);
+  --surface-code: #0e1020;
+  --surface-topbar: rgba(7, 7, 19, 0.92);
+  --surface-mobile-nav: rgba(7, 7, 19, 0.96);
   --page-aura-primary: rgba(255, 111, 183, 0.1);
   --page-aura-secondary: rgba(134, 247, 255, 0.08);
   --shadow-accent: 0 14px 35px rgba(255, 111, 183, 0.18);
@@ -398,8 +417,8 @@ textarea:focus-visible {
 
 .ops-runway__headline span.is-blocked,
 .ops-runway__list span.is-blocked {
-  border-color: rgba(255, 92, 88, 0.52);
-  background: #241011;
+  border-color: var(--color-danger-border-strong);
+  background: var(--color-danger-bg);
 }
 
 .ops-runway__headline strong {
@@ -432,7 +451,7 @@ textarea:focus-visible {
   width: 100%;
   height: 7px;
   border: 1px solid var(--line-bright);
-  background: rgba(5, 8, 13, 0.7);
+  background: var(--surface-glass);
 }
 
 .ops-runway__list b {
@@ -556,7 +575,7 @@ textarea:focus-visible {
 }
 
 .ops-form input::placeholder {
-  color: #6f8290;
+  color: var(--color-text-subtle);
 }
 
 .ops-form-row,
@@ -579,7 +598,7 @@ textarea:focus-visible {
 .ops-claim-card img {
   width: 180px;
   height: 180px;
-  background: #fff;
+  background: var(--color-white);
 }
 
 .ops-claim-card div {
@@ -628,8 +647,8 @@ textarea:focus-visible {
 .ops-error {
   padding: 10px;
   border: 1px solid var(--danger);
-  color: #ffb0ad;
-  background: #241011;
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
 }
 
 .ops-success {
@@ -739,8 +758,8 @@ textarea:focus-visible {
   margin: 0;
   padding: 11px;
   border: 1px solid var(--line);
-  color: #c8f8ff;
-  background: #07111a;
+  color: var(--color-info-text);
+  background: var(--surface-code);
   font-size: 11px;
   line-height: 1.55;
   white-space: pre-wrap;
@@ -758,7 +777,7 @@ textarea:focus-visible {
   gap: 16px;
   padding: 12px clamp(16px, 4vw, 42px);
   border-bottom: 1px solid var(--line);
-  background: rgba(5, 8, 13, 0.92);
+  background: var(--surface-topbar);
   backdrop-filter: blur(18px);
 }
 
@@ -786,7 +805,7 @@ textarea:focus-visible {
   place-items: center;
   border: 1px solid var(--accent);
   color: var(--accent);
-  background: rgba(255, 157, 28, 0.12);
+  background: var(--accent-soft);
 }
 
 .brand strong,
@@ -810,6 +829,27 @@ textarea:focus-visible {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.language-toggle {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--panel);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.language-toggle a {
+  color: var(--muted);
+}
+
+.language-toggle a.is-active {
+  color: var(--accent);
 }
 
 .quiet-link,
@@ -941,7 +981,7 @@ textarea:focus-visible {
   padding: 0 11px;
   border: 1px solid var(--line);
   color: var(--muted);
-  background: rgba(10, 17, 25, 0.82);
+  background: var(--surface-panel-glass-soft);
   font-size: 12px;
   font-weight: 700;
 }
@@ -978,7 +1018,7 @@ textarea:focus-visible {
   gap: 2px;
   padding: 14px 15px;
   border: 1px solid var(--line-bright);
-  background: rgba(5, 8, 13, 0.88);
+  background: var(--surface-glass-card);
   box-shadow: var(--shadow);
 }
 
@@ -1129,7 +1169,7 @@ textarea:focus-visible {
   width: min(460px, 100%);
   justify-self: center;
   border: 1px solid var(--line);
-  background: rgba(10, 17, 25, 0.92);
+  background: var(--surface-panel-glass-strong);
   box-shadow: var(--shadow);
 }
 
@@ -1149,7 +1189,7 @@ textarea:focus-visible {
 }
 
 .mode-tabs button.is-active {
-  color: #160d03;
+  color: var(--color-text-on-accent);
   background: var(--accent);
 }
 
@@ -1172,7 +1212,7 @@ textarea:focus-visible {
 }
 
 .oauth-button:hover {
-  box-shadow: 0 14px 35px rgba(102, 228, 196, 0.12);
+  box-shadow: var(--shadow-secondary);
 }
 
 .auth-divider {
@@ -1220,7 +1260,7 @@ textarea:focus-visible {
 }
 
 .auth-card input::placeholder {
-  color: #6f8290;
+  color: var(--color-text-subtle);
 }
 
 .auth-submit {
@@ -1348,7 +1388,7 @@ textarea:focus-visible {
   padding: 8px 11px;
   border: 1px solid var(--line);
   color: var(--accent-2);
-  background: rgba(10, 17, 25, 0.86);
+  background: var(--surface-panel-glass);
   font-size: 12px;
   font-weight: 700;
 }
@@ -1358,9 +1398,9 @@ textarea:focus-visible {
 }
 
 .rf-save-message.is-warning {
-  color: #ffd39d;
-  border-color: rgba(255, 157, 28, 0.42);
-  background: rgba(255, 157, 28, 0.1);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning-border);
+  background: var(--color-warning-bg);
 }
 
 .rf-screen {
@@ -1561,7 +1601,7 @@ textarea:focus-visible {
 }
 
 .rf-claim-form input::placeholder {
-  color: #6f8290;
+  color: var(--color-text-subtle);
 }
 
 .rf-fleet-rail {
@@ -1653,7 +1693,7 @@ textarea:focus-visible {
   gap: 2px;
   padding: 12px 13px;
   border: 1px solid var(--line-bright);
-  background: rgba(5, 8, 13, 0.86);
+  background: var(--surface-glass-medium);
 }
 
 .rf-robot-identity strong,
@@ -1840,7 +1880,7 @@ textarea:focus-visible {
 
 .rf-button--danger {
   border-color: var(--danger);
-  color: #ffffff;
+  color: var(--color-white);
   background: var(--danger);
 }
 
@@ -2228,7 +2268,7 @@ textarea:focus-visible {
   gap: 8px;
   padding: 10px;
   border: 1px solid var(--line);
-  background: rgba(5, 8, 13, 0.35);
+  background: var(--surface-glass-soft);
 }
 
 .rf-connection-details span,
@@ -2299,7 +2339,7 @@ textarea:focus-visible {
 }
 
 .rf-feedback-form textarea::placeholder {
-  color: #6f8290;
+  color: var(--color-text-subtle);
 }
 
 .rf-mission-panel h2 {
@@ -2518,7 +2558,7 @@ textarea:focus-visible {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 7px max(5px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(5px, env(safe-area-inset-left));
   border-top: 1px solid var(--line);
-  background: rgba(5, 8, 13, 0.96);
+  background: var(--surface-mobile-nav);
   backdrop-filter: blur(18px);
 }
 
