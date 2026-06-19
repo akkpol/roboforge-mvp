@@ -626,6 +626,24 @@ begin
         limit 8
       ) tests
     ), '[]'::jsonb),
+    'latestConnections', coalesce((
+      select jsonb_agg(to_jsonb(connections))
+      from (
+        select
+          connection_sessions.ended_at,
+          connection_sessions.failure_reason,
+          connection_sessions.metadata,
+          connection_sessions.result,
+          connection_sessions.robot_id,
+          connection_sessions.started_at,
+          robots.unit_code
+        from public.connection_sessions
+        left join public.robots
+          on robots.id = connection_sessions.robot_id
+        order by connection_sessions.started_at desc
+        limit 8
+      ) connections
+    ), '[]'::jsonb),
     'claimKits', coalesce((
       select jsonb_agg(to_jsonb(kits))
       from (

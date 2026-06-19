@@ -60,6 +60,15 @@ export type BetaHealth = {
     stage: string;
     unit_code: string | null;
   }>;
+  latestConnections?: Array<{
+    ended_at: string | null;
+    failure_reason: string | null;
+    metadata: Record<string, unknown> | null;
+    result: string;
+    robot_id: string;
+    started_at: string;
+    unit_code: string | null;
+  }>;
   readinessBreakdown?: Record<string, number>;
   topEvents: Array<{
     created_at: string;

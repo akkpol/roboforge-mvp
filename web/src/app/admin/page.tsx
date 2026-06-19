@@ -91,6 +91,14 @@ function targetPercent(value: number, target: number) {
   return Math.min(100, Math.round((value / target) * 100));
 }
 
+function metadataText(
+  metadata: Record<string, unknown> | null | undefined,
+  key: string,
+) {
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function ScaleProgress({
   current,
   label,
@@ -403,6 +411,7 @@ export default async function AdminPage() {
   const successCount = data.connectionResults.success ?? 0;
   const failedCount = data.connectionResults.failed ?? 0;
   const connectionFailureEntries = Object.entries(data.connectionFailures ?? {});
+  const latestConnections = data.latestConnections ?? [];
   const totalFinishedConnections = successCount + failedCount;
   const successRate =
     totalFinishedConnections > 0
@@ -537,6 +546,46 @@ export default async function AdminPage() {
                     <small>{count.toLocaleString()}</small>
                   </span>
                 ))}
+              </div>
+            </>
+          ) : null}
+          {latestConnections.length > 0 ? (
+            <>
+              <small className="ops-subhead">Recent attempts</small>
+              <div className="ops-feed">
+                {latestConnections.map((connection) => {
+                  const expectedSsid = metadataText(
+                    connection.metadata,
+                    "expected_ssid",
+                  );
+                  const localUrl = metadataText(
+                    connection.metadata,
+                    "local_cockpit_url",
+                  );
+                  const unitCode =
+                    connection.unit_code ??
+                    metadataText(connection.metadata, "unit_code") ??
+                    "Robot";
+                  const reason = connection.failure_reason
+                    ? connection.failure_reason.replaceAll("_", " ")
+                    : "no issue recorded";
+
+                  return (
+                    <span key={`${connection.started_at}-${connection.robot_id}`}>
+                      <strong>
+                        {unitCode} / {connection.result}
+                      </strong>
+                      <small>
+                        {reason} /{" "}
+                        {new Date(connection.started_at).toLocaleString()}
+                      </small>
+                      <p>
+                        {expectedSsid ? `SSID ${expectedSsid}` : "SSID not captured"} ·{" "}
+                        {localUrl ?? "local page not captured"}
+                      </p>
+                    </span>
+                  );
+                })}
               </div>
             </>
           ) : null}
