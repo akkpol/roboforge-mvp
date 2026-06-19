@@ -154,6 +154,18 @@ https://<project-ref>.supabase.co/auth/v1/callback
 
 ## Beta Load Test
 
+Run the read-only Supabase readiness check first. It loads `.env.local`, checks
+the expected tables and admin RPCs, and does not write data:
+
+```bash
+npm run check:supabase
+```
+
+With only the publishable key, the check reports `verificationLevel:
+limited_by_rls`. Add `SUPABASE_SERVICE_ROLE_KEY` locally when you need full
+read-only counts without logging in to `/admin`; the script still does not write
+data.
+
 Dry-run the expected row volume for the first beta without writing data:
 
 ```bash
