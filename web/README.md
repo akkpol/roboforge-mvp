@@ -169,6 +169,10 @@ profiles, bench and raised-wheel test records, connection summaries, control
 summaries, events, and feedback. It intentionally does not model live joystick
 commands as cloud rows.
 
+The dry-run output includes a `readinessReport` with row budget, summary-only
+backend assumptions, and the checks that still require a disposable Supabase
+branch/test project plus `/admin` verification.
+
 ## Deploy
 
 Use a new Vercel project with Root Directory set to `web`.

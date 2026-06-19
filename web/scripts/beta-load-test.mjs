@@ -8,12 +8,29 @@ const args = new Map(
   }),
 );
 
-const users = Number(args.get("users") ?? 100);
-const robots = Number(args.get("robots") ?? Math.min(users, 300));
+function integerArg(key, fallback) {
+  const value = Number(args.get(key) ?? fallback);
+  if (Number.isInteger(value) && value >= 0) return value;
+  console.error(`--${key} must be a non-negative integer.`);
+  process.exit(1);
+}
+
+const users = integerArg("users", 100);
+const robots = integerArg("robots", Math.min(users, 300));
 const execute = args.get("execute") === "true";
 const batchId = args.get("batch") ?? `seed-${Date.now()}`;
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (users < 1) {
+  console.error("--users must be at least 1.");
+  process.exit(1);
+}
+
+if (execute && robots < 1) {
+  console.error("--robots must be at least 1 when --execute=true.");
+  process.exit(1);
+}
 
 function estimateRows() {
   return {
@@ -31,6 +48,64 @@ function estimateRows() {
   };
 }
 
+function roundMetric(value) {
+  return Math.round(value * 100) / 100;
+}
+
+function buildReadinessReport(rows) {
+  const totalRows = Object.values(rows).reduce((sum, value) => sum + value, 0);
+  const ownerOutcomeRows =
+    rows.connection_sessions +
+    rows.control_sessions +
+    rows.feedback_reports +
+    rows.robot_bench_tests +
+    rows.robot_events;
+
+  return {
+    assumptions: {
+      commandPath: "Live joystick commands stay on the robot local Wi-Fi API.",
+      hardwareProfile:
+        "Seeded rows model the current Rover candidate: ESP32/L298N/2S Li-ion plus variants.",
+      liveJoystickRowsInSupabase: 0,
+      targetRobots: robots,
+      targetUsers: users,
+    },
+    gates: [
+      {
+        check: "Supabase stays a system of record, not a joystick stream.",
+        evidence:
+          "The generated data models summaries, events, bench evidence, and feedback only.",
+        status: "pass-in-plan",
+      },
+      {
+        check: "The admin dashboard has enough rows to review beta health.",
+        evidence:
+          "Seeded rows cover owner profiles, robots, devices, bench tests, connection sessions, control summaries, events, and feedback.",
+        status: "pass-in-plan",
+      },
+      {
+        check: "RLS and admin RPC behavior are tested against real Supabase.",
+        evidence:
+          "Requires --execute on a disposable Supabase branch or test project, then /admin verification.",
+        status: execute ? "requires-post-seed-check" : "not-run-in-dry-run",
+      },
+      {
+        check: "Physical hardware is not falsely marked proven.",
+        evidence:
+          "Seeded hardware is beta evidence simulation. Real Rover-01 still needs bench and raised-wheel evidence from the actual kit.",
+        status: "requires-real-hardware",
+      },
+    ],
+    rowBudget: {
+      authUsers: users,
+      ownerOutcomeRows,
+      rowsPerRobot: robots > 0 ? roundMetric(totalRows / robots) : 0,
+      rowsPerUser: users > 0 ? roundMetric(totalRows / users) : 0,
+      totalRows,
+    },
+  };
+}
+
 function printPlan() {
   const rows = estimateRows();
   const totalRows = Object.values(rows).reduce((sum, value) => sum + value, 0);
@@ -41,6 +116,12 @@ function printPlan() {
       dryRun: !execute,
       note:
         "Default mode does not write to Supabase. Pass --execute only against a disposable branch or test project.",
+      followUpCommands: [
+        "npm run seed:beta -- --users=100 --robots=10",
+        "npm run seed:beta -- --users=1000 --robots=300",
+        "$env:ROBOFORGE_ALLOW_PROD_SEED='true'; npm run seed:beta -- --users=100 --robots=10 --execute --batch=<test-batch>",
+      ],
+      readinessReport: buildReadinessReport(rows),
       rows,
       totalRows,
       users,
