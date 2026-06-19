@@ -32,6 +32,7 @@ connect, and drive like a game.
 
 - `/` explains the product path and routes people by role.
 - `/login` is the owner entry for account creation and Google/email login.
+- `/login?lang=th` is the Thai owner entry from the Thai landing page.
 - `/dashboard` is the logged-in owner Garage.
 - `/dashboard?claim=CODE` is the QR/code claim path for a physical beta kit.
 - `/admin` is the Beta Ops view for claim kits, hardware profiles, bench

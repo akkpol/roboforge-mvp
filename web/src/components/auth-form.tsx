@@ -8,7 +8,49 @@ import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 
 type Mode = "sign-in" | "sign-up";
 type BusyAction = "email" | "google" | null;
+type AuthLocale = "en" | "th";
 const oauthNextCookieName = "roboforge_oauth_next";
+
+const authCopy = {
+  en: {
+    configuredWarning:
+      "Supabase is not connected yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in `.env.local`.",
+    createAccount: "Create account",
+    email: "Email",
+    emailAccess: "Email access",
+    envMissing: "Add Supabase env vars first, then restart the dev server.",
+    google: "Continue with Google",
+    googleBusy: "Opening Google...",
+    login: "Login",
+    name: "Owner name",
+    namePlaceholder: "Akkapol",
+    password: "Password",
+    passwordPlaceholder: "At least 6 characters",
+    signUp: "Sign up",
+    signupNeedsConfirmation:
+      "Account created. Check email confirmation if it is enabled.",
+    working: "Working...",
+  },
+  th: {
+    configuredWarning:
+      "Supabase ยังไม่เชื่อมต่อ ต้องตั้ง NEXT_PUBLIC_SUPABASE_URL และ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ใน `.env.local` ก่อน",
+    createAccount: "สร้างบัญชี",
+    email: "อีเมล",
+    emailAccess: "เข้าด้วยอีเมล",
+    envMissing: "เพิ่ม Supabase env vars ก่อน แล้ว restart dev server",
+    google: "เข้าสู่ระบบด้วย Google",
+    googleBusy: "กำลังเปิด Google...",
+    login: "เข้าสู่ระบบ",
+    name: "ชื่อเจ้าของ",
+    namePlaceholder: "Akkapol",
+    password: "รหัสผ่าน",
+    passwordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
+    signUp: "สมัครบัญชี",
+    signupNeedsConfirmation:
+      "สร้างบัญชีแล้ว ถ้าเปิดยืนยันอีเมลไว้ ให้เช็คกล่องอีเมลก่อนเข้าใช้งาน",
+    working: "กำลังทำงาน...",
+  },
+} as const;
 
 function cleanRedirectTarget(value: string) {
   if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
@@ -24,12 +66,15 @@ function rememberOAuthRedirect(value: string) {
 
 export function AuthForm({
   initialMessage = "",
+  locale = "en",
   redirectTo,
 }: {
   initialMessage?: string;
+  locale?: AuthLocale;
   redirectTo: string;
 }) {
   const router = useRouter();
+  const copy = authCopy[locale];
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,7 +89,7 @@ export function AuthForm({
 
     const supabase = getBrowserSupabaseClient();
     if (!supabase) {
-      setMessage("Add Supabase env vars first, then restart the dev server.");
+      setMessage(copy.envMissing);
       return;
     }
 
@@ -75,7 +120,7 @@ export function AuthForm({
 
     const supabase = getBrowserSupabaseClient();
     if (!supabase) {
-      setMessage("Add Supabase env vars first, then restart the dev server.");
+      setMessage(copy.envMissing);
       return;
     }
 
@@ -97,7 +142,7 @@ export function AuthForm({
     }
 
     if (mode === "sign-up" && !result.data.session) {
-      setMessage("Account created. Check email confirmation if it is enabled.");
+      setMessage(copy.signupNeedsConfirmation);
       return;
     }
 
@@ -113,14 +158,14 @@ export function AuthForm({
           type="button"
           onClick={() => setMode("sign-in")}
         >
-          Login
+          {copy.login}
         </button>
         <button
           className={mode === "sign-up" ? "is-active" : ""}
           type="button"
           onClick={() => setMode("sign-up")}
         >
-          Sign up
+          {copy.signUp}
         </button>
       </div>
 
@@ -132,31 +177,31 @@ export function AuthForm({
           type="button"
         >
           <KeyRound size={18} />
-          {busyAction === "google" ? "Opening Google..." : "Continue with Google"}
+          {busyAction === "google" ? copy.googleBusy : copy.google}
         </button>
         <div className="auth-divider">
-          <span>Email access</span>
+          <span>{copy.emailAccess}</span>
         </div>
       </div>
 
       <form onSubmit={submit}>
         {mode === "sign-up" ? (
           <label>
-            Owner name
+            {copy.name}
             <span>
               <UserPlus size={18} />
               <input
                 autoComplete="name"
                 name="name"
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Akkapol"
+                placeholder={copy.namePlaceholder}
                 value={name}
               />
             </span>
           </label>
         ) : null}
         <label>
-          Email
+          {copy.email}
           <span>
             <Mail size={18} />
             <input
@@ -171,7 +216,7 @@ export function AuthForm({
           </span>
         </label>
         <label>
-          Password
+          {copy.password}
           <span>
             <LockKeyhole size={18} />
             <input
@@ -179,7 +224,7 @@ export function AuthForm({
               minLength={6}
               name="password"
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="At least 6 characters"
+              placeholder={copy.passwordPlaceholder}
               required
               type="password"
               value={password}
@@ -189,15 +234,16 @@ export function AuthForm({
 
         <button className="button auth-submit" disabled={busy || !configured} type="submit">
           <LockKeyhole size={18} />
-          {busyAction === "email" ? "Working..." : mode === "sign-in" ? "Login" : "Create account"}
+          {busyAction === "email"
+            ? copy.working
+            : mode === "sign-in"
+              ? copy.login
+              : copy.createAccount}
         </button>
       </form>
 
       {!configured ? (
-        <p className="form-message is-warning">
-          Supabase is not connected yet. Add NEXT_PUBLIC_SUPABASE_URL and
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in `.env.local`.
-        </p>
+        <p className="form-message is-warning">{copy.configuredWarning}</p>
       ) : null}
       {message ? <p className="form-message">{message}</p> : null}
     </section>

@@ -37,6 +37,12 @@ function homeLocale(value: string | string[] | undefined): HomeLocale {
   return firstParam(value)?.toLowerCase() === "th" ? "th" : "en";
 }
 
+function localizePath(path: string, locale: HomeLocale) {
+  if (locale !== "th") return path;
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}lang=th`;
+}
+
 const entryIcons = [LockKeyhole, QrCode, Gamepad2] as const;
 const routeIcons = [LockKeyhole, QrCode, Clipboard, Bot] as const;
 
@@ -231,6 +237,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const locale = homeLocale(params.lang);
   const next = firstParam(params.next);
   const copy = homeCopy[locale];
+  const loginHref = localizePath("/login", locale);
 
   if (code) {
     const callbackParams = new URLSearchParams({ code });
@@ -269,7 +276,7 @@ export default async function Home({ searchParams }: HomeProps) {
               TH
             </Link>
           </div>
-          <Link className="quiet-link" href="/login">
+          <Link className="quiet-link" href={loginHref}>
             {copy.cta.login}
           </Link>
           <Link className="button button-small" href="/dashboard">
@@ -290,7 +297,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </h1>
           <p>{copy.hero.body}</p>
           <div className="hero-actions">
-            <Link className="button" href="/login">
+            <Link className="button" href={loginHref}>
               <LockKeyhole size={18} /> {copy.cta.garage}
             </Link>
             <a className="button button-secondary" href="/demo/index.html">
@@ -372,7 +379,10 @@ export default async function Home({ searchParams }: HomeProps) {
                   <code>{item.label}</code>
                   <h3>{item.title}</h3>
                   <p>{item.body}</p>
-                  <Link className="text-command" href={item.href}>
+                  <Link
+                    className="text-command"
+                    href={localizePath(item.href, locale)}
+                  >
                     {item.cta} <ArrowRight size={17} />
                   </Link>
                 </div>
@@ -405,7 +415,7 @@ export default async function Home({ searchParams }: HomeProps) {
             </article>
           ))}
         </div>
-        <Link className="text-command" href="/login">
+        <Link className="text-command" href={loginHref}>
           {copy.fleet.cta} <ArrowRight size={17} />
         </Link>
       </section>
