@@ -37,7 +37,23 @@ export type RobotInterest = {
   robot_id: string;
 };
 
+export type RobotDevice = {
+  ap_ssid: string | null;
+  battery_config: Record<string, unknown>;
+  board_type: string;
+  created_at: string;
+  firmware_version: string | null;
+  hardware_profile: Record<string, unknown>;
+  id: string;
+  last_seen_at: string | null;
+  protocol_version: string;
+  readiness_status: string;
+  robot_id: string;
+  updated_at: string;
+};
+
 export type OwnerWorkspace = {
+  devices: RobotDevice[];
   error: string | null;
   interests: RobotInterest[];
   notice?: string | null;
@@ -52,6 +68,8 @@ const robotSelect =
 const progressSelect =
   "robot_id, setup_complete, first_connection_complete, first_drive_complete, first_mission_complete, battery_calibrated, ready_for_floor_test, created_at, updated_at";
 const interestSelect = "id, robot_id, interest, created_at";
+const deviceSelect =
+  "id, robot_id, board_type, firmware_version, protocol_version, ap_ssid, last_seen_at, battery_config, hardware_profile, readiness_status, created_at, updated_at";
 
 export async function createServerSupabaseClient() {
   const { publishableKey, url } = getSupabaseEnv();
@@ -110,6 +128,7 @@ function isMissingWorkspaceTable(error: { code?: string; message?: string }) {
     error.code === "PGRST205" ||
     message.includes("schema cache") ||
     message.includes("robot_progress") ||
+    message.includes("robot_devices") ||
     message.includes("robot_interests")
   );
 }
@@ -119,6 +138,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
 
   if (!supabase) {
     return {
+      devices: [],
       error: "Supabase is not configured.",
       interests: [],
       profile: null,
@@ -135,6 +155,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
 
   if (profileReadError) {
     return {
+      devices: [],
       error: profileReadError.message,
       interests: [],
       profile: null,
@@ -157,6 +178,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
 
     if (profileCreateError) {
       return {
+        devices: [],
         error: profileCreateError.message,
         interests: [],
         profile: null,
@@ -176,6 +198,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
 
   if (robotsReadError) {
     return {
+      devices: [],
       error: robotsReadError.message,
       interests: [],
       profile,
@@ -205,6 +228,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
 
     if (robotCreateError) {
       return {
+        devices: [],
         error: robotCreateError.message,
         interests: [],
         profile,
@@ -226,6 +250,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
   if (progressReadError) {
     if (isMissingWorkspaceTable(progressReadError)) {
       return {
+        devices: [],
         error: null,
         interests: [],
         notice:
@@ -237,6 +262,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     }
 
     return {
+      devices: [],
       error: progressReadError.message,
       interests: [],
       profile,
@@ -260,6 +286,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     if (progressCreateError) {
       if (isMissingWorkspaceTable(progressCreateError)) {
         return {
+          devices: [],
           error: null,
           interests: [],
           notice:
@@ -271,6 +298,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
       }
 
       return {
+        devices: [],
         error: progressCreateError.message,
         interests: [],
         profile,
@@ -282,6 +310,32 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     progress = createdProgress as RobotProgress;
   }
 
+  const { data: existingDevices, error: devicesReadError } = await supabase
+    .from("robot_devices")
+    .select(deviceSelect)
+    .in(
+      "robot_id",
+      robots.map((robot) => robot.id),
+    )
+    .order("updated_at", { ascending: false });
+
+  let devices = (existingDevices ?? []) as RobotDevice[];
+
+  if (devicesReadError) {
+    if (isMissingWorkspaceTable(devicesReadError)) {
+      devices = [];
+    } else {
+      return {
+        devices: [],
+        error: devicesReadError.message,
+        interests: [],
+        profile,
+        progress,
+        robots,
+      };
+    }
+  }
+
   const { data: existingInterests, error: interestsReadError } = await supabase
     .from("robot_interests")
     .select(interestSelect)
@@ -291,6 +345,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
   if (interestsReadError) {
     if (isMissingWorkspaceTable(interestsReadError)) {
       return {
+        devices,
         error: null,
         interests: [],
         notice:
@@ -302,6 +357,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     }
 
     return {
+      devices,
       error: interestsReadError.message,
       interests: [],
       profile,
@@ -311,6 +367,7 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
   }
 
   return {
+    devices,
     error: null,
     interests: (existingInterests ?? []) as RobotInterest[],
     profile,

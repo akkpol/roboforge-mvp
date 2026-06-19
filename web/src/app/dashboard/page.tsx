@@ -47,7 +47,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const workspace = user
     ? await getOwnerWorkspace(user)
-    : { error: null, interests: [], profile: null, progress: null, robots: [] };
+    : {
+        devices: [],
+        error: null,
+        interests: [],
+        profile: null,
+        progress: null,
+        robots: [],
+      };
 
   if (!configured) {
     return (

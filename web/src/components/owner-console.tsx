@@ -65,7 +65,7 @@ import {
   type ThemeId,
   type UpgradeInterest,
 } from "@/lib/roboforge-data";
-import type { OwnerWorkspace } from "@/lib/supabase/server";
+import type { OwnerWorkspace, RobotDevice } from "@/lib/supabase/server";
 
 type OwnerConsoleProps = {
   initialClaimCode?: string | null;
@@ -176,8 +176,12 @@ const ownerCopy = {
         compatibility:
           "Compatible with the Rover protocol draft. The real kit still needs bench proof.",
         current: "Current demo firmware",
+        demoSource: "Demo profile until a physical claim kit is linked.",
+        protocol: "Protocol",
+        readiness: "Readiness",
         safety:
           "No one-click firmware update until a physical kit passes bench and raised-wheel recovery tests.",
+        ssid: "Robot Wi-Fi",
         steps: [
           "Confirm the board profile in Ops",
           "Read release notes in plain language",
@@ -193,24 +197,28 @@ const ownerCopy = {
           {
             detail:
               "Creates the robot Wi-Fi, serves the local Cockpit, reads status, and sends motor signals.",
+            id: "learn-esp32",
             label: "Control board",
             name: "ESP32",
           },
           {
             detail:
               "Takes low-power commands from ESP32 and switches higher motor power. Good for MVP, not final production proof.",
+            id: "learn-motor-driver",
             label: "Motor driver",
             name: "L298N",
           },
           {
             detail:
               "Usually 7.4V nominal and 8.4V full. It needs a switch and protected pack, BMS, or fuse before floor tests.",
+            id: "learn-battery",
             label: "Power source",
             name: "2S 18650 Li-ion",
           },
           {
             detail:
               "Common ground, correct left/right polarity, and raised wheels first. Unknown facts mean not ready for floor.",
+            id: "learn-wiring",
             label: "Safety gate",
             name: "Wiring proof",
           },
@@ -438,8 +446,12 @@ const ownerCopy = {
         compatibility:
           "เข้ากับ RoboForge protocol เบื้องต้น แต่หุ่นจริงยังต้องผ่าน bench test",
         current: "เฟิร์มแวร์เดโมตอนนี้",
+        demoSource: "ยังเป็น demo profile จนกว่าจะผูกชุดหุ่นจริงเข้าบัญชี",
+        protocol: "Protocol",
+        readiness: "ความพร้อม",
         safety:
           "ยังไม่เปิดอัปเดตเฟิร์มแวร์คลิกเดียว จนกว่าชุดจริงผ่าน bench และ raised-wheel recovery test",
+        ssid: "Wi-Fi ของหุ่น",
         steps: [
           "ยืนยันรุ่นบอร์ดในหน้า Ops",
           "อ่านสิ่งที่เปลี่ยนเป็นภาษาง่าย",
@@ -455,24 +467,28 @@ const ownerCopy = {
           {
             detail:
               "สร้าง Wi-Fi ของหุ่น เปิดหน้า Cockpit ในตัวหุ่น อ่านสถานะ และส่งสัญญาณไปมอเตอร์",
+            id: "learn-esp32",
             label: "บอร์ดควบคุม",
             name: "ESP32",
           },
           {
             detail:
               "รับคำสั่งจาก ESP32 แล้วจ่ายไฟให้มอเตอร์ ใช้กับ MVP ได้ แต่ยังไม่ใช่คำตอบสุดท้ายของรุ่นผลิตจริง",
+            id: "learn-motor-driver",
             label: "ตัวขับมอเตอร์",
             name: "L298N",
           },
           {
             detail:
               "โดยทั่วไปประมาณ 7.4V และเต็มราว 8.4V ก่อนลงพื้นต้องมีสวิตช์และระบบป้องกันที่ตรวจได้จริง",
+            id: "learn-battery",
             label: "แหล่งพลังงาน",
             name: "18650 Li-ion 2S",
           },
           {
             detail:
               "GND ต้องร่วมกัน ล้อซ้ายขวาต้องหมุนถูกทิศ และยกรถขึ้นก่อนทดสอบครั้งแรก ถ้ายังไม่รู้ข้อมูลนี้ ห้ามถือว่าพร้อมลงพื้น",
+            id: "learn-wiring",
             label: "ด่านความปลอดภัย",
             name: "หลักฐานการต่อสาย",
           },
@@ -1565,12 +1581,76 @@ function Missions({
   );
 }
 
+function recordText(
+  record: Record<string, unknown> | null | undefined,
+  key: string,
+) {
+  const value = record?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function recordNumber(
+  record: Record<string, unknown> | null | undefined,
+  key: string,
+) {
+  const value = record?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function formatReadinessStatus(status: string | null | undefined) {
+  return (status ?? "needs_details").replaceAll("_", " ");
+}
+
+function deviceBatteryName(device: RobotDevice | null) {
+  const profile = device?.hardware_profile;
+  const battery = device?.battery_config;
+  const chemistry =
+    recordText(profile, "batteryChemistry") ?? recordText(battery, "chemistry");
+  const cells = recordNumber(profile, "batteryCells") ?? recordNumber(battery, "cells");
+
+  if (chemistry && cells) return `${chemistry} ${cells}S`;
+  if (chemistry) return chemistry;
+  if (cells) return `${cells}S battery`;
+  return null;
+}
+
+function deviceHardwareName(
+  device: RobotDevice | null,
+  key: "board" | "battery" | "motorDriver" | "wiring",
+  fallback: string,
+) {
+  if (!device) return fallback;
+
+  const profile = device.hardware_profile;
+
+  if (key === "board") {
+    return recordText(profile, "boardModel") ?? device.board_type ?? fallback;
+  }
+
+  if (key === "battery") {
+    return deviceBatteryName(device) ?? fallback;
+  }
+
+  if (key === "motorDriver") {
+    return recordText(profile, "motorDriver") ?? fallback;
+  }
+
+  return recordText(profile, "wiringStatus") ?? fallback;
+}
+
 const codexIcons = [CircuitBoard, Wrench, BatteryCharging, ShieldCheck] as const;
 
-function Engineer({ copy }: { copy: OwnerCopy }) {
+function Engineer({
+  copy,
+  device,
+}: {
+  copy: OwnerCopy;
+  device: RobotDevice | null;
+}) {
   const [selected, setSelected] = useState(0);
   const script =
     copy.engineer.support.scripts[selected] ?? copy.engineer.support.scripts[0];
+  const partKeys = ["board", "motorDriver", "battery", "wiring"] as const;
 
   return (
     <main className="rf-screen">
@@ -1588,15 +1668,27 @@ function Engineer({ copy }: { copy: OwnerCopy }) {
         <article className="rf-codex-panel">
           <span className="eyebrow">{copy.engineer.hardware.title}</span>
           <p>{copy.engineer.hardware.body}</p>
+          <nav className="rf-learning-map" aria-label={copy.engineer.hardware.title}>
+            {copy.engineer.hardware.parts.map((part) => (
+              <a href={`#${part.id}`} key={part.id}>
+                {part.label}
+              </a>
+            ))}
+          </nav>
           <div className="rf-hardware-codex">
             {copy.engineer.hardware.parts.map((part, index) => {
               const Icon = codexIcons[index] ?? CircuitBoard;
+              const learnedName = deviceHardwareName(
+                device,
+                partKeys[index] ?? "board",
+                part.name,
+              );
 
               return (
-                <div key={part.name}>
+                <div id={part.id} key={part.id}>
                   <Icon size={24} />
                   <span>{part.label}</span>
-                  <h2>{part.name}</h2>
+                  <h2>{learnedName}</h2>
                   <p>{part.detail}</p>
                 </div>
               );
@@ -1609,7 +1701,17 @@ function Engineer({ copy }: { copy: OwnerCopy }) {
           <h2>{copy.engineer.firmware.body}</h2>
           <div className="rf-firmware-version">
             <span>{copy.engineer.firmware.current}</span>
-            <strong>{demoTelemetry.firmwareVersion}</strong>
+            <strong>{device?.firmware_version ?? demoTelemetry.firmwareVersion}</strong>
+            <small>
+              {copy.engineer.firmware.protocol}:{" "}
+              {device?.protocol_version ?? "v1"} / {copy.engineer.firmware.readiness}:{" "}
+              {formatReadinessStatus(device?.readiness_status)}
+            </small>
+            <small>
+              {device?.ap_ssid
+                ? `${copy.engineer.firmware.ssid}: ${device.ap_ssid}`
+                : copy.engineer.firmware.demoSource}
+            </small>
             <small>{copy.engineer.firmware.compatibility}</small>
           </div>
           <ol>
@@ -1837,6 +1939,8 @@ export function OwnerConsole({
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
   const robotCode = activeRobot?.unit_code ?? "ROVER-01";
+  const activeDevice =
+    workspace.devices.find((device) => device.robot_id === activeRobot?.id) ?? null;
   const ownerName = workspace.profile?.display_name ?? copy.topbar.defaultOwner;
   const savedInterestCount = workspace.interests.length;
 
@@ -2162,7 +2266,9 @@ export function OwnerConsole({
         />
       ) : null}
       {screen === "missions" ? <Missions progress={progress} /> : null}
-      {screen === "engineer" ? <Engineer copy={copy} /> : null}
+      {screen === "engineer" ? (
+        <Engineer copy={copy} device={activeDevice} />
+      ) : null}
       {screen === "store" ? (
         <Store onBeta={openBeta} onInterest={persistInterest} />
       ) : null}
