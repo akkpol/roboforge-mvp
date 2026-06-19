@@ -28,6 +28,17 @@ connect, and drive like a game.
    the session.
 9. The system records enough summary data to know whether the beta worked.
 
+## Entry Points
+
+- `/` explains the product path and routes people by role.
+- `/login` is the owner entry for account creation and Google/email login.
+- `/dashboard` is the logged-in owner Garage.
+- `/dashboard?claim=CODE` is the QR/code claim path for a physical beta kit.
+- `/admin` is the Beta Ops view for claim kits, hardware profiles, bench
+  evidence, health, and failure review.
+- `/demo/index.html` is the public no-login concept demo and must stay separate
+  from real ownership/control.
+
 ## Core Features For The First Beta
 
 - Account and login.

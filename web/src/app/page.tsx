@@ -2,6 +2,7 @@ import {
   ArrowRight,
   Bot,
   CircuitBoard,
+  Clipboard,
   Gamepad2,
   Globe2,
   LockKeyhole,
@@ -37,6 +38,7 @@ function homeLocale(value: string | string[] | undefined): HomeLocale {
 }
 
 const entryIcons = [LockKeyhole, QrCode, Gamepad2] as const;
+const routeIcons = [LockKeyhole, QrCode, Clipboard, Bot] as const;
 
 const homeCopy = {
   en: {
@@ -67,6 +69,40 @@ const homeCopy = {
             "Live joystick commands stay on the robot Wi-Fi page; RoboForge Web saves outcomes.",
           label: "03 Local Cockpit",
           title: "Drive only after connection",
+        },
+      ],
+    },
+    routes: {
+      eyebrow: "WHERE TO GO",
+      title: "Four doors, one product flow.",
+      items: [
+        {
+          body: "For owners creating an account before any robot is claimed.",
+          cta: "Open login",
+          href: "/login",
+          label: "/login",
+          title: "New owner",
+        },
+        {
+          body: "For testers who received a QR card or claim code with a kit.",
+          cta: "Open Garage",
+          href: "/dashboard",
+          label: "/dashboard?claim=CODE",
+          title: "Claim a robot",
+        },
+        {
+          body: "For the team creating claim kits, hardware profiles, and bench evidence.",
+          cta: "Open Ops",
+          href: "/admin",
+          label: "/admin",
+          title: "Beta Ops",
+        },
+        {
+          body: "For anyone who only wants to feel the RoboForge concept without login.",
+          cta: "Open demo",
+          href: "/demo/index.html",
+          label: "/demo/index.html",
+          title: "Public demo",
         },
       ],
     },
@@ -123,6 +159,40 @@ const homeCopy = {
             "คำสั่ง joystick จริงอยู่บนหน้า Wi-Fi ของหุ่น ส่วน RoboForge Web เก็บผลลัพธ์และความคืบหน้า",
           label: "03 Local Cockpit",
           title: "ขับเมื่อเชื่อมต่อแล้ว",
+        },
+      ],
+    },
+    routes: {
+      eyebrow: "ต้องเข้าเว็บไหน",
+      title: "มี 4 ประตู แต่ flow เดียวกัน",
+      items: [
+        {
+          body: "สำหรับเจ้าของที่เริ่มสมัครหรือเข้าสู่ระบบก่อนมีหุ่นจริง",
+          cta: "เปิด login",
+          href: "/login",
+          label: "/login",
+          title: "เจ้าของใหม่",
+        },
+        {
+          body: "สำหรับคนที่ได้ QR card หรือ claim code มากับคิตเบต้า",
+          cta: "เปิด Garage",
+          href: "/dashboard",
+          label: "/dashboard?claim=CODE",
+          title: "Claim หุ่น",
+        },
+        {
+          body: "สำหรับทีมที่สร้างคิต กรอก hardware profile และเก็บผล bench test",
+          cta: "เปิด Ops",
+          href: "/admin",
+          label: "/admin",
+          title: "ทีมเบต้า",
+        },
+        {
+          body: "สำหรับคนที่อยากลองฟีล RoboForge ก่อน โดยยังไม่ต้อง login",
+          cta: "เปิดเดโม",
+          href: "/demo/index.html",
+          label: "/demo/index.html",
+          title: "เดโมสาธารณะ",
         },
       ],
     },
@@ -276,6 +346,36 @@ export default async function Home({ searchParams }: HomeProps) {
                 </span>
                 <h3>{step.title}</h3>
                 <p>{step.body}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="route-map" aria-label="RoboForge route map">
+        <div className="section-heading">
+          <span className="eyebrow">
+            <Globe2 size={15} /> {copy.routes.eyebrow}
+          </span>
+          <h2>{copy.routes.title}</h2>
+        </div>
+        <div className="route-map__grid">
+          {copy.routes.items.map((item, index) => {
+            const Icon = routeIcons[index];
+
+            return (
+              <article className="route-map__item" key={item.href}>
+                <span className="route-map__icon">
+                  <Icon size={20} />
+                </span>
+                <div>
+                  <code>{item.label}</code>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                  <Link className="text-command" href={item.href}>
+                    {item.cta} <ArrowRight size={17} />
+                  </Link>
+                </div>
               </article>
             );
           })}

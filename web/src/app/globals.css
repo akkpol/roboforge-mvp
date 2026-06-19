@@ -1066,6 +1066,7 @@ textarea:focus-visible {
 
 .fleet-band,
 .entry-flow,
+.route-map,
 .dashboard-section {
   width: min(1240px, calc(100% - 32px));
   margin: 0 auto;
@@ -1127,6 +1128,57 @@ textarea:focus-visible {
 }
 
 .entry-flow__card p {
+  color: var(--muted);
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.route-map {
+  padding-top: 6px;
+}
+
+.route-map__grid {
+  display: grid;
+  gap: 10px;
+}
+
+.route-map__item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 168px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  background: var(--surface-panel-glass);
+}
+
+.route-map__icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line-bright);
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2), transparent 88%);
+}
+
+.route-map__item code {
+  display: inline-block;
+  max-width: 100%;
+  color: var(--accent-2);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.route-map__item h3 {
+  margin: 8px 0 6px;
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1;
+}
+
+.route-map__item p {
+  margin-bottom: 12px;
   color: var(--muted);
   font-family: "Noto Sans Thai", Rajdhani, sans-serif;
   font-size: 13px;
@@ -2863,6 +2915,10 @@ textarea:focus-visible {
 
   .entry-flow__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .route-map__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .setup-alert {
