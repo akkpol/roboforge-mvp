@@ -22,6 +22,7 @@ starts from the latest intent.
 
 For the current beta direction, read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md).
 For a short prompt to start future work, read [SESSION_BRIEF.md](SESSION_BRIEF.md).
+For the beta verification path, read [docs/BETA_READINESS_RUNBOOK.md](docs/BETA_READINESS_RUNBOOK.md).
 For the likely first rover hardware from the prototype photos, read
 [docs/ROVER_01_CANDIDATE_HARDWARE_TH.md](docs/ROVER_01_CANDIDATE_HARDWARE_TH.md).
 

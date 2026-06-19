@@ -184,6 +184,8 @@ commands as cloud rows.
 The dry-run output includes a `readinessReport` with row budget, summary-only
 backend assumptions, and the checks that still require a disposable Supabase
 branch/test project plus `/admin` verification.
+Use `../docs/BETA_READINESS_RUNBOOK.md` as the end-to-end beta proof path across
+Supabase, Vercel, and physical hardware.
 
 ## Deploy
 
