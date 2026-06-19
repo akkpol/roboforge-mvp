@@ -57,7 +57,6 @@ import {
   defaultProgress,
   demoTelemetry,
   fleet,
-  supportScripts,
   themes,
   upgradeInterests,
   upgradeItems,
@@ -168,6 +167,88 @@ const ownerCopy = {
       },
       title: "My Garage",
     },
+    engineer: {
+      body:
+        "Plain hardware notes and safe firmware guidance for the current beta kit.",
+      eyebrow: "HARDWARE CODEX / FIRMWARE LAB",
+      firmware: {
+        body: "Understand the code on the robot before changing it.",
+        compatibility:
+          "Compatible with the Rover protocol draft. The real kit still needs bench proof.",
+        current: "Current demo firmware",
+        safety:
+          "No one-click firmware update until a physical kit passes bench and raised-wheel recovery tests.",
+        steps: [
+          "Confirm the board profile in Ops",
+          "Read release notes in plain language",
+          "Run the protocol check with motors disabled or wheels raised",
+          "Keep USB recovery ready before any real update",
+        ],
+        title: "Firmware Lab",
+      },
+      hardware: {
+        body:
+          "Start with the parts the owner can see in the kit, then reveal the technical name.",
+        parts: [
+          {
+            detail:
+              "Creates the robot Wi-Fi, serves the local Cockpit, reads status, and sends motor signals.",
+            label: "Control board",
+            name: "ESP32",
+          },
+          {
+            detail:
+              "Takes low-power commands from ESP32 and switches higher motor power. Good for MVP, not final production proof.",
+            label: "Motor driver",
+            name: "L298N",
+          },
+          {
+            detail:
+              "Usually 7.4V nominal and 8.4V full. It needs a switch and protected pack, BMS, or fuse before floor tests.",
+            label: "Power source",
+            name: "2S 18650 Li-ion",
+          },
+          {
+            detail:
+              "Common ground, correct left/right polarity, and raised wheels first. Unknown facts mean not ready for floor.",
+            label: "Safety gate",
+            name: "Wiring proof",
+          },
+        ],
+        title: "Hardware Codex",
+      },
+      support: {
+        safety: "Power off before changing motor or battery wiring.",
+        scripts: [
+          {
+            body:
+              "Check the configured cell count before driving. Compare the displayed voltage against a multimeter, then update the battery setting only after the pack is identified.",
+            code: "battery_configuration_mismatch",
+            title: "Battery gate blocked arming",
+          },
+          {
+            body:
+              "The rover rejected an old drive command. Tap Emergency stop, refresh Cockpit, then arm again so command numbering restarts cleanly.",
+            code: "stale_sequence",
+            title: "Drive command was rejected",
+          },
+          {
+            body:
+              "Arm the cockpit only after the wheels are raised and the area is clear. Hosted web Cockpit stays simulated; real controls live on the Rover local Wi-Fi.",
+            code: "controls_not_armed",
+            title: "Controls are locked",
+          },
+          {
+            body:
+              "Join the Rover Wi-Fi network and open the local device page for real hardware. The cloud workspace should never proxy live motor commands.",
+            code: "network_error",
+            title: "Rover link is unavailable",
+          },
+        ],
+        title: "Lyra field notes",
+      },
+      title: "Learn the rover before upgrading it",
+    },
     messages: {
       betaError: "Could not save beta application.",
       betaSaved: "Beta application saved.",
@@ -195,7 +276,7 @@ const ownerCopy = {
     },
     nav: {
       cockpit: "Cockpit",
-      engineer: "Engineer",
+      engineer: "Learn",
       garage: "Garage",
       missions: "Missions",
       store: "Upgrades",
@@ -348,6 +429,88 @@ const ownerCopy = {
       },
       title: "Garage ของฉัน",
     },
+    engineer: {
+      body:
+        "รู้จักชิ้นส่วนในชุดเบต้า และดูแนวทางอัปเดตเฟิร์มแวร์แบบไม่เสี่ยงเกินไป",
+      eyebrow: "Hardware Codex / Firmware Lab",
+      firmware: {
+        body: "ดูโค้ดที่อยู่ในหุ่นให้เข้าใจก่อนเปลี่ยน",
+        compatibility:
+          "เข้ากับ RoboForge protocol เบื้องต้น แต่หุ่นจริงยังต้องผ่าน bench test",
+        current: "เฟิร์มแวร์เดโมตอนนี้",
+        safety:
+          "ยังไม่เปิดอัปเดตเฟิร์มแวร์คลิกเดียว จนกว่าชุดจริงผ่าน bench และ raised-wheel recovery test",
+        steps: [
+          "ยืนยันรุ่นบอร์ดในหน้า Ops",
+          "อ่านสิ่งที่เปลี่ยนเป็นภาษาง่าย",
+          "รัน protocol check โดยปิดมอเตอร์หรือยกรถขึ้น",
+          "เตรียมวิธีกู้คืนผ่าน USB ก่อนอัปเดตจริง",
+        ],
+        title: "Firmware Lab",
+      },
+      hardware: {
+        body:
+          "เริ่มจากชิ้นส่วนที่เจ้าของเห็นจริงในชุด แล้วค่อยบอกชื่อเทคนิคของมัน",
+        parts: [
+          {
+            detail:
+              "สร้าง Wi-Fi ของหุ่น เปิดหน้า Cockpit ในตัวหุ่น อ่านสถานะ และส่งสัญญาณไปมอเตอร์",
+            label: "บอร์ดควบคุม",
+            name: "ESP32",
+          },
+          {
+            detail:
+              "รับคำสั่งจาก ESP32 แล้วจ่ายไฟให้มอเตอร์ ใช้กับ MVP ได้ แต่ยังไม่ใช่คำตอบสุดท้ายของรุ่นผลิตจริง",
+            label: "ตัวขับมอเตอร์",
+            name: "L298N",
+          },
+          {
+            detail:
+              "โดยทั่วไปประมาณ 7.4V และเต็มราว 8.4V ก่อนลงพื้นต้องมีสวิตช์และระบบป้องกันที่ตรวจได้จริง",
+            label: "แหล่งพลังงาน",
+            name: "18650 Li-ion 2S",
+          },
+          {
+            detail:
+              "GND ต้องร่วมกัน ล้อซ้ายขวาต้องหมุนถูกทิศ และยกรถขึ้นก่อนทดสอบครั้งแรก ถ้ายังไม่รู้ข้อมูลนี้ ห้ามถือว่าพร้อมลงพื้น",
+            label: "ด่านความปลอดภัย",
+            name: "หลักฐานการต่อสาย",
+          },
+        ],
+        title: "Hardware Codex",
+      },
+      support: {
+        safety: "ปิดไฟก่อนเปลี่ยนสายมอเตอร์หรือแบตเตอรี่",
+        scripts: [
+          {
+            body:
+              "เช็กจำนวนเซลล์แบตเตอรี่ก่อนขับ เทียบค่าแรงดันบนหน้าจอกับ multimeter แล้วค่อยแก้การตั้งค่าแบตเมื่อรู้ชนิด pack แล้ว",
+            code: "battery_configuration_mismatch",
+            title: "แบตเตอรี่ทำให้ arm ไม่ผ่าน",
+          },
+          {
+            body:
+              "Rover ปฏิเสธคำสั่งขับเก่า ให้กด Emergency stop รีเฟรช Cockpit แล้ว arm ใหม่เพื่อเริ่มเลขคำสั่งใหม่",
+            code: "stale_sequence",
+            title: "คำสั่งขับถูกปฏิเสธ",
+          },
+          {
+            body:
+              "กด arm หลังยกล้อขึ้นและพื้นที่รอบตัวปลอดภัยเท่านั้น Cockpit บนเว็บเป็นเดโม ส่วนมอเตอร์จริงอยู่ในหน้า Wi-Fi ของ Rover",
+            code: "controls_not_armed",
+            title: "ระบบควบคุมยังล็อกอยู่",
+          },
+          {
+            body:
+              "ต่อ Wi-Fi ของ Rover แล้วเปิดหน้าควบคุมในตัวหุ่นสำหรับฮาร์ดแวร์จริง cloud ไม่ควรเป็นทางผ่านของคำสั่งมอเตอร์สด",
+            code: "network_error",
+            title: "ติดต่อ Rover ไม่ได้",
+          },
+        ],
+        title: "โน้ตช่วยแก้ปัญหาจาก Lyra",
+      },
+      title: "รู้จัก Rover ก่อนอัปเกรด",
+    },
     messages: {
       betaError: "บันทึกใบสมัครเบต้าไม่สำเร็จ",
       betaSaved: "บันทึกใบสมัครเบต้าแล้ว",
@@ -375,7 +538,7 @@ const ownerCopy = {
     },
     nav: {
       cockpit: "Cockpit",
-      engineer: "Engineer",
+      engineer: "เรียนรู้",
       garage: "Garage",
       missions: "Missions",
       store: "Upgrades",
@@ -1402,27 +1565,67 @@ function Missions({
   );
 }
 
-function Engineer() {
+const codexIcons = [CircuitBoard, Wrench, BatteryCharging, ShieldCheck] as const;
+
+function Engineer({ copy }: { copy: OwnerCopy }) {
   const [selected, setSelected] = useState(0);
-  const script = supportScripts[selected];
+  const script =
+    copy.engineer.support.scripts[selected] ?? copy.engineer.support.scripts[0];
 
   return (
     <main className="rf-screen">
       <section className="rf-screen-heading">
         <div>
           <span className="eyebrow">
-            <CircuitBoard size={15} /> SCRIPTED SUPPORT
+            <CircuitBoard size={15} /> {copy.engineer.eyebrow}
           </span>
-          <h1>AI Engineer</h1>
-          <p>
-            Fast Beta troubleshooting without a cloud model or autonomous
-            control.
-          </p>
+          <h1>{copy.engineer.title}</h1>
+          <p>{copy.engineer.body}</p>
         </div>
       </section>
+
+      <section className="rf-engineer-layout rf-engineer-layout--learning">
+        <article className="rf-codex-panel">
+          <span className="eyebrow">{copy.engineer.hardware.title}</span>
+          <p>{copy.engineer.hardware.body}</p>
+          <div className="rf-hardware-codex">
+            {copy.engineer.hardware.parts.map((part, index) => {
+              const Icon = codexIcons[index] ?? CircuitBoard;
+
+              return (
+                <div key={part.name}>
+                  <Icon size={24} />
+                  <span>{part.label}</span>
+                  <h2>{part.name}</h2>
+                  <p>{part.detail}</p>
+                </div>
+              );
+            })}
+          </div>
+        </article>
+
+        <article className="rf-firmware-lab">
+          <span className="eyebrow">{copy.engineer.firmware.title}</span>
+          <h2>{copy.engineer.firmware.body}</h2>
+          <div className="rf-firmware-version">
+            <span>{copy.engineer.firmware.current}</span>
+            <strong>{demoTelemetry.firmwareVersion}</strong>
+            <small>{copy.engineer.firmware.compatibility}</small>
+          </div>
+          <ol>
+            {copy.engineer.firmware.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <div className="rf-safety-note">
+            <ShieldCheck size={21} /> {copy.engineer.firmware.safety}
+          </div>
+        </article>
+      </section>
+
       <section className="rf-engineer-layout">
         <div className="rf-engineer-prompts">
-          {supportScripts.map((item, index) => (
+          {copy.engineer.support.scripts.map((item, index) => (
             <button
               className={selected === index ? "is-selected" : ""}
               key={item.title}
@@ -1438,12 +1641,11 @@ function Engineer() {
           ))}
         </div>
         <article className="rf-engineer-answer">
-          <span className="eyebrow">ROBOFORGE FIELD NOTE</span>
+          <span className="eyebrow">{copy.engineer.support.title}</span>
           <h2>{script.title}</h2>
           <p>{script.body}</p>
           <div className="rf-safety-note">
-            <ShieldCheck size={21} /> Power off before changing motor or battery
-            wiring.
+            <ShieldCheck size={21} /> {copy.engineer.support.safety}
           </div>
         </article>
       </section>
@@ -1960,7 +2162,7 @@ export function OwnerConsole({
         />
       ) : null}
       {screen === "missions" ? <Missions progress={progress} /> : null}
-      {screen === "engineer" ? <Engineer /> : null}
+      {screen === "engineer" ? <Engineer copy={copy} /> : null}
       {screen === "store" ? (
         <Store onBeta={openBeta} onInterest={persistInterest} />
       ) : null}

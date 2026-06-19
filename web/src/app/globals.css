@@ -2482,6 +2482,82 @@ textarea:focus-visible {
   gap: 7px;
 }
 
+.rf-engineer-layout--learning {
+  margin-bottom: 9px;
+}
+
+.rf-codex-panel,
+.rf-firmware-lab {
+  min-height: 300px;
+  padding: 25px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.rf-codex-panel > p,
+.rf-firmware-lab > h2 {
+  margin: 10px 0 18px;
+}
+
+.rf-firmware-lab > h2 {
+  font-size: 27px;
+}
+
+.rf-hardware-codex {
+  display: grid;
+  gap: 8px;
+}
+
+.rf-hardware-codex div {
+  min-height: 165px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+}
+
+.rf-hardware-codex svg {
+  color: var(--accent);
+}
+
+.rf-hardware-codex span,
+.rf-firmware-version span,
+.rf-firmware-version small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.rf-hardware-codex h2 {
+  margin: 9px 0 7px;
+  font-size: 24px;
+}
+
+.rf-firmware-version {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.rf-firmware-version strong {
+  display: block;
+  margin: 5px 0;
+  font-size: 26px;
+}
+
+.rf-firmware-lab ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.rf-firmware-lab li::marker {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .rf-engineer-prompts button {
   display: flex;
   min-height: 58px;
@@ -2519,6 +2595,8 @@ textarea:focus-visible {
 }
 
 .rf-safety-note {
+  display: flex;
+  align-items: center;
   gap: 9px;
   margin-top: 25px;
   padding: 13px;
@@ -2690,6 +2768,10 @@ textarea:focus-visible {
   .rf-upgrade-grid,
   .rf-evolution-track {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .rf-hardware-codex {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
