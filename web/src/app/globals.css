@@ -1824,7 +1824,18 @@ textarea:focus-visible {
 }
 
 .rf-button--secondary:hover {
-  box-shadow: 0 14px 35px rgba(102, 228, 196, 0.12);
+  box-shadow: var(--shadow-secondary);
+}
+
+.rf-button.is-disabled,
+.rf-button.is-disabled:hover {
+  color: var(--muted);
+  border-color: var(--line);
+  background: var(--panel-strong);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
 }
 
 .rf-button--danger {
@@ -2122,6 +2133,52 @@ textarea:focus-visible {
   font-family: "Noto Sans Thai", Rajdhani, sans-serif;
   font-size: 12px;
   line-height: 1.6;
+}
+
+.rf-connection-guide {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rf-connection-guide span {
+  display: grid;
+  min-width: 0;
+  min-height: 132px;
+  align-content: start;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: color-mix(in srgb, var(--panel-strong), transparent 18%);
+}
+
+.rf-connection-guide span.is-done {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success), transparent 62%);
+}
+
+.rf-connection-guide i {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rf-connection-guide svg {
+  color: var(--accent);
+}
+
+.rf-connection-guide strong {
+  color: var(--text);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.rf-connection-guide small {
+  color: var(--muted);
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .rf-quest-card ol {
@@ -2577,6 +2634,14 @@ textarea:focus-visible {
     padding: 0 9px;
   }
 
+  .rf-connection-guide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rf-connection-guide span {
+    min-height: 124px;
+  }
+
   .rf-connection-details div {
     grid-template-columns: 1fr;
     align-items: start;
@@ -2617,7 +2682,7 @@ textarea:focus-visible {
   margin: 24px auto 0;
   padding: 20px;
   border: 1px solid var(--accent);
-  background: rgba(255, 157, 28, 0.1);
+  background: var(--accent-soft);
 }
 
 .setup-alert h1 {
@@ -2633,9 +2698,9 @@ textarea:focus-visible {
 .setup-alert li {
   min-height: 40px;
   padding: 9px 11px;
-  border: 1px solid rgba(255, 157, 28, 0.35);
-  color: #ffd39d;
-  background: rgba(5, 8, 13, 0.45);
+  border: 1px solid color-mix(in srgb, var(--accent), transparent 65%);
+  color: var(--color-warning-text);
+  background: var(--surface-glass-soft);
   font-weight: 700;
 }
 

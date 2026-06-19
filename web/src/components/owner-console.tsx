@@ -525,6 +525,34 @@ function ConnectionQuest({
   const [feedback, setFeedback] = useState("");
   const [failureReason, setFailureReason] = useState("wifi_not_found");
   const [copied, setCopied] = useState<"ssid" | "url" | null>(null);
+  const localCockpitReady =
+    Boolean(connectionSessionId) || progress.first_connection_complete;
+  const connectionSteps = [
+    {
+      detail: "Turn the rover on and keep wheels off the floor for the first test.",
+      done: true,
+      icon: BatteryCharging,
+      label: "Power",
+    },
+    {
+      detail: `Pick ${robotSsid} in your phone or computer Wi-Fi list.`,
+      done: Boolean(connectionSessionId),
+      icon: Wifi,
+      label: "Join",
+    },
+    {
+      detail: `Open ${localCockpitUrl} after your device joins the rover Wi-Fi.`,
+      done: localCockpitReady,
+      icon: ExternalLink,
+      label: "Open",
+    },
+    {
+      detail: "If battery and status are visible, mark Rover found.",
+      done: progress.first_connection_complete,
+      icon: CheckCircle,
+      label: "Confirm",
+    },
+  ];
 
   async function copyConnectionValue(value: string, key: "ssid" | "url") {
     if (!navigator.clipboard) return;
@@ -567,6 +595,20 @@ function ConnectionQuest({
         <article className="rf-quest-card">
           <span className="eyebrow">LYRA NAVIGATOR</span>
           <h2>Spirit Link checklist</h2>
+          <div className="rf-connection-guide" aria-label="Connection steps">
+            {connectionSteps.map((step, index) => {
+              const StepIcon = step.icon;
+
+              return (
+                <span className={step.done ? "is-done" : ""} key={step.label}>
+                  <i>{String(index + 1).padStart(2, "0")}</i>
+                  <StepIcon size={18} />
+                  <strong>{step.label}</strong>
+                  <small>{step.detail}</small>
+                </span>
+              );
+            })}
+          </div>
           <ol>
             <li className="is-done">Power on Rover-01</li>
             <li className={connectionSessionId ? "is-done" : ""}>
@@ -622,8 +664,14 @@ function ConnectionQuest({
               Start quest
             </Button>
             <Link
-              className="button rf-button rf-button--secondary"
+              aria-disabled={!localCockpitReady}
+              className={`button rf-button rf-button--secondary ${
+                localCockpitReady ? "" : "is-disabled"
+              }`}
               href={localCockpitUrl}
+              onClick={(event) => {
+                if (!localCockpitReady) event.preventDefault();
+              }}
               rel="noreferrer"
               target="_blank"
             >
