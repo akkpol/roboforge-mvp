@@ -56,6 +56,7 @@ import {
   capabilities,
   defaultProgress,
   demoTelemetry,
+  firstPaidOfferInterest,
   fleet,
   themes,
   upgradeInterests,
@@ -93,7 +94,7 @@ const ownerCopy = {
         steps: "Connection steps",
       },
       body:
-        "Lyra guides the owner from power-on to the local Cockpit without needing IoT knowledge.",
+        "Lyra guides you from power-on to the local Cockpit without needing IoT knowledge.",
       checklistTitle: "Spirit Link checklist",
       details: {
         localPage: "Local page",
@@ -167,6 +168,88 @@ const ownerCopy = {
       },
       title: "My Garage",
     },
+    layers: {
+      digital: {
+        body: "Theme, identity, missions, and learning path that stay with your account.",
+        title: "Digital Form",
+      },
+      future: {
+        body: "Sensor packs, body kits, AI guide, and new robot classes stay as demand signals until validated.",
+        title: "Future Upgrade",
+      },
+      physical: {
+        empty: "No physical kit linked yet",
+        linked: "Claimed hardware kit",
+        title: "Physical Unit",
+      },
+    },
+    modular: {
+      aria: "Modular robotics profile",
+      body:
+        "RoboForge starts as one verified Rover-01 path, then grows into module slots and cloneable robot profiles.",
+      blueprint: {
+        action: "Preview only",
+        body:
+          "The blueprint can copy the digital setup and compatible module list. It does not ship hardware, autonomy, or a marketplace listing yet.",
+        clone: "Cloneable profile",
+        format: "robot_profile.json",
+        idLabel: "Blueprint ID",
+        marketplace: "Marketplace later",
+        safety: "Physical control still requires a linked kit and local Wi-Fi.",
+        shareState: "Share/sell disabled until the pilot proves the kit.",
+        title: "Blueprint",
+      },
+      eyebrow: "MODULAR ROBOTICS",
+      hardware: {
+        body:
+          "Physical details from your linked kit. Until a kit is linked, this stays a demo setup.",
+        empty: "Waiting for kit",
+        rows: {
+          brain: "Brain",
+          comms: "Communication",
+          firmware: "Firmware",
+          motion: "Muscle",
+          power: "Power",
+          readiness: "Readiness",
+        },
+        safetyPending: "Switch or fuse still needs proof",
+        safetyReady: "Switch and fuse/protected pack verified",
+        sourceDemo: "Demo setup",
+        sourceProfile: "Hardware profile",
+        title: "Hardware Profile",
+      },
+      slots: {
+        body:
+          "The first version is a readable slot map, not drag-and-drop assembly.",
+        empty: "Pending",
+        installed: "Installed",
+        items: {
+          brain: "Brain",
+          comms: "Communication",
+          drive: "Drive muscle",
+          power: "Power",
+          senses: "Senses",
+        },
+        locked: "Roadmap",
+        planned: "Demand signal",
+        title: "Module Slots",
+        waiting: "Claim a physical kit to bind this slot to real hardware.",
+      },
+      title: "Hardware Profile / Module Slots / Blueprint",
+    },
+    paidOffer: {
+      action: "Apply for guided beta",
+      body:
+        "A small paid beta for people who want the first complete path: prepared Rover-01 kit, guided setup, Web Garage, and beta support.",
+      eyebrow: "FIRST PAID OFFER",
+      items: [
+        "Rover-01 beta kit",
+        "Guided setup workshop",
+        "Your Web Garage account",
+      ],
+      note: "Payment is handled outside the app until hardware proof is complete.",
+      title: "Rover-01 Beta Kit + guided setup workshop + Web Garage",
+    },
     engineer: {
       body:
         "Plain hardware notes and safe firmware guidance for the current beta kit.",
@@ -180,7 +263,7 @@ const ownerCopy = {
         compatibility:
           "Compatible with the Rover protocol draft. The real kit still needs bench proof.",
         current: "Current demo firmware",
-        demoSource: "Demo profile until a physical claim kit is linked.",
+        demoSource: "Demo setup until a physical kit is linked.",
         protocol: "Protocol",
         readiness: "Readiness",
         safety:
@@ -196,7 +279,7 @@ const ownerCopy = {
       },
       hardware: {
         body:
-          "Start with the parts the owner can see in the kit, then reveal the technical name.",
+          "Start with the parts you can see in the kit, then reveal the technical name.",
         parts: [
           {
             detail:
@@ -207,7 +290,7 @@ const ownerCopy = {
           },
           {
             detail:
-              "Takes low-power commands from ESP32 and switches higher motor power. Good for MVP, not final production proof.",
+              "Takes low-power commands from ESP32 and switches higher motor power. Good for the prototype kit, not final production proof.",
             id: "learn-motor-driver",
             label: "Motor driver",
             name: "L298N",
@@ -264,8 +347,8 @@ const ownerCopy = {
     messages: {
       betaError: "Could not save beta application.",
       betaSaved: "Beta application saved.",
-      claimError: "Could not claim robot.",
-      claimingFromQr: "Claiming robot from QR card...",
+      claimError: "Could not add robot.",
+      claimingFromQr: "Adding robot from QR card...",
       connectionIssueError: "Could not save connection issue.",
       connectionIssueSaved: "Connection issue saved for beta review.",
       connectionSaved: "Connection saved. Rover is ready for Cockpit.",
@@ -282,9 +365,9 @@ const ownerCopy = {
       interestError: "Could not save interest.",
       interestSaved: (interest: string) => `${interest} interest saved.`,
       progressSaved: "Mission progress saved.",
-      robotClaimed: "Robot claimed. Garage data refreshed.",
+      robotClaimed: "Robot added. Garage data refreshed.",
       saving: "Saving...",
-      themeSaved: "Theme saved to owner workspace.",
+      themeSaved: "Theme saved to your Garage.",
     },
     nav: {
       cockpit: "Cockpit",
@@ -295,6 +378,12 @@ const ownerCopy = {
     },
     nextStep: {
       aria: "Next step",
+      claim: {
+        action: "Apply for guided beta",
+        body:
+          "Your Digital Form is ready. Link a kit code or apply for the guided beta before real connection.",
+        title: "Next: add a physical kit",
+      },
       cockpit: {
         action: "Enter demo Cockpit",
         body:
@@ -315,7 +404,7 @@ const ownerCopy = {
         title: "Next: build the habit loop",
       },
       path: {
-        aria: "Owner path",
+        aria: "Setup path",
         cockpit: "Cockpit",
         connect: "Connection Quest",
         garage: "Web Garage",
@@ -323,8 +412,11 @@ const ownerCopy = {
     },
     progress: {
       action: "Mark first drive",
-      aria: "Owner progress",
-      eyebrow: "OWNER PROGRESS",
+      aria: "Robot progress",
+      digitalBody:
+        "Claim a physical kit before these readiness gates become real hardware evidence.",
+      digitalTitle: "Physical kit not linked yet",
+      eyebrow: "ROBOT PROGRESS",
       items: {
         batteryCalibrated: "Battery calibrated",
         firstConnection: "First connection complete",
@@ -335,19 +427,19 @@ const ownerCopy = {
       title: "Rover-01 readiness",
     },
     claim: {
-      action: "Claim robot",
-      aria: "Claim robot",
+      action: "Add robot",
+      aria: "Add robot",
       body:
-        "Enter the code from a RoboForge QR card or beta kit. The robot will become part of this owner workspace.",
-      eyebrow: "CLAIM ROBOT",
+        "Enter the code from a RoboForge QR card or beta kit. The robot will be added to your Garage.",
+      eyebrow: "ADD ROBOT",
       label: "Robot code",
       title: "Link a physical unit to this Garage",
     },
     topbar: {
       adminTitle: "Beta Ops",
       back: "Garage",
-      brandSub: "OWNER GARAGE",
-      defaultOwner: "RoboForge Owner",
+      brandSub: "WEB GARAGE",
+      defaultOwner: "RoboForge Account",
       savedInterestPlural: "saved upgrade signals",
       savedInterestSingular: "saved upgrade signal",
       signOutTitle: "Sign out",
@@ -396,7 +488,7 @@ const ownerCopy = {
         safety_unclear: "ขั้นตอนความปลอดภัยไม่ชัด",
         wifi_not_found: "หา Wi-Fi ไม่เจอ",
       },
-      resultBody: "บันทึกผลเพื่อให้ทีมรู้ว่าผู้ใช้ติดตรงไหน",
+      resultBody: "บันทึกผลเพื่อให้ทีมรู้ว่าคุณติดตรงไหน",
       resultEyebrow: "ผลทดสอบเบต้า",
       resultTitle: "เกิดอะไรขึ้น",
       steps: {
@@ -441,6 +533,88 @@ const ownerCopy = {
       },
       title: "Garage ของฉัน",
     },
+    layers: {
+      digital: {
+        body: "ตัวตน ธีม ภารกิจ และเส้นทางเรียนรู้ที่อยู่กับบัญชีของคุณ",
+        title: "Digital Form",
+      },
+      future: {
+        body: "ชุดเซนเซอร์ บอดี้คิต AI guide และหุ่นรุ่นถัดไปจะเปิดตามลำดับหลังชุดแรกพร้อมใช้งานจริง",
+        title: "Future Upgrade",
+      },
+      physical: {
+        empty: "ยังไม่มีคิตจริงผูกกับบัญชี",
+        linked: "คิตฮาร์ดแวร์ที่เพิ่มแล้ว",
+        title: "Physical Unit",
+      },
+    },
+    modular: {
+      aria: "โปรไฟล์หุ่นยนต์แบบโมดูล",
+      body:
+        "RoboForge เริ่มจาก Rover-01 หนึ่งชุดที่ตรวจสอบได้จริง แล้วค่อยขยายเป็นช่องโมดูลและโปรไฟล์หุ่นที่ทำสำเนาได้",
+      blueprint: {
+        action: "พรีวิวเท่านั้น",
+        body:
+          "Blueprint ทำสำเนาได้เฉพาะโปรไฟล์ดิจิทัลและรายการโมดูลที่เข้ากัน ยังไม่รวมการส่งฮาร์ดแวร์ ระบบอัตโนมัติ หรือหน้าขายใน Marketplace",
+        clone: "โปรไฟล์ที่ทำสำเนาได้",
+        format: "robot_profile.json",
+        idLabel: "Blueprint ID",
+        marketplace: "Marketplace ภายหลัง",
+        safety: "การควบคุมหุ่นจริงยังต้องเพิ่มคิตเข้าบัญชีและต่อ Wi-Fi ของหุ่นก่อน",
+        shareState: "ยังไม่เปิดแชร์หรือขาย จนกว่าชุดแรกจะผ่านการทดสอบจริง",
+        title: "Blueprint",
+      },
+      eyebrow: "MODULAR ROBOTICS",
+      hardware: {
+        body:
+          "ข้อมูลฮาร์ดแวร์จากคิตที่เพิ่มเข้าบัญชีแล้ว ถ้ายังไม่ได้เพิ่มคิต หน้านี้จะแสดงโปรไฟล์ตัวอย่าง",
+        empty: "รอเพิ่มคิต",
+        rows: {
+          brain: "สมอง",
+          comms: "การสื่อสาร",
+          firmware: "เฟิร์มแวร์",
+          motion: "กล้ามเนื้อ",
+          power: "พลังงาน",
+          readiness: "ความพร้อม",
+        },
+        safetyPending: "ยังต้องยืนยันสวิตช์หรือฟิวส์",
+        safetyReady: "ยืนยันสวิตช์และฟิวส์หรือแบตที่มีระบบป้องกันแล้ว",
+        sourceDemo: "โปรไฟล์ตัวอย่าง",
+        sourceProfile: "โปรไฟล์ฮาร์ดแวร์",
+        title: "โปรไฟล์ฮาร์ดแวร์",
+      },
+      slots: {
+        body:
+          "เวอร์ชันแรกเป็นแผนที่ช่องโมดูลให้อ่านได้ก่อน ยังไม่ใช่ตัวประกอบแบบลากวาง",
+        empty: "รอข้อมูล",
+        installed: "ติดตั้งแล้ว",
+        items: {
+          brain: "สมอง",
+          comms: "การสื่อสาร",
+          drive: "กล้ามเนื้อขับเคลื่อน",
+          power: "พลังงาน",
+          senses: "ประสาทสัมผัส",
+        },
+        locked: "Roadmap",
+        planned: "วางแผนไว้",
+        title: "ช่องโมดูล",
+        waiting: "เพิ่มคิตจริงก่อนเพื่อผูกช่องนี้กับฮาร์ดแวร์",
+      },
+      title: "โปรไฟล์ฮาร์ดแวร์ / ช่องโมดูล / Blueprint",
+    },
+    paidOffer: {
+      action: "สมัครชุดทดลองแบบมีค่าใช้จ่าย",
+      body:
+        "เบต้าชุดเล็กสำหรับคนที่อยากได้เส้นทางครบ: คิต Rover-01, เวิร์กช็อปตั้งค่า, Web Garage และซัพพอร์ตช่วงทดลอง",
+      eyebrow: "ข้อเสนอแรกที่ขายได้",
+      items: [
+        "คิต Rover-01 beta",
+        "เวิร์กช็อปตั้งค่า",
+        "บัญชี Web Garage ของคุณ",
+      ],
+      note: "การชำระเงินยังทำนอกแอปจนกว่าฮาร์ดแวร์จริงผ่านหลักฐานทดสอบ",
+      title: "Rover-01 Beta Kit + guided setup workshop + Web Garage",
+    },
     engineer: {
       body:
         "รู้จักชิ้นส่วนในชุดเบต้า และดูแนวทางอัปเดตเฟิร์มแวร์แบบไม่เสี่ยงเกินไป",
@@ -454,7 +628,7 @@ const ownerCopy = {
         compatibility:
           "เข้ากับ RoboForge protocol เบื้องต้น แต่หุ่นจริงยังต้องผ่าน bench test",
         current: "เฟิร์มแวร์เดโมตอนนี้",
-        demoSource: "ยังเป็น demo profile จนกว่าจะผูกชุดหุ่นจริงเข้าบัญชี",
+        demoSource: "ยังเป็นโปรไฟล์ตัวอย่าง จนกว่าจะเพิ่มชุดหุ่นจริงเข้าบัญชี",
         protocol: "Protocol",
         readiness: "ความพร้อม",
         safety:
@@ -470,7 +644,7 @@ const ownerCopy = {
       },
       hardware: {
         body:
-          "เริ่มจากชิ้นส่วนที่เจ้าของเห็นจริงในชุด แล้วค่อยบอกชื่อเทคนิคของมัน",
+          "เริ่มจากชิ้นส่วนที่คุณเห็นจริงในชุด แล้วค่อยบอกชื่อเทคนิคของมัน",
         parts: [
           {
             detail:
@@ -481,7 +655,7 @@ const ownerCopy = {
           },
           {
             detail:
-              "รับคำสั่งจาก ESP32 แล้วจ่ายไฟให้มอเตอร์ ใช้กับ MVP ได้ แต่ยังไม่ใช่คำตอบสุดท้ายของรุ่นผลิตจริง",
+              "รับคำสั่งจาก ESP32 แล้วจ่ายไฟให้มอเตอร์ ใช้กับชุดต้นแบบได้ แต่ยังไม่ใช่คำตอบสุดท้ายของรุ่นผลิตจริง",
             id: "learn-motor-driver",
             label: "ตัวขับมอเตอร์",
             name: "L298N",
@@ -538,8 +712,8 @@ const ownerCopy = {
     messages: {
       betaError: "บันทึกใบสมัครเบต้าไม่สำเร็จ",
       betaSaved: "บันทึกใบสมัครเบต้าแล้ว",
-      claimError: "รับสิทธิ์หุ่นไม่สำเร็จ",
-      claimingFromQr: "กำลังรับสิทธิ์หุ่นจากการ์ด QR...",
+      claimError: "เพิ่มหุ่นไม่สำเร็จ",
+      claimingFromQr: "กำลังเพิ่มหุ่นจากการ์ด QR...",
       connectionIssueError: "บันทึกปัญหาไม่สำเร็จ",
       connectionIssueSaved: "บันทึกปัญหาไว้ให้ทีมรีวิวแล้ว",
       connectionSaved: "บันทึกการเชื่อมต่อแล้ว Rover พร้อมเข้า Cockpit",
@@ -556,7 +730,7 @@ const ownerCopy = {
       interestError: "บันทึกความสนใจไม่สำเร็จ",
       interestSaved: (interest: string) => `บันทึกความสนใจเรื่อง ${interest} แล้ว`,
       progressSaved: "บันทึกความคืบหน้าแล้ว",
-      robotClaimed: "รับสิทธิ์หุ่นแล้ว กำลังโหลด Garage ใหม่",
+      robotClaimed: "เพิ่มหุ่นแล้ว กำลังโหลด Garage ใหม่",
       saving: "กำลังบันทึก...",
       themeSaved: "บันทึกสไตล์ของหุ่นแล้ว",
     },
@@ -569,6 +743,12 @@ const ownerCopy = {
     },
     nextStep: {
       aria: "ขั้นต่อไป",
+      claim: {
+        action: "สมัครชุดทดลองแบบมีค่าใช้จ่าย",
+        body:
+          "Digital Form พร้อมแล้ว ขั้นต่อไปคือเพิ่มรหัสคิตหรือสมัครชุดทดลองแบบมีค่าใช้จ่าย ก่อนเชื่อมต่อหุ่นจริง",
+        title: "ขั้นต่อไป: เพิ่มคิตจริง",
+      },
       cockpit: {
         action: "เข้า Cockpit เดโม",
         body:
@@ -585,11 +765,11 @@ const ownerCopy = {
       missions: {
         action: "เปิด Missions",
         body:
-          "ระบบบันทึกการเชื่อมต่อและการขับครั้งแรกแล้ว ต่อไปใช้ Missions เพื่อดูว่าผู้ใช้กลับมาเล่นต่อไหม",
+          "ระบบบันทึกการเชื่อมต่อและการขับครั้งแรกแล้ว ต่อไปใช้ Missions เพื่อพาหุ่นของคุณไปภารกิจถัดไป",
         title: "ขั้นต่อไป: ทำภารกิจแรก",
       },
       path: {
-        aria: "เส้นทางเจ้าของ",
+        aria: "เส้นทางเริ่มใช้งาน",
         cockpit: "Cockpit",
         connect: "เชื่อมต่อหุ่น",
         garage: "Web Garage",
@@ -597,7 +777,10 @@ const ownerCopy = {
     },
     progress: {
       action: "บันทึกว่าขับครั้งแรกแล้ว",
-      aria: "ความคืบหน้าเจ้าของ",
+      aria: "ความคืบหน้าของหุ่น",
+      digitalBody:
+        "เพิ่มคิตจริงก่อน แล้วด่านความพร้อมเหล่านี้ถึงจะเป็นหลักฐานของฮาร์ดแวร์จริง",
+      digitalTitle: "ยังไม่ได้ผูกคิตจริง",
       eyebrow: "ความคืบหน้า",
       items: {
         batteryCalibrated: "ตรวจแบตเตอรี่แล้ว",
@@ -609,11 +792,11 @@ const ownerCopy = {
       title: "ความพร้อมของ Rover-01",
     },
     claim: {
-      action: "รับสิทธิ์หุ่น",
-      aria: "รับสิทธิ์หุ่น",
+      action: "เพิ่มหุ่น",
+      aria: "เพิ่มหุ่น",
       body:
-        "กรอกรหัสจากการ์ด QR หรือชุดเบต้า หุ่นจะถูกเพิ่มเข้าบัญชีเจ้าของนี้",
-      eyebrow: "รับสิทธิ์หุ่น",
+        "กรอกรหัสจากการ์ด QR หรือชุดเบต้า แล้วหุ่นจะถูกเพิ่มเข้าบัญชีของคุณ",
+      eyebrow: "เพิ่มหุ่น",
       label: "รหัสหุ่น",
       title: "ผูกหุ่นจริงเข้ากับ Web Garage นี้",
     },
@@ -621,7 +804,7 @@ const ownerCopy = {
       adminTitle: "ทีมเบต้า",
       back: "Garage",
       brandSub: "WEB GARAGE",
-      defaultOwner: "เจ้าของ RoboForge",
+      defaultOwner: "บัญชี RoboForge",
       savedInterestPlural: "รายการความสนใจที่บันทึกไว้",
       savedInterestSingular: "รายการความสนใจที่บันทึกไว้",
       signOutTitle: "ออกจากระบบ",
@@ -772,7 +955,21 @@ function TelemetryGrid() {
   );
 }
 
-function TruthStrip() {
+function TruthStrip({
+  copy,
+  device,
+  robotCode,
+}: {
+  copy: OwnerCopy;
+  device: RobotDevice | null;
+  robotCode: string;
+}) {
+  const physicalDetail = device
+    ? `${copy.layers.physical.linked}: ${robotCode.toUpperCase()} / ${formatReadinessStatus(
+        device.readiness_status,
+      )}`
+    : copy.layers.physical.empty;
+
   return (
     <div className="rf-truth-strip">
       <div>
@@ -780,17 +977,17 @@ function TruthStrip() {
           <Sparkles size={17} />
         </span>
         <p>
-          <strong>Digital Form</strong>
-          <small>Premium identity shown in app</small>
+          <strong>{copy.layers.digital.title}</strong>
+          <small>{copy.layers.digital.body}</small>
         </p>
       </div>
-      <div>
+      <div className={device ? "is-physical" : "is-empty"}>
         <span>
           <CircuitBoard size={17} />
         </span>
         <p>
-          <strong>Installed Hardware</strong>
-          <small>Rover-01 ESP32 control base</small>
+          <strong>{copy.layers.physical.title}</strong>
+          <small>{physicalDetail}</small>
         </p>
       </div>
       <div className="is-future">
@@ -798,8 +995,8 @@ function TruthStrip() {
           <Wrench size={17} />
         </span>
         <p>
-          <strong>Future Body Kit</strong>
-          <small>Roadmap concept, not shipping yet</small>
+          <strong>{copy.layers.future.title}</strong>
+          <small>{copy.layers.future.body}</small>
         </p>
       </div>
     </div>
@@ -808,10 +1005,12 @@ function TruthStrip() {
 
 function ProgressPanel({
   copy,
+  hasPhysicalUnit,
   onCompleteFirstDrive,
   progress,
 }: {
   copy: OwnerCopy;
+  hasPhysicalUnit: boolean;
   onCompleteFirstDrive: () => void;
   progress: OwnerProgress;
 }) {
@@ -829,7 +1028,10 @@ function ProgressPanel({
         <span className="eyebrow">
           <ShieldCheck size={15} /> {copy.progress.eyebrow}
         </span>
-        <h2>{copy.progress.title}</h2>
+        <h2>{hasPhysicalUnit ? copy.progress.title : copy.progress.digitalTitle}</h2>
+        {!hasPhysicalUnit ? (
+          <p className="rf-progress-note">{copy.progress.digitalBody}</p>
+        ) : null}
       </div>
       <div className="rf-owner-progress__items">
         {items.map(([label, complete]) => (
@@ -839,7 +1041,12 @@ function ProgressPanel({
           </span>
         ))}
       </div>
-      <Button icon={Rocket} onClick={onCompleteFirstDrive} variant="secondary">
+      <Button
+        disabled={!hasPhysicalUnit}
+        icon={Rocket}
+        onClick={onCompleteFirstDrive}
+        variant="secondary"
+      >
         {copy.progress.action}
       </Button>
     </section>
@@ -848,29 +1055,39 @@ function ProgressPanel({
 
 function GarageNextStep({
   copy,
+  hasPhysicalUnit,
+  onPaidOffer,
   onScreen,
   progress,
 }: {
   copy: OwnerCopy;
+  hasPhysicalUnit: boolean;
+  onPaidOffer: () => void;
   onScreen: (screen: ConsoleScreen) => void;
   progress: OwnerProgress;
 }) {
-  const nextStep = progress.first_connection_complete
+  const nextStep = !hasPhysicalUnit
+    ? {
+        ...copy.nextStep.claim,
+        icon: ShoppingBag,
+        onClick: onPaidOffer,
+      }
+    : progress.first_connection_complete
     ? progress.first_drive_complete
       ? {
           ...copy.nextStep.missions,
           icon: Rocket,
-          screen: "missions" as ConsoleScreen,
+          onClick: () => onScreen("missions"),
         }
       : {
           ...copy.nextStep.cockpit,
           icon: Gamepad2,
-          screen: "cockpit" as ConsoleScreen,
+          onClick: () => onScreen("cockpit"),
         }
     : {
         ...copy.nextStep.connect,
         icon: RadioTower,
-        screen: "connect" as ConsoleScreen,
+        onClick: () => onScreen("connect"),
       };
   const Icon = nextStep.icon;
 
@@ -887,14 +1104,14 @@ function GarageNextStep({
         <span className="is-done">
           <LockKeyhole size={16} /> {copy.nextStep.path.garage}
         </span>
-        <span className={progress.first_connection_complete ? "is-done" : ""}>
+        <span className={hasPhysicalUnit && progress.first_connection_complete ? "is-done" : ""}>
           <Wifi size={16} /> {copy.nextStep.path.connect}
         </span>
         <span className={progress.first_drive_complete ? "is-done" : ""}>
           <Gamepad2 size={16} /> {copy.nextStep.path.cockpit}
         </span>
       </div>
-      <Button icon={Icon} onClick={() => onScreen(nextStep.screen)}>
+      <Button icon={Icon} onClick={nextStep.onClick}>
         {nextStep.action}
       </Button>
     </section>
@@ -950,9 +1167,339 @@ function ClaimRobotPanel({
   );
 }
 
+const paidOfferIcons = [Bot, RadioTower, Home] as const;
+
+function PaidOfferPanel({
+  copy,
+  onApply,
+}: {
+  copy: OwnerCopy;
+  onApply: () => void;
+}) {
+  return (
+    <section className="rf-paid-offer">
+      <div className="rf-paid-offer__copy">
+        <span className="eyebrow">
+          <ShoppingBag size={15} /> {copy.paidOffer.eyebrow}
+        </span>
+        <h2>{copy.paidOffer.title}</h2>
+        <p>{copy.paidOffer.body}</p>
+      </div>
+      <div className="rf-paid-offer__items">
+        {copy.paidOffer.items.map((item, index) => {
+          const Icon = paidOfferIcons[index] ?? ShieldCheck;
+
+          return (
+            <span key={item}>
+              <Icon size={17} />
+              {item}
+            </span>
+          );
+        })}
+      </div>
+      <div className="rf-paid-offer__action">
+        <small>{copy.paidOffer.note}</small>
+        <Button icon={Send} onClick={onApply}>
+          {copy.paidOffer.action}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+type ModuleSlotStatus = "installed" | "pending" | "planned" | "locked";
+
+const hardwareProfileIcons = [
+  CircuitBoard,
+  Wrench,
+  BatteryCharging,
+  RadioTower,
+  Clipboard,
+  ShieldCheck,
+] as const;
+const moduleSlotIcons = [
+  CircuitBoard,
+  Wrench,
+  BatteryCharging,
+  Gauge,
+  RadioTower,
+] as const;
+
+function formatHardwareValue(value: string | null | undefined) {
+  return value?.trim().replaceAll("_", " ") || null;
+}
+
+function hasHardwareFlag(device: RobotDevice | null, key: string) {
+  return device?.hardware_profile?.[key] === true;
+}
+
+function moduleStatusLabel(copy: OwnerCopy, status: ModuleSlotStatus) {
+  if (status === "installed") return copy.modular.slots.installed;
+  if (status === "planned") return copy.modular.slots.planned;
+  if (status === "locked") return copy.modular.slots.locked;
+  return copy.modular.slots.empty;
+}
+
+function getModularProfile(device: RobotDevice | null) {
+  const motorChannels = formatHardwareValue(
+    recordText(device?.hardware_profile, "motorChannels"),
+  );
+  const board = deviceHardwareName(device, "board", "ESP32 Rover-01 demo");
+  const motorDriver = deviceHardwareName(
+    device,
+    "motorDriver",
+    "Differential drive demo",
+  );
+  const power = deviceHardwareName(device, "battery", "2S Li-ion candidate");
+  const firmware = `${device?.firmware_version ?? demoTelemetry.firmwareVersion} / ${
+    device?.protocol_version ?? "v1"
+  }`;
+  const communication = device?.ap_ssid ?? "RoboForge local Wi-Fi";
+
+  return {
+    board,
+    communication,
+    firmware,
+    motion: motorChannels ? `${motorDriver} / ${motorChannels}` : motorDriver,
+    power,
+    readiness: formatReadinessStatus(device?.readiness_status),
+  };
+}
+
+function HardwareProfilePanel({
+  copy,
+  device,
+  robotCode,
+}: {
+  copy: OwnerCopy;
+  device: RobotDevice | null;
+  robotCode: string;
+}) {
+  const profile = getModularProfile(device);
+  const profileSource = device
+    ? copy.modular.hardware.sourceProfile
+    : copy.modular.hardware.sourceDemo;
+  const safetyDetail =
+    device && hasHardwareFlag(device, "hasPowerSwitch") && hasHardwareFlag(device, "hasFuse")
+      ? copy.modular.hardware.safetyReady
+      : copy.modular.hardware.safetyPending;
+  const rows = [
+    {
+      detail: profileSource,
+      label: copy.modular.hardware.rows.brain,
+      value: profile.board,
+    },
+    {
+      detail: profileSource,
+      label: copy.modular.hardware.rows.motion,
+      value: profile.motion,
+    },
+    {
+      detail: device ? safetyDetail : profileSource,
+      label: copy.modular.hardware.rows.power,
+      value: profile.power,
+    },
+    {
+      detail: profileSource,
+      label: copy.modular.hardware.rows.comms,
+      value: profile.communication,
+    },
+    {
+      detail: profileSource,
+      label: copy.modular.hardware.rows.firmware,
+      value: profile.firmware,
+    },
+    {
+      detail: device ? profileSource : copy.modular.hardware.empty,
+      label: copy.modular.hardware.rows.readiness,
+      value: profile.readiness,
+    },
+  ];
+
+  return (
+    <article className="rf-modular-card rf-hardware-profile-panel">
+      <span className="eyebrow">{copy.modular.hardware.title}</span>
+      <p>{copy.modular.hardware.body}</p>
+      <div className="rf-profile-matrix">
+        {rows.map((row, index) => {
+          const Icon = hardwareProfileIcons[index] ?? CircuitBoard;
+
+          return (
+            <div className="rf-profile-row" key={row.label}>
+              <span>
+                <Icon size={18} />
+              </span>
+              <p>
+                <small>{row.label}</small>
+                <strong>{row.value}</strong>
+                <em>{row.detail}</em>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      <small className="rf-blueprint-id">{robotCode.toUpperCase()}</small>
+    </article>
+  );
+}
+
+function ModuleSlotsPanel({
+  copy,
+  device,
+}: {
+  copy: OwnerCopy;
+  device: RobotDevice | null;
+}) {
+  const profile = getModularProfile(device);
+  const hasPhysicalUnit = Boolean(device);
+  const slots: Array<{
+    detail: string;
+    label: string;
+    status: ModuleSlotStatus;
+    value: string;
+  }> = [
+    {
+      detail: hasPhysicalUnit ? profile.board : copy.modular.slots.waiting,
+      label: copy.modular.slots.items.brain,
+      status: hasPhysicalUnit ? "installed" : "pending",
+      value: profile.board,
+    },
+    {
+      detail: hasPhysicalUnit ? profile.motion : copy.modular.slots.waiting,
+      label: copy.modular.slots.items.drive,
+      status: hasPhysicalUnit ? "installed" : "pending",
+      value: profile.motion,
+    },
+    {
+      detail: hasPhysicalUnit ? profile.power : copy.modular.slots.waiting,
+      label: copy.modular.slots.items.power,
+      status: hasPhysicalUnit ? "installed" : "pending",
+      value: profile.power,
+    },
+    {
+      detail: copy.modular.blueprint.marketplace,
+      label: copy.modular.slots.items.senses,
+      status: "planned",
+      value: copy.modular.slots.planned,
+    },
+    {
+      detail: profile.communication,
+      label: copy.modular.slots.items.comms,
+      status: hasPhysicalUnit ? "installed" : "pending",
+      value: profile.communication,
+    },
+  ];
+
+  return (
+    <article className="rf-modular-card">
+      <span className="eyebrow">{copy.modular.slots.title}</span>
+      <p>{copy.modular.slots.body}</p>
+      <div className="rf-module-slots">
+        {slots.map((slot, index) => {
+          const Icon = moduleSlotIcons[index] ?? CircuitBoard;
+
+          return (
+            <div className={`rf-module-slot is-${slot.status}`} key={slot.label}>
+              <span>
+                <Icon size={18} />
+              </span>
+              <p>
+                <small>{slot.label}</small>
+                <strong>{slot.value}</strong>
+                <em>{slot.detail}</em>
+              </p>
+              <b>{moduleStatusLabel(copy, slot.status)}</b>
+            </div>
+          );
+        })}
+      </div>
+    </article>
+  );
+}
+
+function BlueprintPanel({
+  copy,
+  device,
+  robotCode,
+}: {
+  copy: OwnerCopy;
+  device: RobotDevice | null;
+  robotCode: string;
+}) {
+  const profile = getModularProfile(device);
+  const blueprintId = `rf.blueprint.${robotCode
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")}.v0`;
+  const blueprintRows = [
+    [copy.modular.hardware.rows.brain, profile.board],
+    [copy.modular.hardware.rows.motion, profile.motion],
+    [copy.modular.hardware.rows.power, profile.power],
+    [copy.modular.hardware.rows.comms, profile.communication],
+  ] as const;
+
+  return (
+    <article className="rf-modular-card rf-blueprint-card">
+      <span className="eyebrow">{copy.modular.blueprint.title}</span>
+      <p>{copy.modular.blueprint.body}</p>
+      <div className="rf-blueprint-header">
+        <span>
+          <Clipboard size={20} />
+          <small>{copy.modular.blueprint.idLabel}</small>
+          <strong>{blueprintId}</strong>
+        </span>
+        <b>{copy.modular.blueprint.action}</b>
+      </div>
+      <div className="rf-blueprint-lines">
+        {blueprintRows.map(([label, value]) => (
+          <span key={label}>
+            <small>{label}</small>
+            <strong>{value}</strong>
+          </span>
+        ))}
+      </div>
+      <div className="rf-blueprint-state">
+        <span>{copy.modular.blueprint.format}</span>
+        <span>{copy.modular.blueprint.clone}</span>
+        <span>{copy.modular.blueprint.shareState}</span>
+      </div>
+      <small className="rf-blueprint-safety">{copy.modular.blueprint.safety}</small>
+    </article>
+  );
+}
+
+function ModularRoboticsPanel({
+  copy,
+  device,
+  robotCode,
+}: {
+  copy: OwnerCopy;
+  device: RobotDevice | null;
+  robotCode: string;
+}) {
+  return (
+    <section aria-label={copy.modular.aria} className="rf-modular-panel">
+      <div className="rf-section-title">
+        <span className="eyebrow">
+          <CircuitBoard size={15} /> {copy.modular.eyebrow}
+        </span>
+        <h2>{copy.modular.title}</h2>
+        <p>{copy.modular.body}</p>
+      </div>
+      <div className="rf-modular-grid">
+        <HardwareProfilePanel copy={copy} device={device} robotCode={robotCode} />
+        <ModuleSlotsPanel copy={copy} device={device} />
+        <BlueprintPanel copy={copy} device={device} robotCode={robotCode} />
+      </div>
+    </section>
+  );
+}
+
 function Garage({
   copy,
+  device,
   isPending,
+  onPaidOffer,
   onClaimRobot,
   onProgress,
   onScreen,
@@ -961,7 +1508,9 @@ function Garage({
   theme,
 }: {
   copy: OwnerCopy;
+  device: RobotDevice | null;
   isPending?: boolean;
+  onPaidOffer: () => void;
   onClaimRobot: (claimCode: string) => void;
   onProgress: (progress: OwnerProgress) => void;
   onScreen: (screen: ConsoleScreen) => void;
@@ -971,6 +1520,7 @@ function Garage({
 }) {
   const [selectedFleet, setSelectedFleet] = useState("rover");
   const selectedTheme = themes[theme];
+  const hasPhysicalUnit = Boolean(device);
 
   function completeFirstDrive() {
     onProgress(
@@ -995,7 +1545,14 @@ function Garage({
         </div>
         <StatusPill />
       </section>
-      <GarageNextStep copy={copy} onScreen={onScreen} progress={progress} />
+      <GarageNextStep
+        copy={copy}
+        hasPhysicalUnit={hasPhysicalUnit}
+        onPaidOffer={onPaidOffer}
+        onScreen={onScreen}
+        progress={progress}
+      />
+      <PaidOfferPanel copy={copy} onApply={onPaidOffer} />
       <FleetRail selected={selectedFleet} setSelected={setSelectedFleet} />
       <ClaimRobotPanel copy={copy} disabled={isPending} onClaim={onClaimRobot} />
       {selectedFleet === "rover" ? (
@@ -1010,9 +1567,13 @@ function Garage({
               {selectedTheme.robotClass} · {copy.garage.driveLabel}
             </p>
             <TelemetryGrid />
-            <TruthStrip />
+            <TruthStrip copy={copy} device={device} robotCode={robotCode} />
             <div className="rf-button-row">
-              <Button icon={RadioTower} onClick={() => onScreen("connect")}>
+              <Button
+                disabled={!hasPhysicalUnit}
+                icon={RadioTower}
+                onClick={() => onScreen("connect")}
+              >
                 {copy.garage.actions.connect}
               </Button>
               <Button icon={Gamepad2} onClick={() => onScreen("cockpit")}>
@@ -1041,8 +1602,10 @@ function Garage({
           <span className="rf-concept-badge">{copy.garage.future.badge}</span>
         </section>
       )}
+      <ModularRoboticsPanel copy={copy} device={device} robotCode={robotCode} />
       <ProgressPanel
         copy={copy}
+        hasPhysicalUnit={hasPhysicalUnit}
         onCompleteFirstDrive={completeFirstDrive}
         progress={progress}
       />
@@ -1867,7 +2430,7 @@ function Store({
           <span className="eyebrow">VALIDATE THE NEXT BUILD</span>
           <h2>Vote with a Beta application, not a Like.</h2>
         </div>
-        <Button icon={Send} onClick={() => onBeta("Build and control Rover-01")}>
+        <Button icon={Send} onClick={() => onBeta(firstPaidOfferInterest)}>
           Register upgrade interest
         </Button>
       </div>
@@ -1914,11 +2477,11 @@ function BetaModal({
         >
           <X size={21} />
         </button>
-        <span className="eyebrow">FOUNDING PILOT PROGRAM</span>
-        <h2>Join the Rover-01 Beta</h2>
+        <span className="eyebrow">PAID PILOT APPLICATION</span>
+        <h2>Rover-01 Beta Kit + guided setup workshop</h2>
         <p>
-          Tell us what you want to build. We will invite a small group to the
-          first demo and workshop.
+          Tell us what you want to build. We will invite the first small paid
+          batch after the hardware proof gates are clear.
         </p>
         <form onSubmit={submit}>
           <label>
@@ -1942,7 +2505,7 @@ function BetaModal({
           <Button icon={Send} type="submit">
             Save beta application
           </Button>
-          <small>Limited Beta batch. Pricing follows hardware validation.</small>
+          <small>Limited guided beta. Final price follows hardware validation.</small>
         </form>
       </section>
     </div>
@@ -2000,7 +2563,7 @@ export function OwnerConsole({
     workspace.progress ?? defaultProgress,
   );
   const [betaInterest, setBetaInterest] =
-    useState<UpgradeInterest>("Build and control Rover-01");
+    useState<UpgradeInterest>(firstPaidOfferInterest);
   const [betaOpen, setBetaOpen] = useState(false);
   const [connectionSessionId, setConnectionSessionId] = useState<string | null>(null);
   const [controlSessionId, setControlSessionId] = useState<string | null>(null);
@@ -2299,8 +2862,10 @@ export function OwnerConsole({
       {screen === "garage" ? (
         <Garage
           copy={copy}
+          device={activeDevice}
           isPending={isPending}
           onClaimRobot={claimRobot}
+          onPaidOffer={() => openBeta(firstPaidOfferInterest)}
           onProgress={persistProgress}
           onScreen={setScreen}
           progress={progress}

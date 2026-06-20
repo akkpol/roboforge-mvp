@@ -133,6 +133,18 @@ function isMissingWorkspaceTable(error: { code?: string; message?: string }) {
   );
 }
 
+function prioritizePhysicalRobots(robots: OwnerRobot[], devices: RobotDevice[]) {
+  const physicalRobotIds = new Set(devices.map((device) => device.robot_id));
+
+  return [...robots].sort((first, second) => {
+    const firstIsPhysical = physicalRobotIds.has(first.id);
+    const secondIsPhysical = physicalRobotIds.has(second.id);
+
+    if (firstIsPhysical === secondIsPhysical) return 0;
+    return firstIsPhysical ? -1 : 1;
+  });
+}
+
 export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
   const supabase = await createServerSupabaseClient();
 
@@ -240,6 +252,33 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     robots = [starterRobot as OwnerRobot];
   }
 
+  const { data: existingDevices, error: devicesReadError } = await supabase
+    .from("robot_devices")
+    .select(deviceSelect)
+    .in(
+      "robot_id",
+      robots.map((robot) => robot.id),
+    )
+    .order("updated_at", { ascending: false });
+
+  let devices = (existingDevices ?? []) as RobotDevice[];
+
+  if (devicesReadError) {
+    if (isMissingWorkspaceTable(devicesReadError)) {
+      devices = [];
+    } else {
+      return {
+        devices: [],
+        error: devicesReadError.message,
+        interests: [],
+        profile,
+        progress: null,
+        robots,
+      };
+    }
+  }
+
+  robots = prioritizePhysicalRobots(robots, devices);
   const activeRobot = robots[0];
   const { data: existingProgress, error: progressReadError } = await supabase
     .from("robot_progress")
@@ -308,32 +347,6 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
     }
 
     progress = createdProgress as RobotProgress;
-  }
-
-  const { data: existingDevices, error: devicesReadError } = await supabase
-    .from("robot_devices")
-    .select(deviceSelect)
-    .in(
-      "robot_id",
-      robots.map((robot) => robot.id),
-    )
-    .order("updated_at", { ascending: false });
-
-  let devices = (existingDevices ?? []) as RobotDevice[];
-
-  if (devicesReadError) {
-    if (isMissingWorkspaceTable(devicesReadError)) {
-      devices = [];
-    } else {
-      return {
-        devices: [],
-        error: devicesReadError.message,
-        interests: [],
-        profile,
-        progress,
-        robots,
-      };
-    }
   }
 
   const { data: existingInterests, error: interestsReadError } = await supabase

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://roboforge.local/schemas/module-manifest.schema.json",
+  "title": "RoboForge Module Manifest",
+  "type": "object",
+  "required": [
+    "manifestVersion",
+    "moduleId",
+    "moduleType",
+    "displayName",
+    "bus",
+    "capabilities",
+    "requiresFirmware",
+    "safetyNotes"
+  ],
+  "properties": {
+    "manifestVersion": {
+      "type": "string"
+    },
+    "moduleId": {
+      "type": "string",
+      "pattern": "^rf\\.[a-z0-9_.-]+$"
+    },
+    "moduleType": {
+      "type": "string",
+      "enum": ["brain", "mechanism", "actuator", "sensor", "power", "communication"]
+    },
+    "displayName": {
+      "type": "string"
+    },
+    "bus": {
+      "type": "string",
+      "enum": ["gpio", "i2c", "can", "serial", "power", "mechanical", "wifi", "none"]
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "requiresFirmware": {
+      "type": "string"
+    },
+    "safetyNotes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "compatibleRobotTypes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

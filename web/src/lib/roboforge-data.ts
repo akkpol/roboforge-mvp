@@ -9,6 +9,7 @@ export type ConsoleScreen =
   | "engineer"
   | "store";
 export type UpgradeInterest =
+  | "Rover-01 Beta Kit + guided setup workshop"
   | "Build and control Rover-01"
   | "STEM workshop or school"
   | "Sensor Pack"
@@ -123,7 +124,11 @@ export const demoTelemetry: RobotTelemetry = {
   wifiStrength: "strong",
 };
 
+export const firstPaidOfferInterest: UpgradeInterest =
+  "Rover-01 Beta Kit + guided setup workshop";
+
 export const upgradeInterests: UpgradeInterest[] = [
+  firstPaidOfferInterest,
   "Build and control Rover-01",
   "Sensor Pack",
   "Body Kit",

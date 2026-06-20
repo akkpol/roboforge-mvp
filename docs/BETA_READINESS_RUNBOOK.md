@@ -87,21 +87,12 @@ reason and a rollback plan.
 
 ## Vercel Proof
 
-After pushing `main`, verify both projects because this repo still deploys both
-the SaaS app and the original demo app.
-
-For `roboforge-saas`:
+After pushing `main`, verify the single SaaS project.
 
 - latest production deployment is `Ready`
 - `https://roboforge-saas.vercel.app/` returns `200`
 - `/?lang=th` returns Thai copy
 - `/admin` returns without server error
-- production error/fatal logs are empty
-
-For `roboforge-mvp`:
-
-- latest production deployment is `Ready`
-- `https://roboforge-mvp.vercel.app/` returns `200`
 - production error/fatal logs are empty
 
 ## Hardware Proof

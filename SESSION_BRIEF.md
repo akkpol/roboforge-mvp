@@ -13,10 +13,26 @@ product and backend can handle early usage.
 In plain customer terms: RoboForge should let people own a robot, learn how the
 parts work, upgrade it safely, and move through setup like a game.
 
+The first paid offer is intentionally narrow: RoboForge Rover-01 Beta Kit +
+guided setup workshop + Web Garage. Use this to validate willingness to pay
+while the full three-layer platform is built in phases.
+
+The platform direction is:
+
+- Layer A: Physical Modular Hardware, starting with the Rover-01 standard kit
+  and growing into partner modules and a hardware marketplace.
+- Layer B: Abstraction Engine, starting with profiles/config generation and
+  growing into module discovery, OTA, and visual behavior programming.
+- Layer C: Control And Sharing, starting with Web Garage and local Cockpit and
+  growing into automation, streaming, swarm, blueprint sharing, and marketplace
+  listings.
+
 ## Product Shape
 
 - Users can sign up and log in.
 - Users have their own Garage.
+- The Garage separates Digital Form, Physical Unit, and Future Upgrade so a
+  starter digital robot does not get confused with a claimed physical kit.
 - The team can create claim kits for real robot units, including QR, firmware
   config, local Wi-Fi details, and protocol check steps.
 - The team can store prototype hardware details in Ops before changing firmware
@@ -31,6 +47,9 @@ parts work, upgrade it safely, and move through setup like a game.
 - Hardware Codex explains the real parts in the kit in plain language.
 - Firmware Lab should start by showing version, compatibility, and safe update
   guidance before any one-click firmware upgrade is allowed.
+- Device Cockpit should move under the `web/` architecture while preserving a
+  separate static build target for ESP32 LittleFS. The customer product should
+  feel like one app even when the repo emits SaaS and device bundles.
 - The backend records enough data to know what worked, what failed, and where
   users got stuck.
 - Hardware details may change. The product should support the current prototype
@@ -61,6 +80,7 @@ controlling their own robot, not filling out technical forms.
 - Admin/Ops view for beta health.
 - Backend testing for 100-1000 early users.
 - Firmware/local protocol checks for the physical prototype.
+- Device Cockpit migration into `web/`.
 - Hardware profile capture for board, motor driver, battery, wiring, fuse,
   power switch, and readiness status.
 - Bench checklist capture for power, robot Wi-Fi, protocol checks,

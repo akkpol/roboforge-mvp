@@ -42,13 +42,16 @@ unit. Copy the generated `firmware/include/config.h` block so the firmware unit
 code, AP password, battery cell count, protocol version, and Supabase claim kit
 match the same robot.
 
-From `app/`:
+From `web/`:
 
 ```powershell
 npm run build:device
 ```
 
-This writes the optimized web build to `firmware/data/`.
+This writes the optimized Device Cockpit build to `firmware/data/`.
+The per-kit firmware config should come from the RoboForge contract generator,
+which renders `hardware/templates/esp32_rover_config.h.mustache` into
+`firmware/include/config.h`.
 
 From `firmware/`:
 

@@ -1,0 +1,35 @@
+{
+  "tableVersion": "0.1",
+  "protocolVersion": "v1",
+  "boards": [
+    {
+      "deviceId": "rf.brain.esp32.devkit-v1",
+      "displayName": "ESP32 DevKit V1",
+      "boardType": "esp32dev",
+      "framework": "arduino",
+      "defaultTransport": "local_wifi"
+    },
+    {
+      "deviceId": "rf.brain.raspberry-pi",
+      "displayName": "Raspberry Pi",
+      "boardType": "raspberry_pi",
+      "framework": "linux",
+      "defaultTransport": "wifi"
+    },
+    {
+      "deviceId": "rf.brain.arduino-class",
+      "displayName": "Arduino-class board",
+      "boardType": "arduino",
+      "framework": "arduino",
+      "defaultTransport": "serial"
+    }
+  ],
+  "buses": ["gpio", "i2c", "can", "serial", "power", "mechanical", "wifi", "none"],
+  "readinessStates": [
+    "needs_details",
+    "ready_for_bench",
+    "ready_for_raised_wheels",
+    "ready_for_floor",
+    "blocked"
+  ]
+}

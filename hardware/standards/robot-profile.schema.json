@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://roboforge.local/schemas/robot-profile.schema.json",
+  "title": "RoboForge Robot Profile",
+  "type": "object",
+  "required": [
+    "profileVersion",
+    "robotType",
+    "unitCode",
+    "brain",
+    "mechanism",
+    "muscle",
+    "senses",
+    "communication",
+    "safety",
+    "compatibility"
+  ],
+  "properties": {
+    "profileVersion": {
+      "type": "string"
+    },
+    "robotType": {
+      "type": "string"
+    },
+    "unitCode": {
+      "type": "string"
+    },
+    "brain": {
+      "type": "object",
+      "required": ["board", "firmware", "protocol"]
+    },
+    "mechanism": {
+      "type": "object",
+      "required": ["drive"]
+    },
+    "muscle": {
+      "type": "object",
+      "required": ["actuators"]
+    },
+    "senses": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "communication": {
+      "type": "object",
+      "required": ["mode"]
+    },
+    "safety": {
+      "type": "object",
+      "required": ["requiresArm", "raisedWheelTestRequired", "readiness"]
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["requiredModuleIds", "optionalSlotIds"]
+    }
+  },
+  "additionalProperties": true
+}

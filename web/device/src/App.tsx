@@ -46,6 +46,8 @@ import type {
 
 const betaUrl = import.meta.env.VITE_AIRTABLE_FORM_URL ?? "";
 const calendlyUrl = import.meta.env.VITE_CALENDLY_URL ?? "";
+const firstPaidOfferInterest: UpgradeInterest =
+  "Rover-01 Beta Kit + guided setup workshop";
 
 const initialTelemetry: RobotTelemetry = {
   connected: false,
@@ -91,6 +93,7 @@ const initialSafetyChecks: Record<SafetyCheck, boolean> = {
 };
 
 const upgradeInterests: UpgradeInterest[] = [
+  firstPaidOfferInterest,
   "Build and control Rover-01",
   "Sensor Pack",
   "Body Kit",
@@ -726,7 +729,7 @@ function Garage({
           </span>
           <span class="eyebrow">FLEET EXPANSION</span>
           <h2>{selectedFleet.toUpperCase()} UNIT</h2>
-          <p>This robot class is part of the RoboForge platform roadmap. Control hardware is not included in the MVP.</p>
+          <p>This robot class is part of the RoboForge platform roadmap. Control hardware is not included in the first beta kit.</p>
           <span class="concept-badge">COMING SOON</span>
         </section>
       )}
@@ -1361,7 +1364,7 @@ function Store({ onBeta }: { onBeta: (interest: UpgradeInterest) => void }) {
         <div>
           <span class="eyebrow"><ShoppingBagOpen size={15} weight="fill" /> UPGRADE LAB</span>
           <h1>Future Loadout</h1>
-          <p>No checkout in this MVP. This page tests which evolution paths create real demand.</p>
+          <p>No checkout in this beta build. This page tests which evolution paths create real demand.</p>
         </div>
       </section>
       <div class="upgrade-grid">
@@ -1383,7 +1386,7 @@ function Store({ onBeta }: { onBeta: (interest: UpgradeInterest) => void }) {
       </div>
       <div class="interest-callout">
         <div><span class="eyebrow">VALIDATE THE NEXT BUILD</span><h2>Vote with a Beta application, not a Like.</h2></div>
-        <Button icon={PaperPlaneTilt} onClick={() => onBeta("Build and control Rover-01")}>Register upgrade interest</Button>
+        <Button icon={PaperPlaneTilt} onClick={() => onBeta(firstPaidOfferInterest)}>Register upgrade interest</Button>
       </div>
     </main>
   );
@@ -1493,7 +1496,7 @@ export function App() {
   );
   const [telemetry, setTelemetry] = useState(initialTelemetry);
   const [betaOpen, setBetaOpen] = useState(false);
-  const [betaInterest, setBetaInterest] = useState<UpgradeInterest>("Build and control Rover-01");
+  const [betaInterest, setBetaInterest] = useState<UpgradeInterest>(firstPaidOfferInterest);
   const [supportCode, setSupportCode] = useState<RoverApiErrorCode | null>(null);
   const t = translator(language);
 
@@ -1530,10 +1533,10 @@ export function App() {
 
   const openBooking = () => {
     if (calendlyUrl) window.open(calendlyUrl, "_blank", "noopener,noreferrer");
-    else openBeta("Build and control Rover-01");
+    else openBeta(firstPaidOfferInterest);
   };
 
-  const openBeta = (interest: UpgradeInterest = "Build and control Rover-01") => {
+  const openBeta = (interest: UpgradeInterest = firstPaidOfferInterest) => {
     setBetaInterest(interest);
     setBetaOpen(true);
   };
@@ -1574,7 +1577,7 @@ export function App() {
           theme={theme}
           onExplore={() => setScreen("garage")}
           onDevice={enterDeviceMode}
-          onBeta={() => openBeta("Build and control Rover-01")}
+          onBeta={() => openBeta(firstPaidOfferInterest)}
           onBook={openBooking}
           t={t}
         />

@@ -24,6 +24,7 @@ export type RoverApiErrorCode =
   | "unknown";
 
 export type UpgradeInterest =
+  | "Rover-01 Beta Kit + guided setup workshop"
   | "Build and control Rover-01"
   | "STEM workshop or school"
   | "Sensor Pack"

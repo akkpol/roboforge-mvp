@@ -1,0 +1,19 @@
+{
+  "manifestVersion": "0.1",
+  "moduleId": "rf.power.pack.18650_2s",
+  "moduleType": "power",
+  "displayName": "2S 18650 Li-ion Pack",
+  "bus": "power",
+  "capabilities": ["battery_power", "voltage_telemetry"],
+  "requiresFirmware": ">=0.1.0",
+  "compatibleRobotTypes": ["rover"],
+  "safetyNotes": [
+    "Use an accessible power switch.",
+    "Use a fuse, protected pack, or BMS before floor tests.",
+    "Calibrate battery voltage against a multimeter."
+  ],
+  "metadata": {
+    "chemistry": "li-ion",
+    "cells": 2
+  }
+}

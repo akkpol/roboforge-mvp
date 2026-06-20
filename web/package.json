@@ -4,30 +4,39 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:device": "vite --config vite.device.config.ts --mode device --host 127.0.0.1",
     "build": "next build",
+    "build:device": "vite build --config vite.device.config.ts --mode device && node scripts/sync-device-build.mjs",
     "start": "next start",
     "lint": "eslint",
     "check:supabase": "node scripts/supabase-readiness-check.mjs",
-    "seed:beta": "node scripts/beta-load-test.mjs"
+    "seed:beta": "node scripts/beta-load-test.mjs",
+    "test:device": "vitest run --config vite.device.config.ts device/src/api.test.ts",
+    "test:foundation": "vitest run src/lib/roboforge-contracts.test.ts --environment node"
   },
   "dependencies": {
     "@fontsource/noto-sans-thai": "^5.2.8",
     "@fontsource/rajdhani": "^5.2.7",
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "lucide-react": "^1.18.0",
     "next": "16.2.9",
+    "preact": "^10.29.2",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@preact/preset-vite": "^2.10.5",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "6.4.2",
+    "vitest": "^4.1.9"
   }
 }

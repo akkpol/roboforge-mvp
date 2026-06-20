@@ -45,6 +45,7 @@ function localizePath(path: string, locale: HomeLocale) {
 
 const entryIcons = [LockKeyhole, QrCode, Gamepad2] as const;
 const routeIcons = [LockKeyhole, QrCode, Clipboard, Bot] as const;
+const paidOfferIcons = [Bot, RadioTower, ShieldCheck] as const;
 
 const homeCopy = {
   en: {
@@ -60,13 +61,13 @@ const homeCopy = {
       steps: [
         {
           body:
-            "Use one account for Garage, beta sign-up, robot ownership, progress, and support.",
+            "Use one account for Garage, beta sign-up, your robot, progress, and support.",
           label: "01 Web Garage",
           title: "Start here",
         },
         {
           body:
-            "When a beta kit arrives, claim the QR code and let Lyra guide the Wi-Fi setup.",
+            "When a beta kit arrives, scan the QR code and let Lyra guide the Wi-Fi setup.",
           label: "02 Claim + connect",
           title: "Add the physical unit",
         },
@@ -83,21 +84,21 @@ const homeCopy = {
       title: "Four entry points, one product flow.",
       items: [
         {
-          body: "For owners creating an account before any robot is claimed.",
+          body: "For people starting an account before any robot is linked.",
           cta: "Go to login",
           href: "/login",
           label: "/login",
-          title: "New owner",
+          title: "New account",
         },
         {
-          body: "For testers who received a QR card or claim code with a kit.",
+          body: "For testers who received a QR card or kit code.",
           cta: "Open Garage",
           href: "/dashboard",
           label: "/dashboard?claim=CODE",
           title: "Claim a robot",
         },
         {
-          body: "For the team creating claim kits, hardware profiles, and bench evidence.",
+          body: "For the team creating kit codes, hardware profiles, and bench evidence.",
           cta: "Open Ops",
           href: "/admin",
           label: "/admin",
@@ -113,25 +114,38 @@ const homeCopy = {
       ],
     },
     fleet: {
-      cta: "Create an owner account",
+      cta: "Create a RoboForge account",
       eyebrow: "FLEET GARAGE",
       state: {
-        active: "LIVE MVP",
+        active: "FIRST KIT",
         coming: "coming",
         concept: "concept",
       },
-      title: "Start with one rover. Keep the system ready for many owners.",
+      title: "Start with one rover. Keep the system ready for many accounts.",
     },
     hero: {
       body:
-        "Web Garage is the starting point: create an owner account, claim a beta kit, follow Connection Quest, then open the robot's local Cockpit when real hardware is ready.",
+        "Web Garage is the starting point: create your account, add a beta kit, follow Connection Quest, then open the robot's local Cockpit when real hardware is ready.",
       eyebrow: "ROBOT IDENTITY PLATFORM",
       headline: "YOUR ROBOT.",
       headlineAccent: "EVOLVED.",
-      signals: ["One web entry", "Owner accounts", "Local robot control"],
+      signals: ["One web entry", "Your account", "Local robot control"],
     },
     nav: {
-      brandSub: "OWNER PLATFORM",
+      brandSub: "ROBOT PLATFORM",
+    },
+    paidOffer: {
+      action: "Apply for guided beta",
+      body:
+        "The first sellable offer is one guided hardware path, not a broad marketplace: a prepared Rover-01 kit, a setup workshop, and Web Garage.",
+      eyebrow: "FIRST PAID OFFER",
+      items: [
+        "Rover-01 beta kit",
+        "Guided setup workshop",
+        "Web Garage access",
+      ],
+      note: "Payment stays outside the app until the hardware proof gates are clear.",
+      title: "RoboForge Rover-01 Beta Kit + guided setup workshop + Web Garage",
     },
     unit: {
       active: "ACTIVE UNIT",
@@ -150,14 +164,14 @@ const homeCopy = {
       steps: [
         {
           body:
-            "ใช้บัญชีเดียวสำหรับ Web Garage, การสมัครเบต้า, ความเป็นเจ้าของ, ความคืบหน้า และซัพพอร์ต",
+            "ใช้บัญชีเดียวสำหรับ Web Garage, การสมัครเบต้า, หุ่นของคุณ, ความคืบหน้า และซัพพอร์ต",
           label: "01 Web Garage",
           title: "เริ่มตรงนี้",
         },
         {
           body:
-            "เมื่อได้ชุดเบต้า สแกน QR เพื่อรับสิทธิ์ แล้วให้ Lyra พาเชื่อมต่อ Wi-Fi ของหุ่นทีละขั้น",
-          label: "02 รับสิทธิ์ + เชื่อมต่อ",
+            "เมื่อได้ชุดเบต้า สแกน QR เพื่อเพิ่มหุ่น แล้วให้ Lyra พาเชื่อมต่อ Wi-Fi ของหุ่นทีละขั้น",
+          label: "02 เพิ่มหุ่น + เชื่อมต่อ",
           title: "เพิ่มเครื่องจริง",
         },
         {
@@ -173,18 +187,18 @@ const homeCopy = {
       title: "มี 4 ทางเข้า แต่ใช้เส้นทางเดียวกัน",
       items: [
         {
-          body: "สำหรับเจ้าของที่เริ่มสมัครหรือเข้าสู่ระบบก่อนมีหุ่นจริง",
+          body: "สำหรับคนที่เริ่มสมัครหรือเข้าสู่ระบบก่อนมีหุ่นจริง",
           cta: "เข้าสู่ระบบ",
           href: "/login",
           label: "/login",
-          title: "เจ้าของใหม่",
+          title: "เริ่มบัญชีใหม่",
         },
         {
-          body: "สำหรับคนที่ได้การ์ด QR หรือรหัสรับสิทธิ์มากับชุดเบต้า",
+          body: "สำหรับคนที่ได้การ์ด QR หรือรหัสมากับชุดเบต้า",
           cta: "เปิด Garage",
           href: "/dashboard",
           label: "/dashboard?claim=CODE",
-          title: "รับสิทธิ์หุ่น",
+          title: "เพิ่มหุ่น",
         },
         {
           body: "สำหรับทีมที่สร้างคิต กรอกข้อมูลฮาร์ดแวร์ และเก็บผลทดสอบบนโต๊ะ",
@@ -203,25 +217,38 @@ const homeCopy = {
       ],
     },
     fleet: {
-      cta: "สร้างบัญชีเจ้าของ",
+      cta: "สร้างบัญชี RoboForge",
       eyebrow: "โรงรถหุ่นยนต์",
       state: {
-        active: "MVP ใช้งานได้",
+        active: "คิตแรก",
         coming: "กำลังมา",
         concept: "แนวคิด",
       },
-      title: "เริ่มจาก rover หนึ่งตัว แล้วเตรียมระบบให้รองรับเจ้าของหลายคน",
+      title: "เริ่มจาก rover หนึ่งตัว แล้วเตรียมระบบให้รองรับหลายบัญชี",
     },
     hero: {
       body:
-        "Web Garage คือจุดเริ่มต้น: สร้างบัญชีเจ้าของ รับสิทธิ์ชุดเบต้า ทำตาม Connection Quest แล้วเปิด Cockpit ของหุ่นเมื่อฮาร์ดแวร์จริงพร้อม",
+        "Web Garage คือจุดเริ่มต้น: สร้างบัญชี RoboForge เพิ่มชุดเบต้า ทำตาม Connection Quest แล้วเปิด Cockpit ของหุ่นเมื่อฮาร์ดแวร์จริงพร้อม",
       eyebrow: "แพลตฟอร์มตัวตนหุ่นยนต์",
       headline: "หุ่นของคุณ.",
       headlineAccent: "พัฒนาได้.",
-      signals: ["เข้าเว็บเดียว", "บัญชีเจ้าของ", "คุมหุ่นผ่าน Wi-Fi"],
+      signals: ["เข้าเว็บเดียว", "บัญชีของคุณ", "คุมหุ่นผ่าน Wi-Fi"],
     },
     nav: {
-      brandSub: "OWNER PLATFORM",
+      brandSub: "ROBOT PLATFORM",
+    },
+    paidOffer: {
+      action: "สมัครชุดทดลองแบบมีค่าใช้จ่าย",
+      body:
+        "ข้อเสนอแรกที่ขายได้คือเส้นทางฮาร์ดแวร์เดียวที่ดูแลครบ ไม่ใช่ marketplace กว้างเกินไป: คิต Rover-01, เวิร์กช็อปตั้งค่า และ Web Garage ของคุณ",
+      eyebrow: "ข้อเสนอแรกที่ขายได้",
+      items: [
+        "คิต Rover-01 beta",
+        "เวิร์กช็อปตั้งค่า",
+        "สิทธิ์ใช้งาน Web Garage",
+      ],
+      note: "การชำระเงินยังทำนอกแอปจนกว่าด่านพิสูจน์ฮาร์ดแวร์จะผ่านครบ",
+      title: "RoboForge Rover-01 Beta Kit + guided setup workshop + Web Garage",
     },
     unit: {
       active: "เครื่องหลัก",
@@ -332,6 +359,34 @@ export default async function Home({ searchParams }: HomeProps) {
             <strong>{themes.forge.robotName}</strong>
             <small>{themes.forge.robotClass} / ROVER-01</small>
           </div>
+        </div>
+      </section>
+
+      <section className="paid-offer" aria-label={copy.paidOffer.eyebrow}>
+        <div className="paid-offer__copy">
+          <span className="eyebrow">
+            <ShieldCheck size={15} /> {copy.paidOffer.eyebrow}
+          </span>
+          <h2>{copy.paidOffer.title}</h2>
+          <p>{copy.paidOffer.body}</p>
+        </div>
+        <div className="paid-offer__items">
+          {copy.paidOffer.items.map((item, index) => {
+            const Icon = paidOfferIcons[index] ?? ShieldCheck;
+
+            return (
+              <span key={item}>
+                <Icon size={18} />
+                {item}
+              </span>
+            );
+          })}
+        </div>
+        <div className="paid-offer__action">
+          <small>{copy.paidOffer.note}</small>
+          <Link className="button" href={loginHref}>
+            <ArrowRight size={18} /> {copy.paidOffer.action}
+          </Link>
         </div>
       </section>
 

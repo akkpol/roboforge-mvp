@@ -57,11 +57,11 @@ const loginCopy = {
       "This is the new SaaS entry point. Supabase handles identity now; the old localStorage demo stays separate in the existing Vite app.",
   },
   th: {
-    eyebrow: "ทางเข้าเจ้าของ",
+    eyebrow: "ทางเข้า Web Garage",
     fallback: "กำลังโหลดระบบเข้าสู่ระบบ...",
     title: "เข้าสู่ Web Garage ของคุณ",
     body:
-      "นี่คือทางเข้าจริงของ RoboForge สำหรับบัญชีเจ้าของ การรับสิทธิ์ชุดเบต้า และการดูความคืบหน้าของหุ่น ส่วนเดโมยังแยกไว้ให้ลองเล่นโดยไม่ต้องเข้าสู่ระบบ",
+      "เข้าสู่ RoboForge เพื่อเพิ่มชุดเบต้า ดูความคืบหน้าของหุ่น และกลับมาใช้งานต่อได้จากที่เดียว ส่วนเดโมยังแยกไว้ให้ลองเล่นโดยไม่ต้องเข้าสู่ระบบ",
   },
 } as const;
 

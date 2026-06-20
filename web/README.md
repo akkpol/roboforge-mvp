@@ -1,16 +1,30 @@
 # RoboForge Web
 
-Next.js SaaS shell for RoboForge owner accounts.
+Next.js product shell for RoboForge Web Garage, modular robot profiles, and the
+future unified device-cockpit build.
 
 ## Current SaaS Direction
 
-RoboForge Web is the logged-in owner version of the product. It should keep the
-core RoboForge experience people already understand from the demo: Garage,
-Cockpit, fleet selection, Forge/Neo themes, robot controls, density, and visual
-tone.
+RoboForge Web is the main customer app for the three-layer modular robotics
+platform:
 
-`/dashboard` is the authenticated SaaS entry point. Future work should connect
-more real hardware paths behind that owner flow.
+- Layer A: physical standard kits, partner modules, and the future hardware
+  marketplace.
+- Layer B: robot profiles, module slots, manifests, config/firmware generation,
+  and visual behavior authoring.
+- Layer C: Web Garage, local Cockpit, automation, streaming, swarm, blueprints,
+  and sharing.
+
+It should keep the core RoboForge experience people already understand from the
+demo: Garage, Cockpit, fleet selection, Forge/Neo themes, robot controls,
+density, and visual tone.
+
+`/dashboard` is the authenticated Web Garage entry point. Future work should
+connect more real hardware paths behind that flow.
+
+The first paid offer is deliberately narrow: Rover-01 Beta Kit + guided setup
+workshop + Web Garage. It is the first standard kit path inside the larger
+three-layer architecture, not a separate MVP product.
 
 If the owner flow, hardware flow, or visual direction changes, write the new
 intent here before building on it.
@@ -29,7 +43,7 @@ real motor commands belong on the robot local Wi-Fi page.
 
 ## Language And Theme Direction
 
-Do not pause the MVP to translate every screen yet. Keep new UI copy grouped in
+Do not pause the first build slice to translate every screen yet. Keep new UI copy grouped in
 small data objects or dictionaries when practical, so Thai and English can move
 into a full App Router `[lang]` dictionary later without rewriting screens.
 
@@ -59,10 +73,19 @@ one-off and not part of the product skin.
 - The first multi-user schema with row-level security is in `supabase/schema.sql`.
 - `/dashboard` is login-gated and uses real owner workspace, robot, progress,
   claim, connection, control-session, and feedback data.
+- `/dashboard` should present Digital Form, Physical Unit, and Future Upgrade
+  as separate layers. If a user has both a starter digital robot and a claimed
+  physical kit, the physical kit should be the active owner unit.
+- `/dashboard` should also make the modular robotics direction tangible through
+  Hardware Profile, Module Slots, and Blueprint preview panels as the first
+  Layer B interface.
 - `/admin` is login-gated for `app_admins` and can create physical robot claim
   kits with a one-time code, claim URL, and QR image.
-- The next product work is firmware/local robot protocol integration behind
-  the existing RoboForge experience.
+- Device Cockpit source lives in `web/device`, with `npm run build:device`
+  emitting the static cockpit bundle to `firmware/data` for ESP32 LittleFS.
+- Hardware contracts live outside the web app in `../hardware`; Next.js route
+  handlers expose the module registry, config-only firmware package generation,
+  and a disabled-until-safe OTA boundary.
 
 ## Run Locally
 
@@ -189,16 +212,15 @@ Supabase, Vercel, and physical hardware.
 
 ## Deploy
 
-Use a new Vercel project with Root Directory set to `web`.
-
-For the SaaS app, use a separate Vercel project or intentionally migrate the
-existing root project from the Vite demo in `app`.
+The root `vercel.json` now builds `web/` as the production app. A Vercel project
+can either use the repo root with that config or use Root Directory `web`.
 
 ## Checks
 
 ```bash
 npm run lint
 npm run build
+npm run build:device
 ```
 
 Known warning: `npm audit` reports a moderate `postcss` advisory through

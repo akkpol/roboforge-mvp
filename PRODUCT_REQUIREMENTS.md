@@ -6,6 +6,15 @@ RoboForge is a robot identity and owner platform for real robots. The first goal
 is to let 100-1000 early users try the product with real owner accounts, real
 Garage ownership, and a simple path to connect a physical robot.
 
+The product architecture is the three-layer modular robotics model:
+
+- Layer A: Physical Modular Hardware, starting with standard kits and expanding
+  toward partner modules and a hardware marketplace.
+- Layer B: Abstraction Engine, hiding firmware, protocols, modules, OTA, and
+  behavior logic behind robot profiles.
+- Layer C: Control And Sharing, giving customers one app for Web Garage, local
+  control, automation, streaming, swarm, and blueprint sharing.
+
 The product should feel easy for non-IoT users: open the robot, follow the app,
 connect, and drive like a game.
 
@@ -28,6 +37,22 @@ user needs it.
 - Individual robot builders and early adopters.
 - Schools or workshop groups that may manage multiple robots.
 - Beta testers who can report setup, connection, and driving problems.
+
+## First Paid Offer
+
+The first paid offer should stay narrow:
+
+> RoboForge Rover-01 Beta Kit + guided setup workshop + Web Garage.
+
+This is not a general robot marketplace yet. Sell the first complete path:
+
+- a prepared Rover-01 beta kit after hardware proof
+- a guided setup workshop so non-IoT users can get through first connection
+- a Web Garage owner account with claim, Connection Quest, missions, and support
+
+Keep payment handling outside the app until the real kit clears the hardware
+proof gates. The app should collect paid-pilot applications and upgrade demand
+signals, then Ops should decide who receives the first batch.
 
 ## Desired User Journey
 
@@ -62,8 +87,8 @@ The product should organize itself around five customer-facing areas:
   versions, compatibility, release notes, and guarded instructions before it
   allows one-click firmware updates.
 
-These names do not all need to be fully built in the first beta, but new work
-should fit this model so the product stays understandable as it grows.
+These names are product modules, not separate products. They should be built in
+phases while keeping one customer mental model.
 
 ## Entry Points
 
@@ -75,7 +100,7 @@ should fit this model so the product stays understandable as it grows.
 - `/admin` is the Beta Ops view for claim kits, hardware profiles, bench
   evidence, health, and failure review.
 - `/demo/index.html` is the public no-login concept demo and must stay separate
-  from real ownership/control.
+  from real ownership/control. It is not the MVP product.
 
 ## Core Features For The First Beta
 
@@ -97,6 +122,9 @@ should fit this model so the product stays understandable as it grows.
   gates.
 - Firmware Lab foundation: show firmware/config identity and update guidance
   before enabling any risky write-to-device update flow.
+- Device Cockpit migration path: keep local motor control as a static
+  robot-served bundle, but move its source under the main web architecture so
+  the product is one app with separate SaaS and device build targets.
 - Session summaries for connection and control.
 - Important robot events and error logs.
 - Feedback reports from beta users.
@@ -107,14 +135,15 @@ should fit this model so the product stays understandable as it grows.
 Firmware upgrade is a real hardware risk. A bad update can leave the robot
 unusable until the owner reconnects by USB or the team repairs it.
 
-For the first beta:
+For the first build slice:
 
 - show firmware version, board profile, and compatibility status
 - show release notes in simple language
 - require hardware profile readiness before recommending firmware changes
 - keep live motor commands local to the robot Wi-Fi
-- do not promise one-click firmware upgrade until a real kit has passed bench
-  and raised-wheel recovery tests
+- implement config/manifest generation first
+- add one-click or OTA firmware upgrade only after a real kit has passed bench,
+  raised-wheel recovery, and rollback/recovery tests
 
 Later, Firmware Lab can add guided update flows, rollback instructions, signed
 firmware packages, and per-board compatibility checks.
@@ -134,8 +163,9 @@ Useful first jobs:
 
 ## Hardware Direction
 
-The first physical path can use ESP32 and local Wi-Fi. Hardware can evolve
-later. The stable contract should be the robot protocol in
+The first physical path can use ESP32 and local Wi-Fi. Hardware then expands to
+Raspberry Pi, Arduino-class boards, partner modules, and self-describing module
+manifests. The stable contract should be the robot protocol in
 `docs/ROBOT_PROTOCOL.md`:
 
 - `status`
@@ -146,6 +176,12 @@ later. The stable contract should be the robot protocol in
 
 Hardware can change later if the robot still speaks the same RoboForge control
 language.
+
+The modular platform direction is documented in
+`docs/MODULAR_ROBOTICS_PLATFORM.md`. Keep the first implementation
+profile-first: Hardware Profile, Module Slots, and Blueprint preview in the Web
+Garage. Then extend the same Layer B/C model into the hardware marketplace, OTA
+firmware generator, Blockly editor, swarm control, and video streaming.
 
 The current candidate from the prototype photos is ESP32 DevKit /
 ESP32-WROOM-32, L298N, TT DC motors, and a 2S 18650 Li-ion pack. Keep the

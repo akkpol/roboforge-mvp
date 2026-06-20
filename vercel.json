@@ -1,12 +1,6 @@
 {
-  "framework": "vite",
-  "installCommand": "npm --prefix app install",
-  "buildCommand": "npm --prefix app run build",
-  "outputDirectory": "app/dist",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "framework": "nextjs",
+  "installCommand": "npm --prefix web install",
+  "buildCommand": "npm --prefix web run build",
+  "outputDirectory": "web/.next"
 }
