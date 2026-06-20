@@ -38,21 +38,33 @@ function redirectAndClearOAuthCookie(request: NextRequest, location: string | UR
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
+  const providerError =
+    url.searchParams.get("error_description") ?? url.searchParams.get("error");
   const next = cleanNext(url.searchParams.get("next") ?? getStoredNext(request));
   const { appUrl } = getSupabaseEnv();
 
-  if (code) {
-    const supabase = await createServerSupabaseClient();
-    const { error } =
-      (await supabase?.auth.exchangeCodeForSession(code)) ?? { error: null };
+  if (!code || providerError) {
+    const errorUrl = new URL("/login", appUrl || request.url);
+    errorUrl.searchParams.set("error", "oauth");
+    errorUrl.searchParams.set(
+      "error_description",
+      providerError ??
+        "Google did not return an auth code. Check the Supabase redirect URL and Google OAuth client settings.",
+    );
+    errorUrl.searchParams.set("redirect", next);
+    return redirectAndClearOAuthCookie(request, errorUrl);
+  }
 
-    if (error) {
-      const errorUrl = new URL("/login", appUrl || request.url);
-      errorUrl.searchParams.set("error", "oauth");
-      errorUrl.searchParams.set("error_description", error.message);
-      errorUrl.searchParams.set("redirect", next);
-      return redirectAndClearOAuthCookie(request, errorUrl);
-    }
+  const supabase = await createServerSupabaseClient();
+  const { error } =
+    (await supabase?.auth.exchangeCodeForSession(code)) ?? { error: null };
+
+  if (error) {
+    const errorUrl = new URL("/login", appUrl || request.url);
+    errorUrl.searchParams.set("error", "oauth");
+    errorUrl.searchParams.set("error_description", error.message);
+    errorUrl.searchParams.set("redirect", next);
+    return redirectAndClearOAuthCookie(request, errorUrl);
   }
 
   if (appUrl) {

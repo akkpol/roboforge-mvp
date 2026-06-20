@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyRound, LockKeyhole, Mail, UserPlus } from "lucide-react";
+import { LockKeyhole, Mail, UserPlus } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
@@ -62,6 +62,34 @@ function rememberOAuthRedirect(value: string) {
   document.cookie = `${oauthNextCookieName}=${encodeURIComponent(
     cleanRedirectTarget(value),
   )}; Max-Age=600; Path=/; SameSite=Lax${secure}`;
+}
+
+function GoogleMark() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="google-mark"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M23.5 12.27c0-.79-.07-1.54-.2-2.27H12v4.29h6.47c-.28 1.5-1.13 2.77-2.4 3.62v3h3.89c2.27-2.09 3.54-5.18 3.54-8.64z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.89-3c-1.08.72-2.46 1.14-4.06 1.14-3.13 0-5.78-2.11-6.72-4.95H1.26v3.09C3.24 21.3 7.3 24 12 24z"
+        fill="#34A853"
+      />
+      <path
+        d="M5.28 14.29c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.26A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.26 5.38l4.02-3.09z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 4.76c1.76 0 3.34.6 4.58 1.8l3.45-3.45C17.95 1.18 15.24 0 12 0 7.3 0 3.24 2.7 1.26 6.62l4.02 3.09C6.22 6.87 8.87 4.76 12 4.76z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
 }
 
 export function AuthForm({
@@ -176,7 +204,7 @@ export function AuthForm({
           onClick={continueWithGoogle}
           type="button"
         >
-          <KeyRound size={18} />
+          <GoogleMark />
           {busyAction === "google" ? copy.googleBusy : copy.google}
         </button>
         <div className="auth-divider">

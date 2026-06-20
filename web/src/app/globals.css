@@ -1352,13 +1352,21 @@ textarea:focus-visible {
 }
 
 .oauth-button {
-  border-color: var(--line-bright);
-  color: var(--text);
-  background: var(--panel-strong);
+  border-color: #dadce0;
+  color: #1f1f1f;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
 }
 
 .oauth-button:hover {
-  box-shadow: var(--shadow-secondary);
+  border-color: #c4c7c5;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.14);
+}
+
+.google-mark {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
 }
 
 .auth-divider {

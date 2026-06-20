@@ -35,9 +35,8 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getClaims();
+  const user = error ? null : data?.claims;
 
   const pathname = request.nextUrl.pathname;
 
