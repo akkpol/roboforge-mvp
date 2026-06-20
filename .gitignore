@@ -13,3 +13,4 @@ firmware/data/
 .npm-cache/
 .DS_Store
 Thumbs.db
+.vercel
