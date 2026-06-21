@@ -398,14 +398,25 @@ export type ProfilePatch = {
   display_name?: string | null;
   onboarding_completed?: boolean;
   organization_name?: string | null;
-  preferred_language?: string | null;
-  role_type?: string | null;
-  skill_level?: string | null;
+  preferred_language?: string;
+  role_type?: string;
+  skill_level?: string;
 };
+
+const validRoles = ["maker", "educator", "enthusiast", "parent", "developer", "other"] as const;
+const validSkills = ["beginner", "intermediate", "advanced", "expert"] as const;
 
 export async function updateProfile(
   patch: ProfilePatch,
 ): Promise<ActionResult> {
+  // Server-side validation before touching the DB.
+  if (patch.role_type && !(validRoles as readonly string[]).includes(patch.role_type)) {
+    return { error: "Invalid role type.", ok: false };
+  }
+  if (patch.skill_level && !(validSkills as readonly string[]).includes(patch.skill_level)) {
+    return { error: "Invalid skill level.", ok: false };
+  }
+
   const supabase = await createServerSupabaseClient();
 
   if (!supabase) return { error: "Supabase is not configured.", ok: false };
@@ -421,9 +432,10 @@ export async function updateProfile(
     .update(patch)
     .eq("id", user.id);
 
-  if (error) return { error: error.message, ok: false };
+  if (error) return { error: "Could not save profile. Try again.", ok: false };
 
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
   return { error: null, ok: true };
 }
 

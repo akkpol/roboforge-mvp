@@ -11,6 +11,7 @@ import {
   Sparkles,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { type FormEvent, useState, useTransition } from "react";
 import { updateProfile, type ProfilePatch } from "@/app/dashboard/actions";
 import type { OwnerProfile } from "@/lib/supabase/server";
@@ -105,6 +106,15 @@ const skillOptions: Array<{
   { label: { en: "Expert", th: "เชี่ยวชาญ" }, value: "expert" },
 ];
 
+function fieldChanged(
+  formValue: string,
+  profileValue: string | null | undefined,
+): boolean {
+  const normalized = formValue.trim();
+  const existing = (profileValue ?? "").trim();
+  return normalized !== existing;
+}
+
 export function SettingsForm({
   locale,
   profile,
@@ -114,6 +124,7 @@ export function SettingsForm({
   profile: OwnerProfile | null;
   workspaceError: string | null;
 }) {
+  const router = useRouter();
   const t = copy[locale];
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState("");
@@ -125,16 +136,52 @@ export function SettingsForm({
     setOk(false);
 
     const form = new FormData(event.currentTarget);
-    const patch: ProfilePatch = {
-      display_name: (form.get("display_name") as string)?.trim() || null,
-      avatar_url: (form.get("avatar_url") as string)?.trim() || null,
-      organization_name:
-        (form.get("organization_name") as string)?.trim() || null,
-      preferred_language: form.get("preferred_language") as string,
-      role_type: form.get("role_type") as string,
-      skill_level: form.get("skill_level") as string,
-      onboarding_completed: form.get("onboarding_completed") === "on",
-    };
+
+    // Only include fields that differ from the existing profile.
+    const patch: ProfilePatch = {};
+    const p = profile;
+
+    const disp = (form.get("display_name") as string) ?? "";
+    if (fieldChanged(disp, p?.display_name)) {
+      patch.display_name = disp.trim() || null;
+    }
+
+    const ava = (form.get("avatar_url") as string) ?? "";
+    if (fieldChanged(ava, p?.avatar_url)) {
+      patch.avatar_url = ava.trim() || null;
+    }
+
+    const org = (form.get("organization_name") as string) ?? "";
+    if (fieldChanged(org, p?.organization_name)) {
+      patch.organization_name = org.trim() || null;
+    }
+
+    const lang = form.get("preferred_language") as string;
+    if (lang !== (p?.preferred_language ?? "en")) {
+      patch.preferred_language = lang;
+    }
+
+    const role = form.get("role_type") as string;
+    if (role !== (p?.role_type ?? "enthusiast")) {
+      patch.role_type = role;
+    }
+
+    const skill = form.get("skill_level") as string;
+    if (skill !== (p?.skill_level ?? "beginner")) {
+      patch.skill_level = skill;
+    }
+
+    const onboarding = form.get("onboarding_completed") === "on";
+    if (onboarding !== Boolean(p?.onboarding_completed)) {
+      patch.onboarding_completed = onboarding;
+    }
+
+    // Nothing changed — no need to call the server.
+    if (Object.keys(patch).length === 0) {
+      setOk(true);
+      setMessage(t.doneMessage);
+      return;
+    }
 
     startTransition(async () => {
       const result = await updateProfile(patch);
@@ -143,6 +190,8 @@ export function SettingsForm({
       } else {
         setOk(true);
         setMessage(t.doneMessage);
+        // Refresh server-side data so the form reflects saved values.
+        router.refresh();
       }
     });
   }

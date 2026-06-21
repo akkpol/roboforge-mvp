@@ -394,7 +394,9 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
       .from("owner_profiles")
       .update({ last_active_at: new Date().toISOString() })
       .eq("id", user.id)
-      .then(undefined, undefined);
+      .then(undefined, (_err: unknown) => {
+        // Swallow — non-critical telemetry must never break the workspace.
+      });
   }
 
   return {
