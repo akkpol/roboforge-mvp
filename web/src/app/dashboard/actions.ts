@@ -392,3 +392,38 @@ export async function saveFeedbackReport(input: {
   revalidatePath("/dashboard");
   return { error: null, ok: true };
 }
+
+export type ProfilePatch = {
+  avatar_url?: string | null;
+  display_name?: string | null;
+  onboarding_completed?: boolean;
+  organization_name?: string | null;
+  preferred_language?: string | null;
+  role_type?: string | null;
+  skill_level?: string | null;
+};
+
+export async function updateProfile(
+  patch: ProfilePatch,
+): Promise<ActionResult> {
+  const supabase = await createServerSupabaseClient();
+
+  if (!supabase) return { error: "Supabase is not configured.", ok: false };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Login is required.", ok: false };
+
+  const { error } = await supabase
+    .from("owner_profiles")
+    .update(patch)
+    .eq("id", user.id);
+
+  if (error) return { error: error.message, ok: false };
+
+  revalidatePath("/dashboard");
+  return { error: null, ok: true };
+}
+
