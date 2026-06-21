@@ -1700,10 +1700,10 @@ function ConnectionQuest({
       <section className="rf-screen-heading">
         <div>
           <span className="eyebrow">
-            <RadioTower size={15} /> {copy.connection.eyebrow}
+            <RadioTower size={15} /> CONNECTION QUEST
           </span>
-          <h1>{copy.connection.title}</h1>
-          <p>{copy.connection.body}</p>
+          <h1>Connect Rover-01</h1>
+          <p>Lyra guides you from power-on to the local Cockpit without needing IoT knowledge.</p>
         </div>
         <StatusPill />
       </section>
@@ -1784,7 +1784,7 @@ function ConnectionQuest({
               icon={RadioTower}
               onClick={onStart}
             >
-              {copy.connection.actions.start}
+              Start quest
             </Button>
             <Link
               aria-disabled={!localCockpitReady}
@@ -1941,6 +1941,7 @@ function Profile({
 }
 
 function Cockpit({
+  activeDevice,
   isPending,
   onProgress,
   onStartControl,
@@ -1948,6 +1949,7 @@ function Cockpit({
   onScreen,
   progress,
 }: {
+  activeDevice: RobotDevice | null;
   isPending?: boolean;
   onProgress: (progress: OwnerProgress) => void;
   onStartControl: () => void;
@@ -2013,6 +2015,25 @@ function Cockpit({
         </div>
         <StatusPill />
       </section>
+      {!activeDevice && (
+        <section className="rf-connect-cta">
+          <div>
+            <span className="eyebrow">
+              <RadioTower size={15} /> CONNECTION QUEST
+            </span>
+            <h2>Connect Rover-01</h2>
+            <p>Lyra guides you from power-on to the local Cockpit without needing IoT knowledge.</p>
+            <button
+              className="button"
+              onClick={() => onScreen("connect")}
+              type="button"
+            >
+              Start quest
+            </button>
+          </div>
+        </section>
+      )}
+
       <TelemetryGrid />
       <section className="rf-cockpit-grid">
         <article className="rf-control-panel">
@@ -2893,6 +2914,7 @@ export function OwnerConsole({
       {screen === "profile" ? <Profile onScreen={setScreen} theme={theme} /> : null}
       {screen === "cockpit" ? (
         <Cockpit
+          activeDevice={activeDevice}
           isPending={isPending}
           onProgress={persistProgress}
           onScreen={setScreen}

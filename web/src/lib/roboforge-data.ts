@@ -209,3 +209,28 @@ export const upgradeItems: Array<{
     interest: "Neo Decal Set",
   },
 ];
+
+export function getDemoWorkspace() {
+  return {
+    devices: [],
+    error: null,
+    interests: [],
+    notice: null,
+    profile: null,
+    progress: null,
+    robots: [
+      {
+        created_at: new Date().toISOString(),
+        display_name: "AEGIS-01",
+        id: "demo-rover-01",
+        owner_id: "demo-owner",
+        robot_type: "rover" as const,
+        status: "demo" as const,
+        theme: "forge" as const,
+        unit_code: "ROVER-01",
+        updated_at: new Date().toISOString(),
+        workspace_id: null,
+      },
+    ],
+  };
+}
