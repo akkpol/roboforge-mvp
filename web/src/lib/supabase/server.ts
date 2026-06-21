@@ -5,9 +5,16 @@ import { defaultProgress, type OwnerProgress } from "@/lib/roboforge-data";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export type OwnerProfile = {
+  avatar_url: string | null;
   created_at: string;
   display_name: string | null;
   id: string;
+  last_active_at: string | null;
+  onboarding_completed: boolean;
+  organization_name: string | null;
+  preferred_language: string | null;
+  role_type: string | null;
+  skill_level: string | null;
   updated_at: string;
 };
 
@@ -62,7 +69,7 @@ export type OwnerWorkspace = {
   robots: OwnerRobot[];
 };
 
-const profileSelect = "id, display_name, created_at, updated_at";
+const profileSelect = "id, avatar_url, created_at, display_name, last_active_at, onboarding_completed, organization_name, preferred_language, role_type, skill_level, updated_at";
 const robotSelect =
   "id, owner_id, workspace_id, unit_code, robot_type, display_name, theme, status, created_at, updated_at";
 const progressSelect =
@@ -184,6 +191,8 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
       .insert({
         display_name: getDisplayName(user),
         id: user.id,
+        onboarding_completed: false,
+        preferred_language: "en",
       })
       .select(profileSelect)
       .single();
@@ -377,6 +386,15 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
       progress,
       robots,
     };
+  }
+
+  // Touch last_active_at on workspace load (fire-and-forget, do not fail on error).
+  if (profile) {
+    supabase
+      .from("owner_profiles")
+      .update({ last_active_at: new Date().toISOString() })
+      .eq("id", user.id)
+      .then(undefined, undefined);
   }
 
   return {

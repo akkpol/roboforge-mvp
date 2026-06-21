@@ -2823,6 +2823,9 @@ export function OwnerConsole({
           <Link className="rf-sign-out" href="/admin" title={copy.topbar.adminTitle}>
             <ShieldCheck size={18} />
           </Link>
+          <Link className="rf-sign-out" href="/dashboard/settings" title="Profile settings">
+            <Settings2 size={18} />
+          </Link>
           <Link
             className="rf-sign-out"
             href="/auth/sign-out"

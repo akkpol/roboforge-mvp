@@ -3,6 +3,15 @@ create extension if not exists pgcrypto;
 create table if not exists public.owner_profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text,
+  avatar_url text,
+  role_type text default 'enthusiast'
+    check (role_type in ('maker', 'educator', 'enthusiast', 'parent', 'developer', 'other')),
+  skill_level text default 'beginner'
+    check (skill_level in ('beginner', 'intermediate', 'advanced', 'expert')),
+  preferred_language text default 'en',
+  organization_name text,
+  onboarding_completed boolean not null default false,
+  last_active_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
