@@ -3579,3 +3579,68 @@ textarea:focus-visible {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ── Landing page ── */
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--black);
+  border-bottom: 1px solid var(--border);
+}
+.landing-nav > span { display: flex; align-items: baseline; gap: 6px; }
+.landing-nav strong { font-family: var(--font-rajdhani); font-weight: 700; font-size: 1.1rem; color: var(--orange); }
+.landing-nav small { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+.landing-nav-links { display: flex; gap: 14px; }
+.landing-nav-links a { font-size: 0.85rem; color: var(--text-dim); text-decoration: none; }
+.landing-nav-links a:hover { color: var(--text); }
+
+/* Demo cockpit */
+.demo-section { padding: 60px 16px 48px; text-align: center; max-width: 400px; margin: 0 auto; }
+.demo-section h2 { font-size: 1.25rem; margin: 6px 0 4px; }
+.demo-section p { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 20px; }
+.demo-cockpit { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.demo-telemetry { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 0.8rem; }
+.demo-telemetry strong { color: var(--cyan); }
+.demo-status { color: var(--text-dim); }
+.demo-controls { display: flex; flex-direction: column; gap: 14px; }
+.demo-throttle { display: flex; flex-direction: column; gap: 4px; font-size: 0.7rem; color: var(--text-dim); }
+.demo-throttle input { width: 100%; accent-color: var(--orange); }
+.demo-arm { width: 100%; }
+
+/* Steps */
+.steps-section { padding: 48px 16px 60px; max-width: 500px; margin: 0 auto; text-align: center; }
+.steps-section h2 { font-size: 1.25rem; margin: 6px 0 24px; }
+.steps-list { list-style: none; display: flex; flex-direction: column; gap: 20px; text-align: left; }
+.steps-list li { display: grid; grid-template-columns: 36px 1fr; gap: 6px 12px; align-items: start; }
+.steps-list li span {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-family: var(--font-rajdhani); font-size: 1.1rem;
+  color: var(--black); grid-row: span 2;
+}
+.steps-list li strong { font-size: 0.95rem; }
+.steps-list li p { font-size: 0.75rem; color: var(--text-dim); margin: 0; }
+
+/* Fleet */
+.fleet-section { padding: 48px 16px 60px; text-align: center; max-width: 400px; margin: 0 auto; }
+.fleet-section h2 { font-size: 1.15rem; margin-bottom: 16px; }
+.fleet-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fleet-list li { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 0.85rem; text-align: center; }
+.fleet-list small { display: block; font-size: 0.65rem; color: var(--text-dim); }
+.fleet-active { color: var(--cyan); margin-left: 4px; }
+
+/* Hero robot placeholder */
+.hero-robot {
+  width: 200px; height: 200px; margin: 0 auto;
+  background: var(--panel); border: 2px solid var(--orange);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+}
+.hero-robot::before {
+  content: "🦾"; font-size: 5rem;
+}
