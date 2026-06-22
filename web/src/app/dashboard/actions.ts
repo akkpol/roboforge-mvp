@@ -439,3 +439,30 @@ export async function updateProfile(
   return { error: null, ok: true };
 }
 
+
+export async function completeSimulatedConnection(): Promise<ActionResult> {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return { error: "Supabase is not configured.", ok: false };
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Login is required.", ok: false };
+
+  await supabase.from("robot_progress").upsert(
+    {
+      first_connection_complete: true,
+      setup_complete: true,
+      robot_id: (await supabase.from("robots").select("id").eq("owner_id", user.id).limit(1).single()).data?.id,
+    },
+    { onConflict: "robot_id" }
+  );
+
+  await supabase.from("robot_events").insert({
+    event_type: "connection_simulated",
+    message: "Owner completed a simulated connection quest.",
+    severity: "info",
+    user_id: user.id,
+  });
+
+  revalidatePath("/dashboard");
+  return { error: null, ok: true };
+}

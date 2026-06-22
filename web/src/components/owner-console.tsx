@@ -1569,6 +1569,16 @@ function Garage({
             <TelemetryGrid />
             <TruthStrip copy={copy} device={device} robotCode={robotCode} />
             <div className="rf-button-row">
+            {!hasPhysicalUnit && !progress.first_connection_complete && (
+              <button
+                className="button button-secondary"
+                onClick={() => onProgress({...progress, first_connection_complete: true, setup_complete: true})}
+                type="button"
+              >
+                Quick start (simulated)
+              </button>
+            )}
+
               <Button
                 disabled={!hasPhysicalUnit}
                 icon={RadioTower}
@@ -2126,8 +2136,10 @@ function Cockpit({
 }
 
 function Missions({
+  onScreen,
   progress,
 }: {
+  onScreen: (screen: ConsoleScreen) => void;
   progress: OwnerProgress;
 }) {
   return (
@@ -2145,7 +2157,7 @@ function Missions({
         </div>
       </section>
       <div className="rf-mission-cards">
-        <article className="is-active">
+        <article className="is-active" onClick={() => onScreen("cockpit")}>
           <span>01</span>
           <h2>First Drive</h2>
           <p>
@@ -2923,7 +2935,7 @@ export function OwnerConsole({
           progress={progress}
         />
       ) : null}
-      {screen === "missions" ? <Missions progress={progress} /> : null}
+      {screen === "missions" ? <Missions progress={progress} onScreen={setScreen} /> : null}
       {screen === "engineer" ? (
         <Engineer copy={copy} device={activeDevice} theme={theme} />
       ) : null}
