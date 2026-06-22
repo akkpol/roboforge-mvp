@@ -735,11 +735,11 @@ const ownerCopy = {
       themeSaved: "บันทึกสไตล์ของหุ่นแล้ว",
     },
     nav: {
-      cockpit: "Cockpit",
+      cockpit: "ค็อกพิต",
       engineer: "เรียนรู้",
-      garage: "Garage",
-      missions: "Missions",
-      store: "Upgrades",
+      garage: "โรงรถ",
+      missions: "ภารกิจ",
+      store: "อัปเกรด",
     },
     nextStep: {
       aria: "ขั้นต่อไป",
