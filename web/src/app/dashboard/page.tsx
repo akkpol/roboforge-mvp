@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { OwnerConsole } from "@/components/owner-console";
 import { getCurrentUser, getOwnerWorkspace } from "@/lib/supabase/server";
 
@@ -26,6 +27,21 @@ function dashboardLocale(value?: string | string[]) {
   return firstParam(value) === "th" ? "th" : "en";
 }
 
+const welcomeCopy = {
+  en: {
+    body: "Your Digital Form AEGIS-01 is waiting. Follow Connection Quest to link a real rover, or try the demo Cockpit first.",
+    enter: "Enter Garage",
+    subtitle: "You have your first robot.",
+    title: "Welcome to your Garage,",
+  },
+  th: {
+    body: "Digital Form AEGIS-01 ของคุณพร้อมแล้ว ทำตาม Connection Quest เพื่อเชื่อมต่อ Rover จริง หรือลอง Cockpit เดโมดูก่อนได้",
+    enter: "เข้า Garage",
+    subtitle: "คุณมีหุ่นยนต์ตัวแรกแล้ว",
+    title: "ยินดีต้อนรับสู่ Garage ของคุณ,",
+  },
+} as const;
+
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = searchParams ? await searchParams : {};
   const claimParam = firstParam(params.claim);
@@ -51,6 +67,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         devices: [],
         error: null,
         interests: [],
+        isFirstVisit: true,
         profile: null,
         progress: null,
         robots: [],
@@ -94,6 +111,26 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <li>Reload after login</li>
           </ol>
         </section>
+      </main>
+    );
+  }
+
+  if (workspace.isFirstVisit && workspace.profile) {
+    const w = welcomeCopy[locale];
+    const name = workspace.profile.display_name || "AEGIS-01";
+    const dashboardHref = locale === "th" ? "/dashboard?lang=th" : "/dashboard";
+
+    return (
+      <main className="welcome-screen">
+        <span className="eyebrow">🦾 SETUP COMPLETE</span>
+        <h1>
+          {w.title} <strong>{name}</strong>
+        </h1>
+        <p>{w.subtitle}</p>
+        <p className="welcome-body">{w.body}</p>
+        <Link className="button" href={`${dashboardHref}?welcome=done`}>
+          {w.enter}
+        </Link>
       </main>
     );
   }

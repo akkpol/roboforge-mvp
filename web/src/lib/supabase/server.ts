@@ -63,6 +63,7 @@ export type OwnerWorkspace = {
   devices: RobotDevice[];
   error: string | null;
   interests: RobotInterest[];
+  isFirstVisit?: boolean;
   notice?: string | null;
   profile: OwnerProfile | null;
   progress: RobotProgress | null;
@@ -399,10 +400,15 @@ export async function getOwnerWorkspace(user: User): Promise<OwnerWorkspace> {
       });
   }
 
+  const isFirstVisit = profile
+    ? Date.now() - new Date(profile.created_at).getTime() < 300_000
+    : true;
+
   return {
     devices,
     error: null,
     interests: (existingInterests ?? []) as RobotInterest[],
+    isFirstVisit,
     profile,
     progress,
     robots,
