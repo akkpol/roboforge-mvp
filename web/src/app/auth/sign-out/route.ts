@@ -8,5 +8,5 @@ export async function GET(request: NextRequest) {
     await supabase.auth.signOut();
   }
 
-  return NextResponse.redirect(new URL("/", request.url));
+  return NextResponse.redirect(new URL("/login?lang=th&redirect=/?connected=1", request.url));
 }

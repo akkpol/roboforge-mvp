@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Bot, LogIn, LogOut, Settings } from "lucide-react";
+import { useState } from "react";
+import { Bell, Bot, LogOut, Settings } from "lucide-react";
 
 type TopBarProps = {
   isConnected?: boolean;
 };
 
 export function TopBar({ isConnected = false }: TopBarProps) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <header className="lumina-topbar">
       <Link className="brand-lockup" href="/" aria-label="RoboForge home">
@@ -17,23 +20,31 @@ export function TopBar({ isConnected = false }: TopBarProps) {
         <strong>ROBOFORGE</strong>
       </Link>
       <div className="top-actions" aria-label="Garage controls">
-        {isConnected ? (
-          <Link className="round-action round-action-login" href="/auth/sign-out">
-            <LogOut data-icon="inline-start" />
-            <span>ออกจากระบบ</span>
-          </Link>
-        ) : (
-          <Link className="round-action round-action-login" href="/login?lang=th&redirect=/?connected=1">
-            <LogIn data-icon="inline-start" />
-            <span>เข้าสู่ระบบ</span>
-          </Link>
-        )}
         <button className="round-action has-dot" type="button" aria-label="Notifications">
           <Bell data-icon="inline-start" />
         </button>
-        <button className="round-action" type="button" aria-label="Settings">
-          <Settings data-icon="inline-start" />
-        </button>
+        <div className="settings-menu-wrap">
+          <button
+            aria-expanded={settingsOpen}
+            aria-haspopup="menu"
+            className="round-action"
+            onClick={() => setSettingsOpen((open) => !open)}
+            type="button"
+            aria-label="Settings"
+          >
+            <Settings data-icon="inline-start" />
+          </button>
+          {settingsOpen ? (
+            <div className="settings-menu" role="menu">
+              {isConnected ? (
+                <Link href="/auth/sign-out" role="menuitem">
+                  <LogOut data-icon="inline-start" />
+                  <span>ออกจากระบบ</span>
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
     </header>
   );

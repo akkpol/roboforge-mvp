@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 
 type ActionBarProps = {
   isConnected?: boolean;
+  roverLinked?: boolean;
   onConnect: () => void;
   onCycleTheme: () => void;
   onTalk: () => void;
@@ -10,6 +11,7 @@ type ActionBarProps = {
 
 export function ActionBar({
   isConnected = false,
+  roverLinked = false,
   onConnect,
   onCycleTheme,
   onTalk,
@@ -20,9 +22,9 @@ export function ActionBar({
         <MessageCircle data-icon="inline-start" />
         คุยกับ Lyra
       </Button>
-      <Button disabled={isConnected} onClick={onConnect}>
-        {isConnected ? <Check data-icon="inline-start" /> : <Gamepad2 data-icon="inline-start" />}
-        {isConnected ? "เชื่อมต่อแล้ว" : "เชื่อมต่อ Rover"}
+      <Button onClick={onConnect}>
+        {roverLinked ? <Check data-icon="inline-start" /> : <Gamepad2 data-icon="inline-start" />}
+        {roverLinked ? "กำลังจับคู่" : isConnected ? "เชื่อมต่อ Rover" : "รอเข้าสู่ระบบ"}
       </Button>
       <Button variant="warm" onClick={onCycleTheme}>
         <Palette data-icon="inline-start" />

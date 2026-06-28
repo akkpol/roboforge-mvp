@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { startTransition, useState } from "react";
 import { ActionBar } from "./action-bar";
@@ -23,9 +22,9 @@ export function GarageScreen({
   justConnected = false,
   userName = null,
 }: GarageScreenProps) {
-  const router = useRouter();
   const { setTheme, theme } = useTheme();
   const [activeRobot, setActiveRobot] = useState(0);
+  const [roverLinked, setRoverLinked] = useState(false);
   const [, setLyraLine] = useState(
     isConnected
       ? justConnected
@@ -43,13 +42,8 @@ export function GarageScreen({
   }
 
   function connectRover() {
-    if (isConnected) {
-      setLyraLine("เชื่อมต่อแล้ว ขั้นถัดไปคือเริ่มตั้งค่า Rover ผ่าน Garage นี้ได้เลย");
-      return;
-    }
-
-    setLyraLine("เข้าสู่ระบบหรือเชื่อมต่อแล้วจะกลับมาที่หน้า Garage นี้ จากนั้นค่อยต่อ Wi-Fi ของ Rover");
-    router.push("/login?lang=th&redirect=/?connected=1");
+    setRoverLinked(true);
+    setLyraLine("เริ่มโหมดเชื่อมต่อ Rover แล้ว ขั้นถัดไปคือเปิด Wi-Fi ของ ESP32 และจับคู่กับมือถือ");
   }
 
   return (
@@ -60,6 +54,7 @@ export function GarageScreen({
       <MissionCard isConnected={isConnected} />
       <ActionBar
         isConnected={isConnected}
+        roverLinked={roverLinked}
         onConnect={connectRover}
         onCycleTheme={cycleTheme}
         onTalk={() => setLyraLine("ถาม Lyra ได้เลย: ชิ้นส่วนไหนต่อก่อน หรือขั้นตอนไหนยังไม่ชัด")}
