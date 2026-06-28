@@ -26,7 +26,10 @@ export function getSupabaseEnv() {
       cleanPublicKey(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
       cleanPublicKey(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ?? "",
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "",
+    url:
+      process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+      process.env.EXT_PUBLIC_SUPABASE_URL?.trim() ||
+      "",
   };
 }
 
