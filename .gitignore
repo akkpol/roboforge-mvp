@@ -8,6 +8,7 @@ web/.vercel/
 firmware/.pio/
 firmware/.venv/
 firmware/data/
+.tools/
 .vercel/
 .playwright-mcp/
 .npm-cache/

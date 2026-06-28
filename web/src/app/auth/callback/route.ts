@@ -6,7 +6,7 @@ const oauthNextCookieName = "roboforge_oauth_next";
 
 function cleanNext(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/dashboard";
+    return "/";
   }
 
   return value;

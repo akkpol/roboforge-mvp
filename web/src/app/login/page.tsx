@@ -22,7 +22,7 @@ function loginLocale(value: string | string[] | undefined): LoginLocale {
 
 function cleanRedirect(value: string | string[] | undefined) {
   const raw = firstParam(value);
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
   return raw;
 }
 
@@ -50,18 +50,16 @@ function authMessage(
 
 const loginCopy = {
   en: {
-    eyebrow: "FOUNDER ACCESS",
     fallback: "Loading auth...",
-    title: "Login to your RoboForge garage.",
+    title: "Return to Lumina Garage.",
     body:
-      "This is the new SaaS entry point. Supabase handles identity now; the old localStorage demo stays separate in the existing Vite app.",
+      "Login brings you back to the Lumina Garden Garage home screen. No dashboard detour in this restart.",
   },
   th: {
-    eyebrow: "ทางเข้า Web Garage",
     fallback: "กำลังโหลดระบบเข้าสู่ระบบ...",
-    title: "เข้าสู่ Web Garage ของคุณ",
+    title: "กลับเข้า Lumina Garage",
     body:
-      "เข้าสู่ RoboForge เพื่อเพิ่มชุดเบต้า ดูความคืบหน้าของหุ่น และกลับมาใช้งานต่อได้จากที่เดียว ส่วนเดโมยังแยกไว้ให้ลองเล่นโดยไม่ต้องเข้าสู่ระบบ",
+      "เข้าสู่ระบบแล้วจะกลับมาหน้าหลัก Lumina Garden Garage ที่เราสร้างไว้นี้ ไม่พาไป dashboard เก่า",
   },
 } as const;
 
@@ -75,7 +73,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="auth-page">
       <section className="auth-copy">
-        <span className="eyebrow">{copy.eyebrow}</span>
         <h1>{copy.title}</h1>
         <p>{copy.body}</p>
       </section>

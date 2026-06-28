@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-06-28T02:48:22",
+  "public": [
+    "/assets/lumina/mission-background.png",
+    "/assets/lumina/mission-flag.png"
+  ],
+  "flagSource": "C:\\Users\\akkap\\.codex\\generated_images\\019f0851-319e-7370-a173-78bfa5922548\\ig_06609f05bfc4d22d016a4028241e8c8191a18b6bfb3977eda2.png",
+  "backgroundSource": "C:\\Users\\akkap\\.codex\\generated_images\\019f0851-319e-7370-a173-78bfa5922548\\ig_06609f05bfc4d22d016a4027d08e4c8191aa465506a97b4454.png",
+  "alphaValidation": {
+    "Path": "outputs\\lumina-garden-garage\\assets-v1\\final\\mission-flag.png",
+    "Width": 918,
+    "Height": 964,
+    "CornerAlphaSum": 0
+  }
+}
