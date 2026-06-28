@@ -4,7 +4,11 @@ import Image from "next/image";
 import { Check } from "lucide-react";
 import { luminaAssets } from "./assets";
 
-export function HeroScene() {
+type HeroSceneProps = {
+  isConnected?: boolean;
+};
+
+export function HeroScene({ isConnected = false }: HeroSceneProps) {
   return (
     <section className="poster-hero">
       <div className="hero-atmosphere" aria-hidden="true" />
@@ -16,7 +20,7 @@ export function HeroScene() {
         </h1>
         <p className="status-pill">
           <Check data-icon="inline-start" />
-          ชิ้นส่วนครบ 4/4
+          {isConnected ? "เชื่อมต่อแล้ว" : "ชิ้นส่วนครบ 4/4"}
         </p>
       </div>
       <div className="lyra-stage" aria-label="Lyra ผู้ช่วยนำทาง">

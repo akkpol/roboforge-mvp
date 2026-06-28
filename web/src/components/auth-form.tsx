@@ -67,6 +67,17 @@ function rememberOAuthRedirect(value: string) {
   )}; Max-Age=600; Path=/; SameSite=Lax${secure}`;
 }
 
+function resolveOAuthOrigin(appUrl: string) {
+  const currentOrigin = window.location.origin;
+  const currentHost = window.location.hostname;
+
+  if (currentHost === "localhost" || currentHost === "127.0.0.1") {
+    return currentOrigin;
+  }
+
+  return appUrl || currentOrigin;
+}
+
 function GoogleMark() {
   return (
     <svg
@@ -127,10 +138,7 @@ export function AuthForm({
     setBusyAction("google");
     rememberOAuthRedirect(redirectTo);
     const { appUrl } = getSupabaseEnv();
-    const callbackUrl = new URL(
-      "/auth/callback",
-      appUrl || window.location.origin,
-    );
+    const callbackUrl = new URL("/auth/callback", resolveOAuthOrigin(appUrl));
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

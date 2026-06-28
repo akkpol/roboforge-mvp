@@ -23,6 +23,27 @@ function getStoredNext(request: NextRequest) {
   }
 }
 
+function resolveAppOrigin(request: NextRequest, appUrl: string) {
+  const hostname = request.nextUrl.hostname;
+
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return request.nextUrl.origin;
+  }
+
+  if (appUrl) {
+    return appUrl;
+  }
+
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
 function redirectAndClearOAuthCookie(request: NextRequest, location: string | URL) {
   const response = NextResponse.redirect(location);
   response.cookies.set(oauthNextCookieName, "", {
@@ -42,9 +63,10 @@ export async function GET(request: NextRequest) {
     url.searchParams.get("error_description") ?? url.searchParams.get("error");
   const next = cleanNext(url.searchParams.get("next") ?? getStoredNext(request));
   const { appUrl } = getSupabaseEnv();
+  const appOrigin = resolveAppOrigin(request, appUrl);
 
   if (!code || providerError) {
-    const errorUrl = new URL("/login", appUrl || request.url);
+    const errorUrl = new URL("/login", appOrigin);
     errorUrl.searchParams.set("error", "oauth");
     errorUrl.searchParams.set(
       "error_description",
@@ -60,26 +82,12 @@ export async function GET(request: NextRequest) {
     (await supabase?.auth.exchangeCodeForSession(code)) ?? { error: null };
 
   if (error) {
-    const errorUrl = new URL("/login", appUrl || request.url);
+    const errorUrl = new URL("/login", appOrigin);
     errorUrl.searchParams.set("error", "oauth");
     errorUrl.searchParams.set("error_description", error.message);
     errorUrl.searchParams.set("redirect", next);
     return redirectAndClearOAuthCookie(request, errorUrl);
   }
 
-  if (appUrl) {
-    return redirectAndClearOAuthCookie(request, new URL(next, appUrl));
-  }
-
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-
-  if (forwardedHost) {
-    return redirectAndClearOAuthCookie(
-      request,
-      `${forwardedProto}://${forwardedHost}${next}`,
-    );
-  }
-
-  return redirectAndClearOAuthCookie(request, new URL(next, request.url));
+  return redirectAndClearOAuthCookie(request, new URL(next, appOrigin));
 }
