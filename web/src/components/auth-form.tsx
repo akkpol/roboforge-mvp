@@ -3,6 +3,7 @@
 import { LockKeyhole, Mail, UserPlus } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -26,6 +27,7 @@ const authCopy = {
     namePlaceholder: "Akkapol",
     password: "Password",
     passwordPlaceholder: "At least 6 characters",
+    routeNote: "After login, you return to `/`: the Lumina Garden Garage home screen.",
     signUp: "Sign up",
     signupNeedsConfirmation:
       "Account created. Check email confirmation if it is enabled.",
@@ -45,6 +47,7 @@ const authCopy = {
     namePlaceholder: "Akkapol",
     password: "รหัสผ่าน",
     passwordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
+    routeNote: "หลังเข้าสู่ระบบสำเร็จ ระบบจะกลับไปที่ `/` คือหน้า Lumina Garden Garage หลัก",
     signUp: "สมัครบัญชี",
     signupNeedsConfirmation:
       "สร้างบัญชีแล้ว ถ้าเปิดการยืนยันอีเมลไว้ ให้เช็คกล่องอีเมลก่อนเข้าใช้งาน",
@@ -53,7 +56,7 @@ const authCopy = {
 } as const;
 
 function cleanRedirectTarget(value: string) {
-  if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  if (!value.startsWith("/") || value.startsWith("//")) return "/";
   return value;
 }
 
@@ -197,16 +200,19 @@ export function AuthForm({
         </button>
       </div>
 
+      <p className="login-route-note">{copy.routeNote}</p>
+
       <div className="oauth-panel">
-        <button
-          className="button auth-submit oauth-button"
+        <Button
+          className="auth-submit oauth-button"
           disabled={busy || !configured}
           onClick={continueWithGoogle}
           type="button"
+          variant="secondary"
         >
           <GoogleMark />
           {busyAction === "google" ? copy.googleBusy : copy.google}
-        </button>
+        </Button>
         <div className="auth-divider">
           <span>{copy.emailAccess}</span>
         </div>
@@ -260,14 +266,14 @@ export function AuthForm({
           </span>
         </label>
 
-        <button className="button auth-submit" disabled={busy || !configured} type="submit">
-          <LockKeyhole size={18} />
+        <Button className="auth-submit" disabled={busy || !configured} type="submit">
+          <LockKeyhole data-icon="inline-start" />
           {busyAction === "email"
             ? copy.working
             : mode === "sign-in"
               ? copy.login
               : copy.createAccount}
-        </button>
+        </Button>
       </form>
 
       {!configured ? (

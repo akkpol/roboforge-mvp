@@ -1,0 +1,24 @@
+{
+  "sourceFiles": {
+    "platform": "C:\\Users\\akkap\\.codex\\generated_images\\019f0851-319e-7370-a173-78bfa5922548\\ig_0c80e2601dc7dff0016a409dae4dc88191802107c3e4879f2e.png"
+  },
+  "finalAssets": {
+    "platform": "outputs/lumina-garden-garage/assets-v2/final/summon-platform-v2-cropped.png"
+  },
+  "publicAssets": [
+    "/assets/lumina/summon-platform-v2.png"
+  ],
+  "alphaValidation": [
+    {
+      "Path": "outputs/lumina-garden-garage/assets-v2/final/summon-platform-v2-cropped.png",
+      "Width": 1677,
+      "Height": 436,
+      "CornerAlphaSum": 0
+    }
+  ],
+  "notes": [
+    "Generated on a flat #00ff00 chroma-key background with built-in image generation.",
+    "Removed background using the installed imagegen chroma-key helper.",
+    "Cropped to the alpha bounding box so CSS width maps to visible platform size."
+  ]
+}

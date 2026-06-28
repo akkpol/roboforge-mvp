@@ -4,7 +4,7 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 
 function cleanRedirect(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/dashboard";
+    return "/";
   }
 
   return value;
@@ -39,15 +39,6 @@ export async function updateSession(request: NextRequest) {
   const user = error ? null : data?.claims;
 
   const pathname = request.nextUrl.pathname;
-
-  if (pathname.startsWith("/dashboard") && !user) {
-    const redirectUrl = new URL("/login", request.url);
-    redirectUrl.searchParams.set("redirect", `${pathname}${request.nextUrl.search}`);
-    if (request.nextUrl.searchParams.get("lang") === "th") {
-      redirectUrl.searchParams.set("lang", "th");
-    }
-    return NextResponse.redirect(redirectUrl);
-  }
 
   if (pathname === "/login" && user) {
     const redirectTarget = cleanRedirect(request.nextUrl.searchParams.get("redirect"));

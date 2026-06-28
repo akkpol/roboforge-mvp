@@ -1,228 +1,88 @@
 # RoboForge Web
 
-Next.js product shell for RoboForge Web Garage, modular robot profiles, and the
-future unified device-cockpit build.
+Clean restart web shell for **Lumina Garden Garage**.
 
-## Current SaaS Direction
+This round intentionally keeps the public product surface small:
 
-RoboForge Web is the main customer app for the three-layer modular robotics
-platform:
+- `/` is the mock-first Lumina Garden Garage.
+- `/login` is the Supabase auth shell.
+- `/auth/callback` and `/auth/sign-out` stay available for the auth flow.
 
-- Layer A: physical standard kits, partner modules, and the future hardware
-  marketplace.
-- Layer B: robot profiles, module slots, manifests, config/firmware generation,
-  and visual behavior authoring.
-- Layer C: Web Garage, local Cockpit, automation, streaming, swarm, blueprints,
-  and sharing.
+Old public product routes such as dashboard, admin, settings, demo, missions,
+engineer, store, and profile are intentionally removed from the Next.js app for
+this restart.
 
-It should keep the core RoboForge experience people already understand from the
-demo: Garage, Cockpit, fleet selection, Forge/Neo themes, robot controls,
-density, and visual tone.
+## Product Direction
 
-`/dashboard` is the authenticated Web Garage entry point. Future work should
-connect more real hardware paths behind that flow.
+Lumina Garden Garage is a soft, friendly, anime-inspired setup screen for
+Rover-01. The first experience should feel plug and play:
 
-The first paid offer is deliberately narrow: Rover-01 Beta Kit + guided setup
-workshop + Web Garage. It is the first standard kit path inside the larger
-three-layer architecture, not a separate MVP product.
+1. Show the Rover and Lyra companion immediately.
+2. Confirm the four starter hardware parts.
+3. Guide the owner into the first connection mission.
+4. Keep future tabs disabled until their wireframes are approved.
 
-If the owner flow, hardware flow, or visual direction changes, write the new
-intent here before building on it.
+Every new visible screen after this point should start with a wireframe or
+mockup confirmation before coding.
 
-## UX Entry Flow
+## Current Stack
 
-Keep the public owner path simple:
+- Next.js App Router
+- Tailwind CSS 4 with `@tailwindcss/postcss`
+- Small shadcn-style primitives in `src/components/ui`
+- `motion` for soft entrance and interaction animation
+- `next-themes` for palette switching
+- `lucide-react` for lightweight icons
+- Supabase SSR client shell with `@supabase/ssr` and `@supabase/supabase-js`
 
-1. Web Garage is the main website entry.
-2. Claim Code links a beta kit to the owner account.
-3. Connection Quest guides the owner onto the robot Wi-Fi.
-4. Local Cockpit handles live robot control after hardware is ready.
+## Theme System
 
-The hosted Cockpit can simulate the driving loop, but it must stay clear that
-real motor commands belong on the robot local Wi-Fi page.
+Theme palettes live in `src/app/globals.css`.
 
-## Language And Theme Direction
+Supported palettes:
 
-Do not pause the first build slice to translate every screen yet. Keep new UI copy grouped in
-small data objects or dictionaries when practical, so Thai and English can move
-into a full App Router `[lang]` dictionary later without rewriting screens.
+- `lumina`
+- `mint`
+- `peach`
+- `lavender`
+- `sky`
+- `light`
 
-The public landing page has the first lightweight locale switch through
-`/?lang=th`. Keep that page copy in its local dictionary until the product needs
-a full app-wide route strategy.
-
-The app has a small theme token layer in `globals.css`. New UI should use
-semantic CSS variables such as `--bg`, `--panel`, `--text`, `--muted`,
-`--accent`, `--accent-2`, `--accent-3`, `--line`, `--success`, and `--danger`
-instead of literal colors.
-
-For broader theme work, prefer the `--color-*`, `--surface-*`,
-`--page-*`, and `--shadow-*` tokens, then map legacy aliases back to them. The
-global selectors `.theme-forge`, `[data-theme="forge"]`, `.theme-neo`, and
-`[data-theme="neo"]` are the intended extension points. Add a new token before
-hardcoding a reusable color. This keeps future Forge/Neo or market-specific
-themes editable from the global theme layer instead of each component.
-Hex and rgba values should stay in the token blocks unless the value is truly
-one-off and not part of the product skin.
-
-## Started Work To Preserve
-
-- Supabase auth helpers, middleware, login, callback, and sign-out routes are in
-  place.
-- Google OAuth is wired through the app callback flow.
-- The first multi-user schema with row-level security is in `supabase/schema.sql`.
-- `/dashboard` is login-gated and uses real owner workspace, robot, progress,
-  claim, connection, control-session, and feedback data.
-- `/dashboard` should present Digital Form, Physical Unit, and Future Upgrade
-  as separate layers. If a user has both a starter digital robot and a claimed
-  physical kit, the physical kit should be the active owner unit.
-- `/dashboard` should also make the modular robotics direction tangible through
-  Hardware Profile, Module Slots, and Blueprint preview panels as the first
-  Layer B interface.
-- `/admin` is login-gated for `app_admins` and can create physical robot claim
-  kits with a one-time code, claim URL, and QR image.
-- Device Cockpit source lives in `web/device`, with `npm run build:device`
-  emitting the static cockpit bundle to `firmware/data` for ESP32 LittleFS.
-- Hardware contracts live outside the web app in `../hardware`; Next.js route
-  handlers expose the module registry, config-only firmware package generation,
-  and a disabled-until-safe OTA boundary.
+Use semantic CSS variables instead of hardcoded colors when adding UI. The
+theme switcher should change palette only, not layout.
 
 ## Run Locally
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev
 ```
 
 Open `http://localhost:3000`.
 
-## Supabase Auth
+## Supabase Auth Shell
 
-Create a Supabase project, enable Google auth and/or email/password auth, then add:
+Create `.env.local` when real auth is needed:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_APP_URL=
-SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Run `supabase/schema.sql` in the Supabase SQL editor to create the first
-multi-user tables with row-level security.
-
-`SUPABASE_SERVICE_ROLE_KEY` is server-only and only needed for the optional beta
-seed script. The `/admin` Ops view uses the authenticated user plus the
-`app_admins` table.
-
-## Claim Kits
-
-Open `/admin` with an account in `app_admins`, then create a claim kit for each
-physical robot. The action creates a robot, device row, progress row, hashed
-claim code, QR link, printable card data, and a firmware kit manifest in one
-flow.
-
-Claim kit creation intentionally asks for the real board, motor driver, battery
-chemistry/cell count, motor channel mapping, wiring note/photo, power switch,
-and fuse/protected pack before it writes the kit. Do not create a physical kit
-from defaults when those facts are unknown.
-
-The current likely Rover-01 candidate from prototype photos is ESP32 DevKit /
-ESP32-WROOM-32, L298N, TT DC motors, and a 2S 18650 Li-ion pack. `/admin`
-includes a candidate preset for faster data entry, but the switch,
-fuse/protected pack, BMS, and motor polarity still need real-world verification.
-Keep the longer Thai hardware note in
-`docs/ROVER_01_CANDIDATE_HARDWARE_TH.md`.
-
-The QR opens `/dashboard?claim=<code>`. After login, the owner Garage claims the
-robot and removes the code from the URL.
-
-The generated manifest includes the `firmware/include/config.h` block, local
-Wi-Fi SSID/password, claim URL, and protocol check commands that write evidence
-JSON for that unit.
-
-After the kit exists, use the Hardware Profile panel in `/admin` to store the
-actual board model, motor driver, battery chemistry/cell count, wiring status,
-power switch, fuse/protected pack, and readiness status before changing
-firmware for that physical unit.
-
-Use the Bench Checklist panel in `/admin` to record the real kit test path:
-power, robot Wi-Fi, protocol checks, raised-wheel movement, emergency stop, and
-floor readiness evidence.
-
-For Google auth, add this app callback in Supabase Redirect URLs:
+For Google auth, add these callback URLs in Supabase:
 
 ```text
-https://roboforge-saas.vercel.app/auth/callback
 http://localhost:3000/auth/callback
+https://<production-domain>/auth/callback
 ```
 
-Set the Supabase Auth Site URL to the production app:
-
-```text
-https://roboforge-saas.vercel.app
-```
-
-In Vercel, set this public env var for production:
-
-```text
-NEXT_PUBLIC_APP_URL=https://roboforge-saas.vercel.app
-```
-
-In Google Cloud, use the Supabase callback URL from the Google provider setup:
-
-```text
-https://<project-ref>.supabase.co/auth/v1/callback
-```
-
-## Beta Load Test
-
-Run the read-only Supabase readiness check first. It loads `.env.local`, checks
-the expected tables and admin RPCs, and does not write data:
-
-```bash
-npm run check:supabase
-```
-
-With only the publishable key, the check reports `verificationLevel:
-limited_by_rls`. Add `SUPABASE_SERVICE_ROLE_KEY` locally when you need full
-read-only counts without logging in to `/admin`; the script still does not write
-data.
-
-Dry-run the expected row volume for the first beta without writing data:
-
-```bash
-npm run seed:beta -- --users=1000 --robots=300
-```
-
-The script defaults to dry-run. Only use `--execute` against a disposable
-Supabase branch or test project after setting `ROBOFORGE_ALLOW_PROD_SEED=true`
-and the service role key.
-
-The estimate includes owner accounts, physical claim kits, robot device
-profiles, bench and raised-wheel test records, connection summaries, control
-summaries, events, and feedback. It intentionally does not model live joystick
-commands as cloud rows.
-
-The dry-run output includes a `readinessReport` with row budget, summary-only
-backend assumptions, and the checks that still require a disposable Supabase
-branch/test project plus `/admin` verification.
-Use `../docs/BETA_READINESS_RUNBOOK.md` as the end-to-end beta proof path across
-Supabase, Vercel, and physical hardware.
-
-## Deploy
-
-The root `vercel.json` now builds `web/` as the production app. A Vercel project
-can either use the repo root with that config or use Root Directory `web`.
+The current UI remains mock-first. Do not wire new data-heavy flows until the
+screen has been designed and approved.
 
 ## Checks
 
 ```bash
 npm run lint
 npm run build
-npm run build:device
 ```
-
-Known warning: `npm audit` reports a moderate `postcss` advisory through
-Next.js 16.2.9. The offered fix currently uses `--force` and downgrades Next to
-an old major version. Review that fix manually before applying it.

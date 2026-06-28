@@ -4,12 +4,13 @@ import "@fontsource/rajdhani/600.css";
 import "@fontsource/rajdhani/700.css";
 import "@fontsource/noto-sans-thai/400.css";
 import "@fontsource/noto-sans-thai/600.css";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RoboForge",
+  title: "RoboForge Lumina",
   description:
-    "A robot identity and owner platform for builders, schools, and future fleets.",
+    "A soft anime robot garage for setting up Rover-01 with Lyra.",
   icons: {
     icon: "/favicon.svg",
   },
@@ -21,8 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="th" suppressHydrationWarning>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
