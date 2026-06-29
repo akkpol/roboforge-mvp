@@ -1,0 +1,276 @@
+{
+  "generatedAt": "2026-06-28T19:47:16.696Z",
+  "summary": {
+    "status": "ok",
+    "url": "http://127.0.0.1:3003/connect",
+    "reference": {
+      "source": "docs/design-reference/connection-quest/prototype.png",
+      "intrinsicWidth": 866,
+      "intrinsicHeight": 1815,
+      "inferredCssWidth": 430,
+      "inferredCssHeight": 908,
+      "shellPaddingBottom": 24,
+      "scale": 2.013953488372093
+    },
+    "viewport": {
+      "width": 430,
+      "height": 900
+    },
+    "documentHeight": 932,
+    "targetDocumentHeight": 932,
+    "documentOverflow": 0,
+    "worstSections": [
+      {
+        "key": "progress",
+        "label": "Progress rail",
+        "maxAbsDelta": 6.6,
+        "heightDelta": 2.8,
+        "bottomDelta": 6.6
+      },
+      {
+        "key": "visual",
+        "label": "Rover map card",
+        "maxAbsDelta": 6,
+        "heightDelta": 1.3,
+        "bottomDelta": 6
+      },
+      {
+        "key": "advanced",
+        "label": "Advanced drawer",
+        "maxAbsDelta": 6,
+        "heightDelta": 6,
+        "bottomDelta": 6
+      },
+      {
+        "key": "lyra",
+        "label": "Lyra tip",
+        "maxAbsDelta": 6,
+        "heightDelta": 6,
+        "bottomDelta": 6
+      }
+    ]
+  },
+  "sections": [
+    {
+      "key": "topbar",
+      "label": "Top bar",
+      "selector": ".lumina-topbar",
+      "rect": {
+        "top": 18,
+        "height": 54,
+        "bottom": 72,
+        "width": 398
+      },
+      "target": {
+        "top": 18,
+        "height": 54,
+        "bottom": 72
+      },
+      "tolerance": 8,
+      "topDelta": 0,
+      "heightDelta": 0,
+      "bottomDelta": 0,
+      "maxAbsDelta": 0,
+      "status": "ok"
+    },
+    {
+      "key": "hero",
+      "label": "Title copy",
+      "selector": ".connection-hero-copy",
+      "rect": {
+        "top": 70,
+        "height": 89.9,
+        "bottom": 159.9,
+        "width": 398
+      },
+      "target": {
+        "top": 70,
+        "height": 90,
+        "bottom": 160
+      },
+      "tolerance": 12,
+      "topDelta": 0,
+      "heightDelta": -0.1,
+      "bottomDelta": -0.1,
+      "maxAbsDelta": 0.1,
+      "status": "ok"
+    },
+    {
+      "key": "progress",
+      "label": "Progress rail",
+      "selector": ".connection-progress-card",
+      "rect": {
+        "top": 163.9,
+        "height": 54.8,
+        "bottom": 218.6,
+        "width": 398
+      },
+      "target": {
+        "top": 160,
+        "height": 52,
+        "bottom": 212
+      },
+      "tolerance": 10,
+      "topDelta": 3.9,
+      "heightDelta": 2.8,
+      "bottomDelta": 6.6,
+      "maxAbsDelta": 6.6,
+      "status": "ok"
+    },
+    {
+      "key": "visual",
+      "label": "Rover map card",
+      "selector": ".connection-visual-card",
+      "rect": {
+        "top": 222.6,
+        "height": 221.3,
+        "bottom": 444,
+        "width": 398
+      },
+      "target": {
+        "top": 218,
+        "height": 220,
+        "bottom": 438
+      },
+      "tolerance": 16,
+      "topDelta": 4.6,
+      "heightDelta": 1.3,
+      "bottomDelta": 6,
+      "maxAbsDelta": 6,
+      "status": "ok"
+    },
+    {
+      "key": "steps",
+      "label": "Step cards",
+      "selector": ".connection-step-list",
+      "rect": {
+        "top": 448,
+        "height": 172,
+        "bottom": 620,
+        "width": 398
+      },
+      "target": {
+        "top": 445,
+        "height": 170,
+        "bottom": 615
+      },
+      "tolerance": 16,
+      "topDelta": 3,
+      "heightDelta": 2,
+      "bottomDelta": 5,
+      "maxAbsDelta": 5,
+      "status": "ok"
+    },
+    {
+      "key": "advanced",
+      "label": "Advanced drawer",
+      "selector": ".advanced-details",
+      "rect": {
+        "top": 624,
+        "height": 56,
+        "bottom": 680,
+        "width": 398
+      },
+      "target": {
+        "top": 624,
+        "height": 50,
+        "bottom": 674
+      },
+      "tolerance": 10,
+      "topDelta": 0,
+      "heightDelta": 6,
+      "bottomDelta": 6,
+      "maxAbsDelta": 6,
+      "status": "ok"
+    },
+    {
+      "key": "lyra",
+      "label": "Lyra tip",
+      "selector": ".lyra-tip",
+      "rect": {
+        "top": 684,
+        "height": 84,
+        "bottom": 768,
+        "width": 398
+      },
+      "target": {
+        "top": 684,
+        "height": 78,
+        "bottom": 762
+      },
+      "tolerance": 12,
+      "topDelta": 0,
+      "heightDelta": 6,
+      "bottomDelta": 6,
+      "maxAbsDelta": 6,
+      "status": "ok"
+    },
+    {
+      "key": "actions",
+      "label": "CTA buttons",
+      "selector": ".connection-actions",
+      "rect": {
+        "top": 772,
+        "height": 48,
+        "bottom": 820,
+        "width": 398
+      },
+      "target": {
+        "top": 772,
+        "height": 48,
+        "bottom": 820
+      },
+      "tolerance": 12,
+      "topDelta": 0,
+      "heightDelta": 0,
+      "bottomDelta": 0,
+      "maxAbsDelta": 0,
+      "status": "ok"
+    },
+    {
+      "key": "safety",
+      "label": "Safety note",
+      "selector": ".connection-safety-note",
+      "rect": {
+        "top": 824,
+        "height": 27,
+        "bottom": 851,
+        "width": 398
+      },
+      "target": {
+        "top": 830,
+        "height": 26,
+        "bottom": 856
+      },
+      "tolerance": 8,
+      "topDelta": -6,
+      "heightDelta": 1,
+      "bottomDelta": -5,
+      "maxAbsDelta": 6,
+      "status": "ok"
+    },
+    {
+      "key": "bottomNav",
+      "label": "Bottom nav",
+      "selector": ".bottom-nav",
+      "rect": {
+        "top": 859,
+        "height": 59,
+        "bottom": 918,
+        "width": 398
+      },
+      "target": {
+        "top": 864,
+        "height": 58,
+        "bottom": 922
+      },
+      "tolerance": 12,
+      "topDelta": -5,
+      "heightDelta": 1,
+      "bottomDelta": -4,
+      "maxAbsDelta": 5,
+      "status": "ok"
+    }
+  ],
+  "screenshotPath": "web/.qa-connect/connect-measured-mobile.png"
+}

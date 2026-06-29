@@ -2,23 +2,33 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Bell, Bot, LogOut, Settings } from "lucide-react";
+import { ArrowLeft, Bell, Bot, LogOut, Settings } from "lucide-react";
 
 type TopBarProps = {
+  backHref?: string;
+  backLabel?: string;
   isConnected?: boolean;
+  showBack?: boolean;
 };
 
-export function TopBar({ isConnected = false }: TopBarProps) {
+export function TopBar({ backHref = "/", backLabel = "กลับ Garage", isConnected = false, showBack = false }: TopBarProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <header className="lumina-topbar">
-      <Link className="brand-lockup" href="/" aria-label="RoboForge home">
-        <span className="brand-mark">
-          <Bot data-icon="inline-start" />
-        </span>
-        <strong>ROBOFORGE</strong>
-      </Link>
+    <header className={showBack ? "lumina-topbar lumina-topbar--with-back" : "lumina-topbar"}>
+      <div className="topbar-left">
+        {showBack ? (
+          <Link className="round-action round-action--back" href={backHref} aria-label={backLabel}>
+            <ArrowLeft data-icon="inline-start" />
+          </Link>
+        ) : null}
+        <Link className="brand-lockup" href="/" aria-label="RoboForge home">
+          <span className="brand-mark">
+            <Bot data-icon="inline-start" />
+          </span>
+          <strong>ROBOFORGE</strong>
+        </Link>
+      </div>
       <div className="top-actions" aria-label="Garage controls">
         <button className="round-action has-dot" type="button" aria-label="Notifications">
           <Bell data-icon="inline-start" />

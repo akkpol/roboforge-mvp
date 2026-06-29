@@ -5,6 +5,11 @@ export const luminaAssets = {
     width: 946,
     height: 1608,
   },
+  lyraConnect: {
+    src: "/assets/lumina/lyra-connect-guide.png",
+    width: 1280,
+    height: 1228,
+  },
   platform: {
     src: "/assets/lumina/summon-platform-v2.png",
     width: 1677,
