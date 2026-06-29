@@ -53,6 +53,7 @@ export function GarageScreen({
       <HardwareGrid />
       <MissionCard isConnected={isConnected} />
       <ActionBar
+        connectHref="/connect"
         isConnected={isConnected}
         roverLinked={roverLinked}
         onConnect={connectRover}

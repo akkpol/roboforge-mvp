@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Check } from "lucide-react";
 import { luminaAssets } from "./assets";
+import { RoverStage } from "./rover-stage";
 
 type HeroSceneProps = {
   isConnected?: boolean;
@@ -33,26 +34,7 @@ export function HeroScene({ isConnected = false }: HeroSceneProps) {
           width={luminaAssets.lyra.width}
         />
       </div>
-      <div className="rover-stage">
-        <Image
-          alt=""
-          aria-hidden="true"
-          className="platform-asset"
-          height={luminaAssets.platform.height}
-          priority
-          src={luminaAssets.platform.src}
-          width={luminaAssets.platform.width}
-        />
-        <div className="summon-ring" aria-hidden="true" />
-        <Image
-          alt="Rover-01 friendly robot on a soft summon circle"
-          className="rover-asset"
-          height={luminaAssets.rover.height}
-          priority
-          src={luminaAssets.rover.src}
-          width={luminaAssets.rover.width}
-        />
-      </div>
+      <RoverStage />
       <div className="floating-lyra-nameplate" aria-hidden="true">
         <strong>LYRA</strong>
         <span>ผู้ช่วยนำทาง</span>
