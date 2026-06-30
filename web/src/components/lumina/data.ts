@@ -1,4 +1,9 @@
+import type { LucideIcon } from "lucide-react";
 import {
+  Battery,
+  Bot,
+  Brain,
+  Eye,
   Flag,
   Home,
   ShoppingCart,
@@ -8,85 +13,62 @@ import {
 import { luminaAssets } from "./assets";
 
 export type HardwareItem = {
-  key: "esp32" | "hcsr04" | "l298n" | "motor1" | "motor2" | "motor3" | "motor4" | "battery";
+  Icon: LucideIcon;
   image: string;
+  key: "brain" | "eyes" | "muscle" | "power";
+  label: string;
   name: string;
-  ariaLabel: string;
-  tone: "mint" | "sky" | "amber" | "rose" | "blue";
+  tone: "mint" | "sky" | "peach" | "blue";
 };
 
 export type RobotItem = {
-  key: string;
-  kind: "rover" | "empty";
-  label?: string;
-  ariaLabel: string;
+  label: string;
+  state: string;
+  tone: "active" | "tracked" | "drone" | "arm";
 };
+
+export const themeNames = ["lumina", "mint", "peach", "lavender", "sky", "light"] as const;
 
 export const hardwareItems: readonly HardwareItem[] = [
   {
-    key: "esp32",
-    image: luminaAssets.hardwareIllustrations.esp32,
+    Icon: Brain,
+    image: luminaAssets.hardware.esp32,
+    key: "brain",
+    label: "สมอง",
     name: "ESP32",
-    ariaLabel: "ESP32 controller board connected",
     tone: "mint",
   },
   {
-    key: "hcsr04",
-    image: luminaAssets.hardwareIllustrations.hcsr04,
+    Icon: Eye,
+    image: luminaAssets.hardware.hcsr04,
+    key: "eyes",
+    label: "ดวงตา",
     name: "HC-SR04",
-    ariaLabel: "HC-SR04 ultrasonic sensor connected",
     tone: "sky",
   },
   {
-    key: "l298n",
-    image: luminaAssets.hardwareIllustrations.l298n,
+    Icon: Bot,
+    image: luminaAssets.hardware.motors,
+    key: "muscle",
+    label: "กล้ามเนื้อ",
     name: "L298N",
-    ariaLabel: "L298N motor driver connected",
-    tone: "amber",
+    tone: "peach",
   },
   {
-    key: "motor1",
-    image: luminaAssets.hardwareIllustrations.motor,
-    name: "Motor 1",
-    ariaLabel: "Rover motor 1 connected",
-    tone: "rose",
-  },
-  {
-    key: "motor2",
-    image: luminaAssets.hardwareIllustrations.motor,
-    name: "Motor 2",
-    ariaLabel: "Rover motor 2 connected",
-    tone: "rose",
-  },
-  {
-    key: "motor3",
-    image: luminaAssets.hardwareIllustrations.motor,
-    name: "Motor 3",
-    ariaLabel: "Rover motor 3 connected",
-    tone: "rose",
-  },
-  {
-    key: "motor4",
-    image: luminaAssets.hardwareIllustrations.motor,
-    name: "Motor 4",
-    ariaLabel: "Rover motor 4 connected",
-    tone: "rose",
-  },
-  {
-    key: "battery",
-    image: luminaAssets.hardwareIllustrations.battery,
+    Icon: Battery,
+    image: luminaAssets.hardware.battery,
+    key: "power",
+    label: "พลังงาน",
     name: "Battery",
-    ariaLabel: "Battery connected",
     tone: "blue",
   },
 ] as const;
 
 export const robotItems: readonly RobotItem[] = [
-  { key: "rover-01", kind: "rover", label: "Rover-01", ariaLabel: "Rover-01" },
-  { key: "slot-01", kind: "empty", ariaLabel: "Empty robot slot 1" },
-  { key: "slot-02", kind: "empty", ariaLabel: "Empty robot slot 2" },
-  { key: "slot-03", kind: "empty", ariaLabel: "Empty robot slot 3" },
-  { key: "slot-04", kind: "empty", ariaLabel: "Empty robot slot 4" },
+  { label: "Rover-01", state: "พร้อม", tone: "active" },
+  { label: "Tracked-01", state: "ภายหลัง", tone: "tracked" },
+  { label: "Drone-01", state: "ภายหลัง", tone: "drone" },
+  { label: "Arm-01", state: "ภายหลัง", tone: "arm" },
 ] as const;
 
 export const navItems = [

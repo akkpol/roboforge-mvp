@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Gamepad2, MessageCircle, Rocket } from "lucide-react";
+import { Check, Gamepad2, MessageCircle, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type ActionBarProps = {
@@ -7,7 +7,7 @@ type ActionBarProps = {
   isConnected?: boolean;
   roverLinked?: boolean;
   onConnect: () => void;
-  onMission: () => void;
+  onCycleTheme: () => void;
   onTalk: () => void;
 };
 
@@ -16,7 +16,7 @@ export function ActionBar({
   isConnected = false,
   roverLinked = false,
   onConnect,
-  onMission,
+  onCycleTheme,
   onTalk,
 }: ActionBarProps) {
   const connectLabel = roverLinked ? "กำลังจับคู่" : isConnected ? "เชื่อมต่อ Rover" : "เชื่อมต่อ Rover";
@@ -41,9 +41,9 @@ export function ActionBar({
           {connectLabel}
         </Button>
       )}
-      <Button variant="warm" onClick={onMission}>
-        <Rocket data-icon="inline-start" />
-        เริ่มภารกิจ
+      <Button variant="warm" onClick={onCycleTheme}>
+        <Palette data-icon="inline-start" />
+        เปลี่ยนสไตล์
       </Button>
     </section>
   );

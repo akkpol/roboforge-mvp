@@ -26,18 +26,6 @@ export const luminaAssets = {
     motors: "/assets/lumina/hardware-motors.png",
     battery: "/assets/lumina/hardware-battery.png",
   },
-  hardwareIllustrations: {
-    esp32: "/assets/lumina/hardware-esp32-illustration.png",
-    hcsr04: "/assets/lumina/hardware-hcsr04-illustration.png",
-    l298n: "/assets/lumina/hardware-l298n-illustration.png",
-    motor: "/assets/lumina/hardware-motor-illustration.png",
-    battery: "/assets/lumina/hardware-battery-illustration.png",
-  },
-  emptySlot: {
-    src: "/assets/lumina/robot-empty-slot-illustration.png",
-    width: 491,
-    height: 449,
-  },
   mission: {
     background: "/assets/lumina/mission-background.png",
     flag: {
