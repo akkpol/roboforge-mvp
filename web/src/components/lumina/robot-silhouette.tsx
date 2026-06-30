@@ -1,8 +1,6 @@
-import type { RobotItem } from "./data";
+type SilhouetteTone = "tracked" | "drone" | "arm";
 
-type SilhouetteTone = Exclude<RobotItem["tone"], "active">;
-
-export function isSilhouetteTone(tone: RobotItem["tone"]): tone is SilhouetteTone {
+export function isSilhouetteTone(tone: "active" | SilhouetteTone): tone is SilhouetteTone {
   return tone !== "active";
 }
 
