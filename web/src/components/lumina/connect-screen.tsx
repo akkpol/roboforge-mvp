@@ -693,7 +693,7 @@ export function ConnectScreen() {
           Wi-Fi password ใช้ส่งเข้า ESP32 เท่านั้น ไม่เก็บถาวรใน browser
         </p>
       </div>
-      <BottomNav />
+      <BottomNav active="garage" />
     </main>
   );
 }

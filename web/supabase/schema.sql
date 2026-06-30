@@ -4,6 +4,7 @@ create table if not exists public.owner_profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text,
   avatar_url text,
+  phone_number text,
   role_type text default 'enthusiast'
     check (role_type in ('maker', 'educator', 'enthusiast', 'parent', 'developer', 'other')),
   skill_level text default 'beginner'
@@ -44,6 +45,60 @@ create policy "Owners can update own profile"
   on public.owner_profiles for update
   using ((select auth.uid()) = id)
   with check ((select auth.uid()) = id);
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'profile-avatars',
+  'profile-avatars',
+  false,
+  524288,
+  array['image/webp']
+)
+on conflict (id) do update
+set
+  public = false,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+create policy "Owners can read own profile avatar"
+  on storage.objects for select
+  to authenticated
+  using (
+    bucket_id = 'profile-avatars'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  );
+
+create policy "Owners can upload own profile avatar"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'profile-avatars'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and storage.filename(name) = 'avatar.webp'
+    and storage.extension(name) = 'webp'
+  );
+
+create policy "Owners can update own profile avatar"
+  on storage.objects for update
+  to authenticated
+  using (
+    bucket_id = 'profile-avatars'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  )
+  with check (
+    bucket_id = 'profile-avatars'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+    and storage.filename(name) = 'avatar.webp'
+    and storage.extension(name) = 'webp'
+  );
+
+create policy "Owners can delete own profile avatar"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'profile-avatars'
+    and (storage.foldername(name))[1] = (select auth.uid())::text
+  );
 
 create policy "Owners can read own robots"
   on public.robots for select

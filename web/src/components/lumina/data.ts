@@ -1,6 +1,7 @@
 import {
   Flag,
   Home,
+  type LucideIcon,
   ShoppingCart,
   UserRound,
   Wrench,
@@ -20,6 +21,14 @@ export type RobotItem = {
   kind: "rover" | "empty";
   label?: string;
   ariaLabel: string;
+};
+
+export type NavItem = {
+  Icon: LucideIcon;
+  href?: string;
+  key: "garage" | "missions" | "engineer" | "store" | "profile";
+  label: string;
+  state: "ready" | "soon";
 };
 
 export const hardwareItems: readonly HardwareItem[] = [
@@ -89,10 +98,10 @@ export const robotItems: readonly RobotItem[] = [
   { key: "slot-04", kind: "empty", ariaLabel: "Empty robot slot 4" },
 ] as const;
 
-export const navItems = [
-  { Icon: Home, label: "Garage", state: "active" },
-  { Icon: Flag, label: "Missions", state: "soon" },
-  { Icon: Wrench, label: "Engineer", state: "soon" },
-  { Icon: ShoppingCart, label: "Store", state: "soon" },
-  { Icon: UserRound, label: "Profile", state: "soon" },
+export const navItems: readonly NavItem[] = [
+  { Icon: Home, href: "/", key: "garage", label: "Garage", state: "ready" },
+  { Icon: Flag, key: "missions", label: "Missions", state: "soon" },
+  { Icon: Wrench, key: "engineer", label: "Engineer", state: "soon" },
+  { Icon: ShoppingCart, key: "store", label: "Store", state: "soon" },
+  { Icon: UserRound, href: "/profile", key: "profile", label: "Profile", state: "ready" },
 ] as const;

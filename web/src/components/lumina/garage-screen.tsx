@@ -52,7 +52,7 @@ export function GarageScreen({
         <MissionCard isConnected={isConnected} />
         <RobotShelf activeRobot={activeRobot} onSelectRobot={setActiveRobot} />
       </div>
-      <BottomNav />
+      <BottomNav active="garage" />
     </main>
   );
 }

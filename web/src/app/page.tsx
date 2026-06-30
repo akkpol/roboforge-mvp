@@ -16,12 +16,23 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const supabase = await createServerSupabaseClient();
   const { data } = (await supabase?.auth.getUser()) ?? { data: { user: null } };
   const user = data.user;
+  const { data: profile } = user
+    ? (await supabase
+        ?.from("owner_profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle()) ?? { data: null }
+    : { data: null };
+  const profileName =
+    profile && typeof profile.display_name === "string" && profile.display_name.trim().length > 0
+      ? profile.display_name.trim()
+      : null;
 
   return (
     <GarageScreen
       isConnected={Boolean(user)}
       justConnected={firstParam(params.connected) === "1" && Boolean(user)}
-      userName={typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null}
+      userName={profileName ?? (typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null)}
     />
   );
 }
