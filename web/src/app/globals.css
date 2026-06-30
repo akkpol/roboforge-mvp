@@ -3041,6 +3041,573 @@ img {
   }
 }
 
+@media (min-width: 480px) {
+  .connection-shell {
+    width: min(520px, calc(100% - 32px));
+    overflow-x: visible;
+    padding: 0 0 24px;
+  }
+
+  .connection-shell .lumina-topbar {
+    right: auto;
+    left: 50%;
+    width: min(520px, calc(100vw - 32px));
+    transform: translateX(-50%);
+  }
+
+  .connection-shell .connection-content {
+    gap: 6px;
+    padding-top: 76px;
+  }
+
+  .connection-shell .connection-hero-copy {
+    padding: 8px 14px 0;
+  }
+
+  .connection-shell .connection-visual-card {
+    padding: 14px 12px 12px;
+  }
+
+  .connection-shell .rover-stage--connect {
+    --platform-visual-w: min(56vw, 270px);
+    --rover-w: min(45vw, 204px);
+    min-height: 132px;
+    margin: -8px auto -8px;
+  }
+
+  .connection-shell .connection-step-list {
+    gap: 6px;
+  }
+
+  .connection-shell .connection-actions {
+    grid-template-columns: 1.08fr 0.92fr;
+  }
+
+  .connection-shell .bottom-nav {
+    position: static;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    margin: 10px auto 0;
+    transform: none;
+  }
+}
+
+@media (min-width: 760px) {
+  .connection-shell {
+    width: min(1120px, calc(100% - 48px));
+    padding: 92px 0 32px;
+  }
+
+  .connection-shell .lumina-topbar {
+    width: min(1120px, calc(100vw - 48px));
+  }
+
+  .connection-shell .connection-content {
+    grid-template-columns: minmax(300px, 0.86fr) minmax(340px, 1.14fr);
+    grid-template-areas:
+      "hero visual"
+      "progress visual"
+      "steps visual"
+      "advanced lyra"
+      "actions safety";
+    align-items: start;
+    gap: 12px;
+    padding-top: 0;
+  }
+
+  .connection-shell .connection-hero-copy {
+    grid-area: hero;
+    min-height: 132px;
+    align-content: end;
+    padding: 12px 16px 6px;
+  }
+
+  .connection-shell .connection-hero-copy h1 {
+    font-size: clamp(52px, 5vw, 68px);
+  }
+
+  .connection-shell .connection-hero-copy p {
+    max-width: 320px;
+    font-size: 12.5px;
+  }
+
+  .connection-shell .connection-progress-card {
+    grid-area: progress;
+    min-height: 60px;
+    padding: 10px 12px;
+  }
+
+  .connection-shell .connection-visual-card {
+    grid-area: visual;
+    align-self: start;
+    min-height: clamp(360px, 40vw, 500px);
+    padding: 18px 16px 16px;
+  }
+
+  .connection-shell .connection-visual-card::before {
+    inset: 56px 34px auto;
+    height: 160px;
+  }
+
+  .connection-shell .rover-stage--connect {
+    --platform-visual-w: clamp(260px, 33vw, 420px);
+    --platform-offset-y: -4px;
+    --rover-w: clamp(198px, 25vw, 318px);
+    --rover-y: -2px;
+    min-height: clamp(210px, 25vw, 314px);
+    margin: 2px auto 4px;
+  }
+
+  .connection-shell .connection-map {
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .connection-shell .connection-map-segment {
+    gap: 6px;
+  }
+
+  .connection-shell .connection-map-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .connection-shell .connection-map-node strong {
+    font-size: 10.8px;
+  }
+
+  .connection-shell .connection-map-node small {
+    font-size: 8.8px;
+  }
+
+  .connection-shell .connection-step-list {
+    grid-area: steps;
+    gap: 8px;
+  }
+
+  .connection-shell .connection-step-card {
+    min-height: 70px;
+    padding: 10px 12px;
+    border-radius: 20px;
+  }
+
+  .connection-shell .connection-step-card h2 {
+    font-size: 15px;
+  }
+
+  .connection-shell .connection-step-card p {
+    font-size: 10.8px;
+  }
+
+  .connection-shell .advanced-details {
+    grid-area: advanced;
+  }
+
+  .connection-shell .lyra-tip {
+    grid-area: lyra;
+    grid-template-columns: 82px minmax(0, 1fr) auto;
+    min-height: 104px;
+    padding-right: 10px;
+  }
+
+  .connection-shell .lyra-tip-asset {
+    width: 98px;
+    height: 98px;
+  }
+
+  .connection-shell .lyra-tip-bubble p {
+    font-size: 10.8px;
+  }
+
+  .connection-shell .connection-actions {
+    grid-area: actions;
+    align-self: stretch;
+    min-height: 56px;
+  }
+
+  .connection-shell .connection-actions .rf-button--default {
+    min-height: 48px;
+  }
+
+  .connection-shell .connection-safety-note {
+    grid-area: safety;
+    align-self: stretch;
+    min-height: 56px;
+    border-radius: 18px;
+  }
+
+  .connection-shell .bottom-nav {
+    width: min(760px, 100%);
+    padding: 4px;
+    border-radius: 20px;
+  }
+
+  .connection-shell .bottom-nav button {
+    min-height: 42px;
+  }
+}
+
+.connection-shell {
+  padding-bottom: 104px;
+}
+
+.connection-shell .bottom-nav {
+  position: static;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  width: 100%;
+  margin: 10px auto 0;
+  transform: none;
+}
+
+.connection-shell .connect-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(243, 251, 255, 0.76)),
+    rgba(255, 255, 255, 0.72);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.connection-shell .connect-section-heading,
+.connection-shell .connect-mobile-brief {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.connection-shell .connect-mobile-brief .rf-button {
+  grid-column: 1 / -1;
+}
+
+.connection-shell .connect-card-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid rgba(75, 158, 231, 0.24);
+  border-radius: 14px;
+  color: #2878d9;
+  background: rgba(232, 248, 255, 0.82);
+}
+
+.connection-shell .connect-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.connection-shell .connect-card h2,
+.connection-shell .connect-card p {
+  margin: 0;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+}
+
+.connection-shell .connect-card h2 {
+  color: #173762;
+  font-size: 14px;
+  line-height: 1.18;
+}
+
+.connection-shell .connect-card p,
+.connection-shell .connect-help,
+.connection-shell .connect-warning {
+  color: var(--muted);
+  font-size: 10.8px;
+  font-weight: 700;
+  line-height: 1.34;
+}
+
+.connection-shell .connect-warning {
+  color: #a35f00;
+}
+
+.connection-shell .connect-check-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.connection-shell .connect-check-grid label,
+.connection-shell .connect-safety-toggle {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(123, 162, 204, 0.22);
+  border-radius: 14px;
+  color: #315981;
+  background: rgba(255, 255, 255, 0.64);
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 10.4px;
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.connection-shell .connect-check-grid label.is-checked,
+.connection-shell .connect-safety-toggle.is-checked {
+  border-color: rgba(69, 196, 157, 0.46);
+  color: #126b56;
+  background: rgba(235, 255, 247, 0.82);
+}
+
+.connection-shell .connect-check-grid input,
+.connection-shell .connect-safety-toggle input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  accent-color: var(--mint);
+}
+
+.connection-shell .connect-field-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.connection-shell .connect-field-grid label,
+.connection-shell .connect-avoid-row label {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  color: #315981;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.connection-shell .connect-field-grid input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(85, 151, 209, 0.24);
+  border-radius: 14px;
+  color: #173762;
+  background: rgba(255, 255, 255, 0.86);
+  outline: 0;
+}
+
+.connection-shell .connect-installer-widget,
+.connection-shell .connect-status-grid,
+.connection-shell .connect-avoid-row {
+  display: grid;
+  gap: 8px;
+}
+
+.connection-shell .connect-installer-widget {
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(69, 196, 157, 0.28);
+  border-radius: 16px;
+  background: rgba(236, 255, 248, 0.72);
+}
+
+.connection-shell .connect-installer-widget strong,
+.connection-shell .connect-installer-widget small {
+  display: block;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+}
+
+.connection-shell .connect-installer-widget strong {
+  color: #126b56;
+  font-size: 12px;
+}
+
+.connection-shell .connect-installer-widget small {
+  color: #315981;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.28;
+}
+
+.connection-shell .esp-install-button-wrap {
+  min-height: 42px;
+}
+
+.connection-shell .connect-actions-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.connection-shell .connect-actions-row .rf-button,
+.connection-shell .connect-test-grid .rf-button,
+.connection-shell .connect-avoid-row .rf-button {
+  min-height: 42px;
+  font-size: 12px;
+}
+
+.connection-shell .connect-status-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.connection-shell .connect-status-grid div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(232, 246, 255, 0.72);
+}
+
+.connection-shell .connect-status-grid span,
+.connection-shell .connect-status-grid strong {
+  overflow: hidden;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connection-shell .connect-status-grid span {
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.connection-shell .connect-status-grid strong {
+  color: #173762;
+  font-size: 13px;
+}
+
+.connection-shell .connect-safety-toggle {
+  min-height: 44px;
+}
+
+.connection-shell .connect-test-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.connection-shell .connect-avoid-row {
+  grid-template-columns: 1fr;
+}
+
+.connection-shell .connect-avoid-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary-strong);
+}
+
+@media (min-width: 480px) {
+  .connection-shell {
+    padding-bottom: 24px;
+  }
+
+  .connection-shell .connect-card {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .connection-shell .connect-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .connection-shell .connect-field-grid label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .connection-shell .connect-installer-widget,
+  .connection-shell .connect-actions-row,
+  .connection-shell .connect-avoid-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .connection-shell .connect-actions-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 760px) {
+  .connection-shell {
+    padding-bottom: 32px;
+  }
+
+  .connection-shell .connection-content {
+    grid-template-columns: minmax(300px, 0.88fr) minmax(360px, 1.12fr);
+    grid-template-areas:
+      "hero visual"
+      "progress visual"
+      "mobile installer"
+      "doctor installer"
+      "test installer"
+      "advanced lyra"
+      "safety lyra";
+    gap: 12px;
+  }
+
+  .connection-shell .connect-mobile-brief {
+    grid-area: mobile;
+  }
+
+  .connection-shell .connect-installer-card {
+    grid-area: installer;
+  }
+
+  .connection-shell .connect-doctor-card {
+    grid-area: doctor;
+  }
+
+  .connection-shell .connect-test-card {
+    grid-area: test;
+  }
+
+  .connection-shell .connect-mobile-brief .rf-button {
+    grid-column: auto;
+    justify-self: end;
+  }
+
+  .connection-shell .connect-mobile-brief {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .connection-shell .connect-installer-card,
+  .connection-shell .connect-test-card {
+    align-self: stretch;
+  }
+
+  .connection-shell .connect-check-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1120px) {
+  .connection-shell {
+    width: min(1280px, calc(100% - 64px));
+  }
+
+  .connection-shell .lumina-topbar {
+    width: min(1280px, calc(100vw - 64px));
+  }
+
+  .connection-shell .connection-content {
+    grid-template-columns: minmax(260px, 0.7fr) minmax(360px, 1fr) minmax(340px, 0.9fr);
+    grid-template-areas:
+      "hero visual installer"
+      "progress visual installer"
+      "mobile doctor installer"
+      "test advanced lyra"
+      "safety safety lyra";
+    align-items: start;
+  }
+
+  .connection-shell .connection-visual-card {
+    min-height: 420px;
+  }
+
+  .connection-shell .connect-check-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
