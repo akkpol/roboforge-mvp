@@ -1,10 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Plus } from "lucide-react";
 import { luminaAssets } from "./assets";
 import { robotItems } from "./data";
-import { isSilhouetteTone, RobotSilhouette } from "./robot-silhouette";
 
 type RobotShelfProps = {
   activeRobot: number;
@@ -21,24 +19,35 @@ export function RobotShelf({ activeRobot, onSelectRobot }: RobotShelfProps) {
       <div className="robot-carousel">
         {robotItems.map((robot, index) => (
           <button
-            className={activeRobot === index ? "is-active" : ""}
-            key={robot.label}
+            aria-label={robot.ariaLabel}
+            className={[
+              robot.kind === "empty" ? "robot-empty-slot" : "robot-card",
+              activeRobot === index && robot.kind === "rover" ? "is-active" : "",
+            ].filter(Boolean).join(" ")}
+            disabled={robot.kind === "empty"}
+            key={robot.key}
             onClick={() => onSelectRobot(index)}
             type="button"
           >
-            {isSilhouetteTone(robot.tone) ? (
-              <RobotSilhouette tone={robot.tone} />
+            {robot.kind === "rover" ? (
+              <>
+                <Image alt="Rover-01" height={116} loading="eager" src={luminaAssets.rover.src} width={116} />
+                <strong>{robot.label}</strong>
+              </>
             ) : (
-              <Image alt={`${robot.label} robot`} height={116} loading="eager" src={luminaAssets.rover.src} width={116} />
+              <span className="empty-slot-art" aria-hidden="true">
+                <Image
+                  alt=""
+                  className="empty-slot-image"
+                  height={luminaAssets.emptySlot.height}
+                  loading="eager"
+                  src={luminaAssets.emptySlot.src}
+                  width={luminaAssets.emptySlot.width}
+                />
+              </span>
             )}
-            <strong>{robot.label}</strong>
-            <span>{robot.state}</span>
           </button>
         ))}
-        <button className="add-robot" type="button" disabled>
-          <Plus data-icon="inline-start" />
-          <strong>เพิ่มหุ่นยนต์</strong>
-        </button>
       </div>
       <div className="pager-dots" aria-hidden="true">
         <span className="is-active" />

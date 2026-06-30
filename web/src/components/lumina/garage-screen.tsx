@@ -1,14 +1,12 @@
 "use client";
 
-import { useTheme } from "next-themes";
-import { startTransition, useState } from "react";
+import { useState } from "react";
 import { ActionBar } from "./action-bar";
 import { BottomNav } from "./bottom-nav";
 import { HardwareGrid } from "./hardware-grid";
 import { HeroScene } from "./hero-scene";
 import { MissionCard } from "./mission-card";
 import { RobotShelf } from "./robot-shelf";
-import { themeNames } from "./data";
 import { TopBar } from "./top-bar";
 
 type GarageScreenProps = {
@@ -22,7 +20,6 @@ export function GarageScreen({
   justConnected = false,
   userName = null,
 }: GarageScreenProps) {
-  const { setTheme, theme } = useTheme();
   const [activeRobot, setActiveRobot] = useState(0);
   const [roverLinked, setRoverLinked] = useState(false);
   const [, setLyraLine] = useState(
@@ -33,14 +30,6 @@ export function GarageScreen({
       : "ฉันจะพา Rover พร้อมเริ่มทีละขั้น เปิดเครื่อง ต่อ Wi-Fi แล้วเข้า Cockpit",
   );
 
-  function cycleTheme() {
-    const current = themeNames.indexOf((theme ?? "lumina") as (typeof themeNames)[number]);
-    const nextTheme = themeNames[(current + 1 + themeNames.length) % themeNames.length];
-    startTransition(() => {
-      setTheme(nextTheme);
-    });
-  }
-
   function connectRover() {
     setRoverLinked(true);
     setLyraLine("เริ่มโหมดเชื่อมต่อ Rover แล้ว ขั้นถัดไปคือเปิด Wi-Fi ของ ESP32 และจับคู่กับมือถือ");
@@ -49,18 +38,20 @@ export function GarageScreen({
   return (
     <main className="lumina-shell">
       <TopBar isConnected={isConnected} />
-      <HeroScene isConnected={isConnected} />
-      <HardwareGrid />
-      <MissionCard isConnected={isConnected} />
-      <ActionBar
-        connectHref="/connect"
-        isConnected={isConnected}
-        roverLinked={roverLinked}
-        onConnect={connectRover}
-        onCycleTheme={cycleTheme}
-        onTalk={() => setLyraLine("ถาม Lyra ได้เลย: ชิ้นส่วนไหนต่อก่อน หรือขั้นตอนไหนยังไม่ชัด")}
-      />
-      <RobotShelf activeRobot={activeRobot} onSelectRobot={setActiveRobot} />
+      <div className="garage-layout">
+        <HeroScene isConnected={isConnected} />
+        <ActionBar
+          connectHref="/connect"
+          isConnected={isConnected}
+          roverLinked={roverLinked}
+          onConnect={connectRover}
+          onMission={() => setLyraLine("พร้อมเริ่มภารกิจแรกแล้ว เลือกเส้นทางสั้น ๆ เพื่อทดสอบ Rover และเก็บข้อมูลรอบแรก")}
+          onTalk={() => setLyraLine("ถาม Lyra ได้เลย: ชิ้นส่วนไหนต่อก่อน หรือขั้นตอนไหนยังไม่ชัด")}
+        />
+        <HardwareGrid />
+        <MissionCard isConnected={isConnected} />
+        <RobotShelf activeRobot={activeRobot} onSelectRobot={setActiveRobot} />
+      </div>
       <BottomNav />
     </main>
   );
