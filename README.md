@@ -1,119 +1,93 @@
-# RoboForge
+# RoboForge MVP
 
-RoboForge is a mobile-first modular robot platform. The product architecture is:
+RoboForge is a plug-and-play setup flow for people who source their own ESP32 rover kit. The product path is:
 
-- **Layer A, Physical Modular Hardware:** standard kits, partner modules, and
-  the future hardware marketplace.
-- **Layer B, Abstraction Engine:** robot profiles, module manifests, config and
-  firmware generation, and visual behavior authoring.
-- **Layer C, Control And Sharing:** Web Garage, local Cockpit, automation,
-  streaming, swarm, blueprints, and marketplace sharing.
+1. Open `https://roboforge.app/install` on a desktop Chrome or Edge browser.
+2. Connect an ESP32 DevKit by USB and install the RoboForge MQTT Agent firmware.
+3. Enter the user Wi-Fi credentials, robot ID, and RoboForge broker settings in the installer.
+4. Open `https://roboforge.app/connect` on desktop or mobile.
+5. Let the app find the robot, read status, send STOP, and run short raised-wheel tests.
 
-The repo still has multiple runtime surfaces while this architecture is being
-unified:
+Desktop is required only for the first firmware install because browsers expose USB serial flashing through desktop Web Serial/WebUSB. After the ESP32 has the agent and Wi-Fi config, the phone can connect to the same RoboForge web app for testing and driving.
 
-- **Web Garage:** the main product app in `web/`.
-- **Device Cockpit:** the static local-control build produced from
-  `web/device` and served by Rover-01 over ESP32 Wi-Fi.
-- **Public Demo:** a no-login tryout surface served from `web/public/demo`. It
-  is not the product MVP.
+## Source Of Truth
 
-## Current Product Direction
+The current RoboForge flow is:
 
-RoboForge should grow from the three-layer modular robotics architecture, not
-from a standalone MVP page.
-The experience people see first should still feel like RoboForge: Garage,
-Cockpit, fleet selection, Forge/Neo themes, robot controls, and a companion-led
-setup flow.
+- Self-sourced ESP32 rover kit.
+- RoboForge Web Installer at `/install`.
+- RoboForge guided connection doctor at `/connect`.
+- RoboForge MQTT broker configured through environment variables.
+- MQTT topics scoped per robot:
+  - `rf/{robotId}/cmd`
+  - `rf/{robotId}/status`
 
-For product work, continue from the current `web/` direction: `/dashboard` is
-the logged-in Web Garage, Supabase stores account/robot/session data, and the
-same product flow connects to real robot units through local device control.
+The app must not ask users to type raw MQTT topics, JSON payloads, or use a third-party MQTT console as the main path. Thonny, MicroPython examples, and public MQTT demo pages are fallback or learning tools only.
 
-If the product direction changes later, update these docs first so future work
-starts from the latest intent.
+## User Responsibilities
 
-For the current beta direction, read [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md).
-For a short prompt to start future work, read [SESSION_BRIEF.md](SESSION_BRIEF.md).
-For the beta verification path, read [docs/BETA_READINESS_RUNBOOK.md](docs/BETA_READINESS_RUNBOOK.md).
-For the modular robotics platform boundary, read
-[docs/MODULAR_ROBOTICS_PLATFORM.md](docs/MODULAR_ROBOTICS_PLATFORM.md).
-For the likely first rover hardware from the prototype photos, read
-[docs/ROVER_01_CANDIDATE_HARDWARE_TH.md](docs/ROVER_01_CANDIDATE_HARDWARE_TH.md).
+The user needs:
 
-## Runtime Architecture
+- ESP32 DevKit.
+- L298N motor driver.
+- Two TT DC motors.
+- 2S 18650 battery pack with BMS, fuse, and physical power switch.
+- A real USB data cable.
+- A 2.4GHz Wi-Fi network or hotspot.
+- Optional HC-SR04P ultrasonic sensor for obstacle avoid mode.
 
-RoboForge should feel like one product, not two separate apps.
+The installer guides the checklist and wiring assumptions before provisioning firmware.
 
-- The **Web Garage** app is the internet-side home for login, robot profiles,
-  kit codes, missions, admin visibility, blueprints, and beta health.
-- The **Device Cockpit** is the lightweight static control surface served near
-  the robot. It talks to the robot local API over the robot Wi-Fi so live
-  joystick commands do not depend on Supabase or a round trip through the cloud.
-- The **Public Demo** is only a tryout and sales surface. It must not become a
-  second product.
+## App Responsibilities
 
-The Device Cockpit source now lives under `web/device` with a separate static
-build target for ESP32 LittleFS. That keeps one product architecture without
-pretending the ESP32 can run the Next/Supabase SaaS runtime.
+The web app handles:
 
-Keep Supabase as the beta system of record. Store ownership, setup progress,
-session summaries, important events, and feedback there. Keep high-frequency
-drive commands local to the user's device and the robot during the session.
+- Generating and storing a robot ID and install token in the browser.
+- Installing the firmware package through the browser installer.
+- Sending Wi-Fi, broker host, broker port, TLS flag, robot ID, topic prefix, and token to the ESP32 over USB serial.
+- Connecting to MQTT through `NEXT_PUBLIC_ROBOFORGE_MQTT_WS_URL`.
+- Subscribing to `rf/{robotId}/status`.
+- Publishing safe commands to `rf/{robotId}/cmd`.
+- Gating motor tests behind an online robot status and a raised-wheel safety checkbox.
 
-Hardware can change later. The product boundary is the robot protocol, not a
-specific board, as long as the robot can answer status checks and accept the
-RoboForge control commands.
+The Wi-Fi password is used only to provision the ESP32 over USB serial. The web app does not persist it in local storage.
 
-## Run The Web Garage
+## Firmware Responsibilities
+
+The ESP32 firmware is the RoboForge MQTT Agent. It should:
+
+- Join the configured 2.4GHz Wi-Fi network.
+- Connect to the matching RoboForge MQTT broker host, port, and TLS setting.
+- Subscribe to `rf/{robotId}/cmd`.
+- Publish telemetry to `rf/{robotId}/status`.
+- Support commands: `status`, `stop`, `drive`, `avoid`, and `config`.
+- Drive the L298N motor outputs with a short deadman timeout.
+- Publish battery telemetry and optional HC-SR04P distance readings.
+- Stop motors when commands time out or broker connectivity is lost.
+
+## Development
+
+Web app:
 
 ```powershell
 cd web
 npm install
-npm run dev
+npm run lint
+npm run test:foundation
+npm run build
 ```
 
-The public no-login demo remains available at `/demo/index.html` from
-`web/public/demo`.
-
-## Build Targets
+Firmware:
 
 ```powershell
-cd web
-npm run build
-npm run build:device
+cd firmware
+platformio run
 ```
 
-`npm run build` produces the Next/Supabase Web Garage build. `npm run
-build:device` produces `web/dist-device/` and copies it to `firmware/data/` for
-LittleFS.
+Important environment variable:
 
-## Current Build Boundary
+```text
+NEXT_PUBLIC_ROBOFORGE_MQTT_WS_URL=wss://mqtt.roboforge.app/mqtt
+```
 
-The first shipped build slice is the Rover-01 Standard Kit path inside the
-larger three-layer platform:
-
-- Layer A starts with ESP32 Rover-01 and partner-ready kit facts.
-- Layer B starts with Hardware Profile, Module Slots, Blueprint, and generated
-  config/manifest from the production contracts in `hardware/`.
-- Layer C starts with Web Garage, Connection Quest, and local Cockpit.
-
-The first production foundation contracts live in:
-
-- `hardware/standards/` for robot profile, module manifest, and device ID
-  contracts.
-- `hardware/kits/rover-01/` for the first standard kit manifest.
-- `hardware/templates/` for the ESP32 config template used by Ops and firmware
-  package generation.
-- `web/src/app/api/` for module registry, config-only firmware generation, and
-  the guarded OTA route.
-
-Payment, OTA flashing, Blockly, plug-and-play discovery, video streaming,
-swarm, and paid blueprint marketplace are still part of the platform
-architecture. Their contracts can exist now, but risky behavior only moves in
-after the lower safety gates exist.
-
-See [firmware/README.md](firmware/README.md) for wiring, battery configuration, upload steps, and the mandatory raised-wheel safety test.
-
-The stable app-to-robot API is documented in [docs/ROBOT_PROTOCOL.md](docs/ROBOT_PROTOCOL.md).
-Use it as the contract for ESP32 now and for other boards later.
+Production can point this variable at a managed RoboForge broker. The product should never rely on a public demo broker as a dependency.

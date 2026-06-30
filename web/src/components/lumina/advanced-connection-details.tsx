@@ -7,10 +7,11 @@ type AdvancedConnectionDetailsProps = {
   broker: string;
   commandTopic: string;
   mode: string;
+  robotId: string;
   statusTopic: string;
 };
 
-export function AdvancedConnectionDetails({ broker, commandTopic, mode, statusTopic }: AdvancedConnectionDetailsProps) {
+export function AdvancedConnectionDetails({ broker, commandTopic, mode, robotId, statusTopic }: AdvancedConnectionDetailsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -22,7 +23,7 @@ export function AdvancedConnectionDetails({ broker, commandTopic, mode, statusTo
         <span>
           <strong>รายละเอียดการเชื่อมต่อ (ขั้นสูง)</strong>
           <small>
-            Topic: {statusTopic} · Broker: HiveMQ
+            Robot: {robotId} · Broker: RoboForge
           </small>
         </span>
         <ChevronDown className="advanced-chevron" data-icon="inline-start" />
@@ -36,6 +37,10 @@ export function AdvancedConnectionDetails({ broker, commandTopic, mode, statusTo
           <div>
             <dt>Broker</dt>
             <dd>{broker}</dd>
+          </div>
+          <div>
+            <dt>Robot ID</dt>
+            <dd>{robotId}</dd>
           </div>
           <div>
             <dt>Status topic</dt>

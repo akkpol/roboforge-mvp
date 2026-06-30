@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Cloud, Cpu, Router, Smartphone } from "lucide-react";
+import { Cloud, Cpu, Laptop, Smartphone } from "lucide-react";
 
 type ConnectionMapNode = {
   Icon: LucideIcon;
@@ -8,10 +8,10 @@ type ConnectionMapNode = {
 };
 
 const nodes: readonly ConnectionMapNode[] = [
-  { Icon: Smartphone, label: "แอปของคุณ", detail: "มือถือหรือเว็บ" },
-  { Icon: Router, label: "Wi-Fi / Hotspot", detail: "ต้องเป็น 2.4GHz" },
-  { Icon: Cloud, label: "HiveMQ", detail: "MQTT broker" },
-  { Icon: Cpu, label: "ESP32 Rover", detail: "รอ status" },
+  { Icon: Smartphone, label: "มือถือ", detail: "ใช้หลังติดตั้ง" },
+  { Icon: Laptop, label: "คอมครั้งแรก", detail: "Web Serial install" },
+  { Icon: Cloud, label: "RoboForge", detail: "MQTT broker" },
+  { Icon: Cpu, label: "ESP32 Rover", detail: "ส่ง status" },
 ];
 
 export function ConnectionMap() {

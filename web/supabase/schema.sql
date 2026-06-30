@@ -268,8 +268,8 @@ create table if not exists public.connection_sessions (
   result text not null default 'started'
     check (result in ('started', 'success', 'failed', 'abandoned')),
   failure_reason text,
-  device_mode text not null default 'local_wifi'
-    check (device_mode in ('local_wifi', 'demo', 'unknown')),
+  device_mode text not null default 'mqtt_agent'
+    check (device_mode in ('mqtt_agent', 'demo', 'unknown')),
   metadata jsonb not null default '{}'::jsonb
 );
 
@@ -280,8 +280,8 @@ create table if not exists public.control_sessions (
   connection_session_id uuid references public.connection_sessions (id) on delete set null,
   started_at timestamptz not null default now(),
   ended_at timestamptz,
-  mode text not null default 'local_device'
-    check (mode in ('local_device', 'demo')),
+  mode text not null default 'mqtt_control'
+    check (mode in ('mqtt_control', 'demo')),
   max_speed_limit numeric(4, 3) not null default 0.450,
   command_count integer not null default 0 check (command_count >= 0),
   emergency_stop_count integer not null default 0 check (emergency_stop_count >= 0),

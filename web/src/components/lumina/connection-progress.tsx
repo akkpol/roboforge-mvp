@@ -1,14 +1,14 @@
 import { Check } from "lucide-react";
 
-export type ConnectionStepId = "power" | "wifi" | "online" | "test";
+export type ConnectionStepId = "install" | "kit" | "online" | "test";
 
 type ConnectionProgressProps = {
   activeStep: ConnectionStepId;
 };
 
 const steps: ReadonlyArray<{ id: ConnectionStepId; label: string }> = [
-  { id: "power", label: "เปิดเครื่อง" },
-  { id: "wifi", label: "Wi-Fi" },
+  { id: "kit", label: "Kit" },
+  { id: "install", label: "Install" },
   { id: "online", label: "Online" },
   { id: "test", label: "ทดสอบ" },
 ];
@@ -20,7 +20,7 @@ export function ConnectionProgress({ activeStep }: ConnectionProgressProps) {
     <section className="connection-progress-card" aria-label="Connection progress">
       <div className="connection-progress-header">
         <strong>ขั้นตอน {Math.max(activeIndex + 1, 1)}/4</strong>
-        <span>Connection Quest</span>
+        <span>RoboForge Installer</span>
       </div>
       <ol className="connection-steps">
         {steps.map((step, index) => {

@@ -12,6 +12,9 @@ firmware/data/
 .vercel/
 .playwright-mcp/
 .npm-cache/
+.agents/
+skills-lock.json
+web/.qa-connect/
 .DS_Store
 Thumbs.db
 .vercel
