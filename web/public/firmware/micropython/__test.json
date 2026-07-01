@@ -1,0 +1,1 @@
+{"name":"test","builds":[{"chipFamily":"ESP32","parts":[{"path":"/firmware/micropython/test.bin","offset":0}]}]}
