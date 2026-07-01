@@ -1,9 +1,26 @@
-export const MICROPYTHON_RUNTIME_MANIFEST_URL = "/firmware/micropython/manifest.json";
+export const MICROPYTHON_RUNTIME_MANIFEST_URL =
+  "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/web/public/firmware/micropython/manifest.json";
 export const MICROPYTHON_AGENT_FILES = [
-  { devicePath: "boot.py", sourceUrl: "/firmware/micropython/boot.py" },
-  { devicePath: "main.py", sourceUrl: "/firmware/micropython/main.py" },
-  { devicePath: "microWebSrv.py", sourceUrl: "/firmware/micropython/microWebSrv.py" },
-  { devicePath: "microWebSocket.py", sourceUrl: "/firmware/micropython/microWebSocket.py" },
+  {
+    devicePath: "boot.py",
+    sourceUrl:
+      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/boot.py",
+  },
+  {
+    devicePath: "main.py",
+    sourceUrl:
+      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/main.py",
+  },
+  {
+    devicePath: "microWebSrv.py",
+    sourceUrl:
+      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/microWebSrv.py",
+  },
+  {
+    devicePath: "microWebSocket.py",
+    sourceUrl:
+      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/microWebSocket.py",
+  },
 ] as const;
 
 export type RobotCommandName = "avoid" | "config" | "drive" | "status" | "stop";

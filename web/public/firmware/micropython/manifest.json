@@ -7,7 +7,7 @@
       "chipFamily": "ESP32",
       "parts": [
         {
-          "path": "/firmware/micropython/ESP32_GENERIC-20260406-v1.28.0.bin",
+          "path": "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/web/public/firmware/micropython/ESP32_GENERIC-20260406-v1.28.0.bin",
           "offset": 4096
         }
       ]
