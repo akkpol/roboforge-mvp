@@ -11,7 +11,7 @@ type TopBarProps = {
   showBack?: boolean;
 };
 
-export function TopBar({ backHref = "/", backLabel = "กลับ Garage", isConnected = false, showBack = false }: TopBarProps) {
+export function TopBar({ backHref = "/", backLabel = "กลับหน้า RoboForge", isConnected = false, showBack = false }: TopBarProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -29,7 +29,7 @@ export function TopBar({ backHref = "/", backLabel = "กลับ Garage", isCo
           <strong>ROBOFORGE</strong>
         </Link>
       </div>
-      <div className="top-actions" aria-label="Garage controls">
+      <div className="top-actions" aria-label="RoboForge controls">
         <button className="round-action has-dot" type="button" aria-label="Notifications">
           <Bell data-icon="inline-start" />
         </button>

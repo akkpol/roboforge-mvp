@@ -25,8 +25,8 @@ export function GarageScreen({
   const [, setLyraLine] = useState(
     isConnected
       ? justConnected
-        ? `ยินดีต้อนรับกลับมา${userName ? ` ${userName}` : ""} ตอนนี้ Garage พร้อมแล้ว เราเริ่มตั้งค่า Rover ต่อได้เลย`
-        : `ดีใจที่กลับมา${userName ? ` ${userName}` : ""} ตอนนี้ Garage ของคุณเชื่อมต่อพร้อมแล้ว`
+        ? `ยินดีต้อนรับกลับมา${userName ? ` ${userName}` : ""} ตอนนี้หน้า RoboForge พร้อมแล้ว เราเริ่มตั้งค่า Rover ต่อได้เลย`
+        : `ดีใจที่กลับมา${userName ? ` ${userName}` : ""} ตอนนี้หน้า RoboForge ของคุณเชื่อมต่อพร้อมแล้ว`
       : "ฉันจะพา Rover พร้อมเริ่มทีละขั้น เปิดเครื่อง ต่อ Wi-Fi แล้วเข้า Cockpit",
   );
 

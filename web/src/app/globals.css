@@ -1598,55 +1598,185 @@ img {
 
 .auth-page {
   display: grid;
-  width: min(980px, calc(100% - 28px));
+  width: min(1040px, calc(100% - 28px));
   min-height: 100vh;
-  align-items: center;
-  gap: 20px;
+  align-items: start;
+  gap: 12px;
   margin: 0 auto;
-  padding: 34px 0;
+  padding: 14px 0 22px;
 }
 
 .auth-copy {
+  position: relative;
   display: grid;
-  gap: 10px;
+  min-height: auto;
+  align-content: start;
+  gap: 12px;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(234, 249, 255, 0.56)),
+    url("/assets/lumina/garage-background-wide.png") center bottom / cover no-repeat;
+  box-shadow: var(--shadow-soft);
+  isolation: isolate;
 }
 
-.auth-copy::before {
-  width: 74px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--primary), var(--mint), var(--lavender));
+.auth-copy::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(100deg, rgba(255, 255, 255, 0.94) 0 46%, rgba(255, 255, 255, 0.54) 64%, rgba(255, 255, 255, 0.1)),
+    radial-gradient(circle at 74% 26%, rgba(69, 196, 157, 0.22), transparent 30%);
   content: "";
 }
 
+.auth-eyebrow,
+.auth-kicker,
+.auth-visual-panel span {
+  width: fit-content;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.auth-eyebrow {
+  padding: 7px 11px;
+  border: 1px solid rgba(69, 196, 157, 0.36);
+  border-radius: 999px;
+  color: #1b7a63;
+  background: rgba(237, 255, 249, 0.8);
+  font-size: 12px;
+}
+
 .auth-copy h1 {
-  max-width: 12ch;
+  max-width: 9ch;
   margin: 0;
   color: var(--foreground);
-  font-size: clamp(48px, 15vw, 72px);
+  font-size: clamp(38px, 12vw, 52px);
   font-weight: 700;
-  line-height: 0.92;
+  line-height: 0.9;
 }
 
 .auth-copy p,
 .form-message,
-.login-route-note {
+.login-route-note,
+.auth-form-intro,
+.auth-secure-note {
   margin: 0;
   color: var(--muted);
   font-family: "Noto Sans Thai", Rajdhani, sans-serif;
-  font-size: 14px;
-  line-height: 1.65;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.auth-copy p {
+  max-width: 34ch;
+}
+
+.auth-visual {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  min-height: 62px;
+  margin-top: 2px;
+  pointer-events: none;
+}
+
+.auth-visual-orbit {
+  position: absolute;
+  right: -4px;
+  bottom: 8px;
+  width: 140px;
+  aspect-ratio: 1 / 0.42;
+  border: 2px solid rgba(74, 184, 255, 0.36);
+  border-radius: 999px;
+  background:
+    radial-gradient(ellipse at center, rgba(255, 255, 255, 0.56), rgba(92, 217, 255, 0.16) 44%, transparent 72%),
+    repeating-radial-gradient(ellipse at center, rgba(69, 196, 157, 0.18) 0 2px, transparent 3px 16px);
+  filter: drop-shadow(0 14px 22px rgba(69, 176, 222, 0.18));
+}
+
+.auth-visual-guide {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  display: none;
+  width: min(46vw, 210px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 24px 28px rgba(75, 102, 180, 0.18));
+}
+
+.auth-visual-panel {
+  position: absolute;
+  right: auto;
+  bottom: 6px;
+  left: 0;
+  min-width: 170px;
+  padding: 10px 13px;
+  border: 1px solid rgba(85, 151, 209, 0.28);
+  border-radius: 17px;
+  color: #1667bd;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 16px 34px rgba(54, 119, 171, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+.auth-visual-panel span {
+  font-size: 12px;
 }
 
 .auth-card {
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  gap: 12px;
+  padding: 15px;
   border: 1px solid var(--line);
-  border-radius: 20px;
-  background: var(--panel);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 252, 255, 0.78)),
+    var(--panel);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(18px);
+}
+
+.auth-card-head,
+.auth-secure-note,
+.form-message {
+  display: flex;
+  align-items: center;
+}
+
+.auth-card-head {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auth-card-head h2 {
+  margin: 1px 0 0;
+  color: #102e57;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.auth-card-head > svg {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  padding: 10px;
+  border-radius: 15px;
+  color: #157e66;
+  background: rgba(69, 196, 157, 0.16);
+}
+
+.auth-kicker {
+  margin: 0;
+  color: #1a8467;
+  font-size: 11px;
 }
 
 .mode-tabs {
@@ -1665,12 +1795,24 @@ img {
   border-radius: 10px;
   color: var(--muted);
   background: transparent;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
   font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .mode-tabs button.is-active {
   color: #ffffff;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary-strong), var(--primary));
+  box-shadow: 0 10px 20px rgba(34, 109, 219, 0.18);
+}
+
+.mode-tabs button:not(.is-active):hover {
+  color: #174f91;
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .oauth-panel,
@@ -1680,11 +1822,21 @@ img {
 }
 
 .auth-divider {
-  display: grid;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   place-items: center;
   color: var(--subtle);
   font-size: 12px;
   font-weight: 700;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+  content: "";
 }
 
 .google-mark {
@@ -1692,28 +1844,43 @@ img {
   height: 18px;
 }
 
-.auth-card label {
+.auth-field {
   display: grid;
   gap: 6px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
 }
 
-.auth-card label > span {
+.auth-label {
+  color: #315981;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.auth-input-shell {
   display: flex;
-  min-height: 48px;
+  min-height: 50px;
   align-items: center;
   gap: 9px;
   padding: 0 12px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(85, 151, 209, 0.28);
   border-radius: 14px;
   background: var(--panel-strong);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
 }
 
-.auth-card label svg {
+.auth-input-shell:focus-within {
+  border-color: rgba(34, 109, 219, 0.58);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(74, 184, 255, 0.14);
+}
+
+.auth-input-shell > svg {
   width: 18px;
   height: 18px;
+  flex: 0 0 auto;
   color: var(--primary-strong);
 }
 
@@ -1724,6 +1891,29 @@ img {
   color: var(--foreground);
   background: transparent;
   outline: 0;
+}
+
+.auth-password-toggle {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #315981;
+  background: transparent;
+  cursor: pointer;
+}
+
+.auth-password-toggle:hover {
+  color: var(--primary-strong);
+  background: rgba(74, 184, 255, 0.12);
+}
+
+.auth-password-toggle svg {
+  width: 18px;
+  height: 18px;
 }
 
 .auth-submit {
@@ -1738,11 +1928,36 @@ img {
   background: rgba(69, 196, 157, 0.12);
 }
 
+.auth-secure-note {
+  gap: 8px;
+  color: #1a8467;
+  font-size: 12px;
+}
+
+.auth-secure-note svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
 .form-message {
+  gap: 8px;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.58);
+}
+
+.form-message svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.form-message.is-info {
+  color: #1d5f9f;
+  border-color: rgba(74, 184, 255, 0.3);
+  background: rgba(232, 248, 255, 0.72);
 }
 
 .form-message.is-warning {
@@ -2407,7 +2622,47 @@ img {
   }
 
   .auth-page {
+    align-content: center;
+    align-items: center;
+    gap: 18px;
     grid-template-columns: minmax(0, 0.95fr) minmax(340px, 0.7fr);
+    padding: 24px 0;
+  }
+
+  .auth-copy {
+    min-height: 420px;
+    align-content: center;
+    padding: 22px 18px 210px;
+  }
+
+  .auth-copy h1 {
+    font-size: clamp(44px, 8vw, 76px);
+  }
+
+  .auth-visual {
+    position: absolute;
+    right: -22px;
+    bottom: -8px;
+    width: min(62vw, 300px);
+    min-height: 250px;
+    margin-top: 0;
+  }
+
+  .auth-visual-orbit {
+    right: 18px;
+    bottom: 34px;
+    width: 210px;
+  }
+
+  .auth-visual-guide {
+    display: block;
+  }
+
+  .auth-visual-panel {
+    right: 18px;
+    bottom: 36px;
+    left: auto;
+    min-width: 170px;
   }
 }
 
