@@ -1,7 +1,9 @@
 import json
 import machine
+import sys
 import time
 import network
+import uselect
 from microWebSrv import MicroWebSrv
 
 # ============================================================
@@ -240,6 +242,14 @@ def handle_command(data):
             config["robot_id"] = str(data["robot_id"])
         save_config(config)
         broadcast_status()
+    elif cmd == "provision":
+        for key in ("ssid", "password", "robot_id"):
+            if key in data:
+                config[key] = data[key]
+        save_config(config)
+        broadcast_status()
+        time.sleep_ms(300)
+        machine.reset()
 
 
 # ============================================================
@@ -335,23 +345,23 @@ def _http_control_page(httpClient, httpResponse):
 
 
 # ============================================================
-# 🔌 Serial provision — รับ WiFi credentials ผ่าน WebSerial USB
-# ใช้ UART โดยตรงแทน sys.stdin — เชื่อถือได้มากกว่า
+# 🔌 Serial provision — รับ WiFi ผ่าน USB (WebSerial)
+#    ใช้ uselect + sys.stdin — ไม่ชนกับ REPL
 # ============================================================
 
-uart0 = machine.UART(0, 115200)
-uart0.readline()  # flush any pending data from boot output
+stdin_poll = uselect.poll()
+stdin_poll.register(sys.stdin, uselect.POLLIN)
 
 
 def check_serial_provision():
     global config
-    if uart0.any() < 4:
+    if not stdin_poll.poll(50):
         return
     try:
-        line = uart0.readline()
+        line = sys.stdin.readline()
     except Exception:
         return
-    if not line:
+    if not line or len(line) < 10:
         return
     try:
         data = json.loads(line)
@@ -367,7 +377,7 @@ def check_serial_provision():
     save_config(next_config)
     config = next_config
     stop()
-    uart0.write(json.dumps({"ok": True, "robot_id": config["robot_id"], "saved": True}) + "\n")
+    sys.stdout.write(json.dumps({"ok": True, "robot_id": config["robot_id"], "saved": True}) + "\n")
     time.sleep_ms(300)
     machine.reset()
 
@@ -462,6 +472,14 @@ input[type=range]{flex:1;accent-color:#35c9b2}
     <span id="dist-label" style="font-size:12px;min-width:40px">25cm</span>
     <button class="secondary" id="btn-apply">ตั้ง</button>
   </div>
+  <details style="cursor:pointer;border-top:1px solid rgba(85,151,209,.12);padding-top:8px">
+    <summary style="font-size:12px;color:#5e7599;font-weight:700">⚙️ Wi-Fi</summary>
+    <div style="display:grid;gap:6px;margin-top:8px">
+      <input id="wifi-ssid" placeholder="ชื่อ hotspot โทรศัพท์" style="padding:6px 10px;border:1px solid rgba(85,151,209,.3);border-radius:10px;font-size:13px;width:100%">
+      <input id="wifi-pass" type="password" placeholder="รหัสอย่างน้อย 8 ตัว" style="padding:6px 10px;border:1px solid rgba(85,151,209,.3);border-radius:10px;font-size:13px;width:100%">
+      <button id="btn-wifi-save" style="padding:8px;border:0;border-radius:12px;background:rgba(74,184,255,.14);cursor:pointer;font-size:13px;font-weight:700;width:100%">💾 บันทึก Wi-Fi</button>
+    </div>
+  </details>
   <div class="help">❤️ ต่อ WebSocket ตรง — ไม่ต้องใช้ broker, internet, หรือสมัคร service</div>
 </div>
 <script>
@@ -474,6 +492,7 @@ document.getElementById('btn-stop').onclick=function(){send({cmd:'status'})};doc
 var avoidOn=false;document.getElementById('btn-avoid').onclick=function(){avoidOn=!avoidOn;send({cmd:'avoid',enable:avoidOn});this.textContent=avoidOn?'✅ หลบ ON':'🚧 หลบหลีก'};
 document.getElementById('slider-distance').oninput=function(){document.getElementById('dist-label').textContent=this.value+'cm'};document.getElementById('btn-apply').onclick=function(){send({cmd:'config',avoid_distance_cm:parseInt(document.getElementById('slider-distance').value)})};
 document.getElementById('chk-raised').onchange=function(){if(!this.checked)send({cmd:'stop'})};
+document.getElementById('btn-wifi-save').onclick=function(){var s=document.getElementById('wifi-ssid').value.trim(),p=document.getElementById('wifi-pass').value;if(s&&p.length>=8){send({cmd:'provision',ssid:s,password:p});alert('Wi-Fi บันทึกแล้ว ESP32 จะรีบูต');}else{alert('กรุณาใส่ชื่อ hotspot และรหัสอย่างน้อย 8 ตัว');}};
 </script>
 </body>
 </html>"""
