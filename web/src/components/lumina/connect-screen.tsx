@@ -180,25 +180,31 @@ export function ConnectScreen() {
     try {
       const port = await serial.requestPort();
       await port.open({ baudRate: 115200 });
+
+      // รอให้ ESP32 พร้อมรับข้อมูลก่อน — flush บูต output
+      await delay(3000);
+
       await writeSerialText(port, `${JSON.stringify(payload)}\n`);
 
-      // รออ่าน response จาก ESP32 (timeout 3 วิ)
+      // รออ่าน response จาก ESP32 (timeout 5 วิ)
       const reader = port.readable?.getReader();
       let response = "";
       if (reader) {
-        const timeout = setTimeout(() => {
-          reader.cancel();
-        }, 3000);
+        const timeoutId = setTimeout(() => {
+          reader.cancel().catch(() => {});
+        }, 5000);
         try {
           while (true) {
             const { value, done } = await reader.read();
             if (done) break;
             response += new TextDecoder().decode(value, { stream: true });
-            if (response.includes('"ok":true') || response.includes('"ok": false')) break;
+            if (response.includes('"ok"')) break;
           }
+        } catch {
+          // timeout or cancel — อ่านเท่าที่ได้
         } finally {
-          clearTimeout(timeout);
-          reader.releaseLock();
+          clearTimeout(timeoutId);
+          try { reader.releaseLock(); } catch { /* ignore */ }
         }
       }
 
@@ -207,8 +213,10 @@ export function ConnectScreen() {
       if (response.includes('"ok":true')) {
         setProvisioned(true);
         setLyraMessage("✅ ส่ง WiFi สำเร็จ! ESP32 จะรีบูตและต่อ hotspot อัตโนมัติ — ถอด USB แล้วเปิด hotspot โทรศัพท์");
+      } else if (response) {
+        setLyraMessage(`⚠️ ESP32 ตอบกลับ: ${response.slice(0, 100)} — ไม่ใช่การยืนยัน`);
       } else {
-        setLyraMessage("⚠️ ส่ง WiFi แล้วแต่ไม่ได้รับ Response ยืนยัน — ลองเสียบ ESP32 ใหม่แล้วกดอีกครั้ง");
+        setLyraMessage("⚠️ ESP32 ไม่ตอบกลับเลย — ลองใหม่: เปิด Serial Monitor ก่อน, กดปุ่ม, ปิด แล้วกดอีกครั้ง");
       }
     } catch {
       setInstallState("ready");

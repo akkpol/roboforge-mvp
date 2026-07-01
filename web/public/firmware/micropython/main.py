@@ -1,9 +1,7 @@
 import json
 import machine
-import sys
 import time
 import network
-import uselect
 from microWebSrv import MicroWebSrv
 
 # ============================================================
@@ -338,17 +336,21 @@ def _http_control_page(httpClient, httpResponse):
 
 # ============================================================
 # 🔌 Serial provision — รับ WiFi credentials ผ่าน WebSerial USB
+# ใช้ UART โดยตรงแทน sys.stdin — เชื่อถือได้มากกว่า
 # ============================================================
 
-stdin_poll = uselect.poll()
-stdin_poll.register(sys.stdin, uselect.POLLIN)
+uart0 = machine.UART(0, 115200)
+uart0.readline()  # flush any pending data from boot output
 
 
 def check_serial_provision():
     global config
-    if not stdin_poll.poll(0):
+    if uart0.any() < 4:
         return
-    line = sys.stdin.readline()
+    try:
+        line = uart0.readline()
+    except Exception:
+        return
     if not line:
         return
     try:
@@ -365,7 +367,7 @@ def check_serial_provision():
     save_config(next_config)
     config = next_config
     stop()
-    print(json.dumps({"ok": True, "robot_id": config["robot_id"], "saved": True}))
+    uart0.write(json.dumps({"ok": True, "robot_id": config["robot_id"], "saved": True}) + "\n")
     time.sleep_ms(300)
     machine.reset()
 
