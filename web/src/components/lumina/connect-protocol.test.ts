@@ -2,12 +2,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  brokerHostFromWebSocket,
-  brokerPortFromWebSocket,
   buildMicroPythonFileWriteCommand,
   buildProvisionPayload,
   buildRobotCommand,
-  buildRobotTopics,
   canRunMotorTest,
   createInstallToken,
   createRobotId,
@@ -18,7 +15,7 @@ import {
 
 describe("connect protocol", () => {
   it("keeps browser installer files synced with the firmware source", () => {
-    for (const file of ["boot.py", "main.py"]) {
+    for (const file of ["boot.py", "main.py", "microWebSrv.py", "microWebSocket.py"]) {
       expect(readFileSync(join(process.cwd(), "public", "firmware", "micropython", file), "utf8")).toBe(
         readFileSync(join(process.cwd(), "..", "firmware", file), "utf8"),
       );
@@ -35,46 +32,28 @@ describe("connect protocol", () => {
     expect(createInstallToken(0.42)).toMatch(/^rft-[a-z0-9]+$/);
   });
 
-  it("builds RoboForge-owned topics without legacy shared defaults", () => {
-    expect(buildRobotTopics("RF-A7K3")).toEqual({
-      command: "rf/rf-a7k3/cmd",
-      status: "rf/rf-a7k3/status",
-    });
-  });
-
   it("clamps drive commands before serializing", () => {
     expect(buildRobotCommand({ cmd: "drive", steering: -3, throttle: 2 })).toEqual({
       cmd: "drive",
       steering: -1,
       throttle: 1,
     });
-
     expect(serializeRobotCommand({ cmd: "stop" })).toBe('{"cmd":"stop"}');
   });
 
-  it("builds provision payloads from the app broker URL", () => {
+  it("builds provision payloads from WiFi hotspot info", () => {
     expect(
       buildProvisionPayload({
-        brokerUrl: "wss://mqtt.roboforge.app/mqtt",
-        installToken: "rft-token",
         robotId: "RF Demo",
         wifiPassword: "secret123",
         wifiSsid: " Home 2G ",
       }),
     ).toEqual({
       cmd: "provision",
-      mqtt_host: "mqtt.roboforge.app",
-      mqtt_port: 8883,
-      mqtt_tls: true,
-      password: "secret123",
       robot_id: "rf-demo",
       ssid: "Home 2G",
-      token: "rft-token",
-      topic_prefix: "rf",
+      password: "secret123",
     });
-
-    expect(brokerHostFromWebSocket("ws://localhost:9001/mqtt")).toBe("localhost");
-    expect(brokerPortFromWebSocket("ws://localhost:9001/mqtt")).toBe(9001);
   });
 
   it("generates MicroPython REPL upload commands only for agent files", () => {
