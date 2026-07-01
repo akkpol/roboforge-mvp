@@ -97,6 +97,18 @@ export function ConnectScreen() {
     );
   }, [robotId, wifiSsid]);
 
+  // Load esp-web-tools web component for Install MicroPython button
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const existing = document.querySelector<HTMLScriptElement>('script[data-rf-esp-tools="true"]');
+    if (existing) return;
+    const script = document.createElement("script");
+    script.type = "module";
+    script.dataset.rfEspTools = "true";
+    script.src = "https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module";
+    document.body.appendChild(script);
+  }, []);
+
   async function uploadMicroPythonAgent() {
     const serial = typeof navigator !== "undefined" ? (navigator as NavigatorWithSerial).serial : undefined;
     if (!serial) {
