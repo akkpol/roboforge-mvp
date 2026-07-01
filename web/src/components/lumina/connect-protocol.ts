@@ -1,5 +1,10 @@
 export const DEFAULT_ROBOFORGE_MQTT_WS_URL = "wss://mqtt.roboforge.app/mqtt";
 export const DEFAULT_TOPIC_ROOT = "rf";
+export const MICROPYTHON_RUNTIME_MANIFEST_URL = "/firmware/micropython/manifest.json";
+export const MICROPYTHON_AGENT_FILES = [
+  { devicePath: "boot.py", sourceUrl: "/firmware/micropython/boot.py" },
+  { devicePath: "main.py", sourceUrl: "/firmware/micropython/main.py" },
+] as const;
 
 export type RobotCommandName = "avoid" | "config" | "drive" | "status" | "stop";
 
@@ -11,13 +16,17 @@ export type RobotCommand =
   | { cmd: "stop" };
 
 export type RobotStatus = {
+  avoid?: boolean;
   battery_pct?: number;
   battery_v?: number;
   distance_cm?: number;
   firmware?: string;
+  left?: number;
   online?: boolean;
+  right?: number;
   robot_id?: string;
   rssi?: number;
+  speed_limit?: number;
 };
 
 export type RobotTopics = {
@@ -31,6 +40,27 @@ function clamp(value: number, min: number, max: number) {
 
 export function getMqttWebSocketUrl() {
   return process.env.NEXT_PUBLIC_ROBOFORGE_MQTT_WS_URL || DEFAULT_ROBOFORGE_MQTT_WS_URL;
+}
+
+export function brokerHostFromWebSocket(url: string) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "mqtt.roboforge.app";
+  }
+}
+
+export function brokerPortFromWebSocket(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.port) {
+      return Number(parsed.port);
+    }
+
+    return parsed.protocol === "wss:" ? 8883 : 1883;
+  } catch {
+    return 8883;
+  }
 }
 
 export function normalizeRobotId(value: string) {
@@ -99,6 +129,41 @@ export function serializeRobotCommand(command: RobotCommand) {
   return JSON.stringify(buildRobotCommand(command));
 }
 
+export function buildProvisionPayload(input: {
+  brokerUrl: string;
+  installToken: string;
+  robotId: string;
+  wifiPassword: string;
+  wifiSsid: string;
+}) {
+  return {
+    cmd: "provision",
+    mqtt_host: brokerHostFromWebSocket(input.brokerUrl),
+    mqtt_port: brokerPortFromWebSocket(input.brokerUrl),
+    mqtt_tls: input.brokerUrl.startsWith("wss://"),
+    password: input.wifiPassword,
+    robot_id: normalizeRobotId(input.robotId),
+    ssid: input.wifiSsid.trim(),
+    token: input.installToken,
+    topic_prefix: DEFAULT_TOPIC_ROOT,
+  };
+}
+
+export function buildMicroPythonFileWriteCommand(devicePath: string, source: string) {
+  if (!MICROPYTHON_AGENT_FILES.some((file) => file.devicePath === devicePath)) {
+    throw new Error("Unsupported MicroPython agent path");
+  }
+
+  const script = [
+    `fp = open(${JSON.stringify(devicePath)}, "w")`,
+    `fp.write(${JSON.stringify(source)})`,
+    "fp.close()",
+    `print("wrote ${devicePath}")`,
+  ].join("\n");
+
+  return `exec(${JSON.stringify(script)})\r\n`;
+}
+
 function numericField(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
@@ -116,10 +181,17 @@ export function parseRobotStatus(input: unknown): RobotStatus {
   status.battery_v = numericField(record.battery_v);
   status.battery_pct = numericField(record.battery_pct);
   status.distance_cm = numericField(record.distance_cm);
+  status.left = numericField(record.left);
+  status.right = numericField(record.right);
   status.rssi = numericField(record.rssi) ?? numericField(record.wifi_rssi);
+  status.speed_limit = numericField(record.speed_limit);
 
   if (typeof record.online === "boolean") {
     status.online = record.online;
+  }
+
+  if (typeof record.avoid === "boolean") {
+    status.avoid = record.avoid;
   }
 
   if (typeof record.robot_id === "string") {

@@ -5,6 +5,7 @@ import {
   Battery,
   Cable,
   CheckCircle2,
+  FileCode2,
   Gauge,
   Laptop,
   PlugZap,
@@ -27,6 +28,10 @@ import { RoverStage } from "./rover-stage";
 import { TopBar } from "./top-bar";
 import {
   DEFAULT_ROBOFORGE_MQTT_WS_URL,
+  MICROPYTHON_AGENT_FILES,
+  MICROPYTHON_RUNTIME_MANIFEST_URL,
+  buildMicroPythonFileWriteCommand,
+  buildProvisionPayload,
   buildRobotTopics,
   canRunMotorTest,
   createInstallToken,
@@ -39,11 +44,10 @@ import {
 } from "./connect-protocol";
 
 const MQTT_SCRIPT_URL = "https://unpkg.com/mqtt/dist/mqtt.min.js";
-const INSTALL_MANIFEST_URL = "/firmware/manifest.json";
 const STORAGE_KEY = "roboforge-connect-profile";
 
 type ConnectionState = "brokerConnecting" | "failed" | "idle" | "robotOnline" | "waitingRobot";
-type InstallState = "idle" | "ready" | "sent" | "unsupported";
+type InstallState = "agentUploaded" | "agentUploading" | "idle" | "ready" | "runtimeReady" | "sent" | "unsupported";
 
 type MqttClientLike = {
   end: (force?: boolean) => void;
@@ -136,33 +140,25 @@ function statusLabel(connectionState: ConnectionState, mqttReady: boolean, robot
   return "พร้อมติดตั้งและเชื่อมต่อ";
 }
 
-function brokerHostFromWebSocket(url: string) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "mqtt.roboforge.app";
-  }
-}
-
-function brokerPortFromWebSocket(url: string) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.port) {
-      return Number(parsed.port);
-    }
-
-    return parsed.protocol === "wss:" ? 8883 : 1883;
-  } catch {
-    return 8883;
-  }
-}
-
 function installCopy(brokerUrl: string) {
   if (brokerUrl === DEFAULT_ROBOFORGE_MQTT_WS_URL) {
     return "RoboForge broker พร้อมใช้จากค่า env ของ production";
   }
 
   return "ใช้ broker จาก environment ของโปรเจกต์นี้";
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function writeSerialText(port: SerialPortLike, text: string) {
+  const writer = port.writable?.getWriter();
+  if (!writer) {
+    throw new Error("Serial writer is not available");
+  }
+  await writer.write(new TextEncoder().encode(text));
+  writer.releaseLock();
 }
 
 export function ConnectScreen() {
@@ -173,10 +169,11 @@ export function ConnectScreen() {
   const [installState, setInstallState] = useState<InstallState>("idle");
   const [lyraMessage, setLyraMessage] = useState("ครั้งแรกต้องใช้คอมเพื่อใส่ firmware ให้ ESP32 หลังจากนั้นมือถือใช้ต่อได้เลย");
   const [mqttReady, setMqttReady] = useState(() => typeof window !== "undefined" && Boolean(window.mqtt));
+  const [profileReady, setProfileReady] = useState(false);
   const [robotStatus, setRobotStatus] = useState<RobotStatus | null>(null);
-  const [serialSupported] = useState(() => typeof navigator !== "undefined" && Boolean((navigator as NavigatorWithSerial).serial));
-  const [robotId, setRobotId] = useState(() => createRobotId());
-  const [installToken, setInstallToken] = useState(() => createInstallToken());
+  const [serialSupported, setSerialSupported] = useState(false);
+  const [robotId, setRobotId] = useState("rf-rover");
+  const [installToken, setInstallToken] = useState("rft-install");
   const [wifiSsid, setWifiSsid] = useState("");
   const [wifiPassword, setWifiPassword] = useState("");
   const [kitChecks, setKitChecks] = useState(() => new Set(["esp32", "driver"]));
@@ -199,31 +196,40 @@ export function ConnectScreen() {
       return;
     }
 
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (!saved) {
-      return;
-    }
+    window.setTimeout(() => {
+      setSerialSupported(Boolean((navigator as NavigatorWithSerial).serial));
 
-    try {
-      const parsed = JSON.parse(saved) as { installToken?: string; robotId?: string; wifiSsid?: string };
-      window.setTimeout(() => {
-        if (parsed.robotId) {
-          setRobotId(normalizeRobotId(parsed.robotId));
-        }
-        if (parsed.installToken) {
-          setInstallToken(parsed.installToken);
-        }
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        setRobotId(createRobotId());
+        setInstallToken(createInstallToken());
+        setProfileReady(true);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(saved) as { installToken?: string; robotId?: string; wifiSsid?: string };
+        setRobotId(parsed.robotId ? normalizeRobotId(parsed.robotId) : createRobotId());
+        setInstallToken(parsed.installToken || createInstallToken());
         if (parsed.wifiSsid) {
           setWifiSsid(parsed.wifiSsid);
         }
-      }, 0);
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
-    }
+        setProfileReady(true);
+      } catch {
+        window.localStorage.removeItem(STORAGE_KEY);
+        setRobotId(createRobotId());
+        setInstallToken(createInstallToken());
+        setProfileReady(true);
+      }
+    }, 0);
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!profileReady) {
       return;
     }
 
@@ -235,7 +241,7 @@ export function ConnectScreen() {
         wifiSsid,
       }),
     );
-  }, [installToken, robotId, wifiSsid]);
+  }, [installToken, profileReady, robotId, wifiSsid]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -385,33 +391,70 @@ export function ConnectScreen() {
       return;
     }
 
-    const payload = {
-      cmd: "provision",
-      mqtt_host: brokerHostFromWebSocket(brokerUrl),
-      mqtt_port: brokerPortFromWebSocket(brokerUrl),
-      mqtt_tls: brokerUrl.startsWith("wss://"),
-      password: wifiPassword,
-      robot_id: robotId,
-      ssid: wifiSsid.trim(),
-      token: installToken,
-      topic_prefix: "rf",
-    };
+    const payload = buildProvisionPayload({ brokerUrl, installToken, robotId, wifiPassword, wifiSsid });
 
     try {
       const port = await serial.requestPort();
       await port.open({ baudRate: 115200 });
-      const writer = port.writable?.getWriter();
-      if (!writer) {
-        throw new Error("Serial writer is not available");
-      }
-      await writer.write(new TextEncoder().encode(`${JSON.stringify(payload)}\n`));
-      writer.releaseLock();
+      await writeSerialText(port, `${JSON.stringify(payload)}\n`);
       await port.close();
       setInstallState("sent");
-      setLyraMessage("ส่งค่า Wi-Fi และ broker ให้ Rover Agent แล้ว กด Find Rover เพื่อรอ status");
+      setLyraMessage("ส่งค่า Wi-Fi และ broker ให้ MicroPython Agent แล้ว กด Find Rover เพื่อรอ status");
     } catch {
       setInstallState("ready");
       setLyraMessage("ยังส่งค่าผ่าน USB ไม่สำเร็จ ลองถอดเสียบ ESP32 แล้วกด Provision อีกครั้ง");
+    }
+  }
+
+  async function uploadMicroPythonAgent() {
+    const serial = typeof navigator !== "undefined" ? (navigator as NavigatorWithSerial).serial : undefined;
+    if (!serial) {
+      setInstallState("unsupported");
+      setLyraMessage("เครื่องนี้ยังไม่รองรับ Web Serial ให้เปิดหน้านี้บน Chrome/Edge desktop");
+      return;
+    }
+
+    setInstallState("agentUploading");
+    setLyraMessage("กำลังอัปโหลด boot.py และ main.py เข้า MicroPython ผ่าน USB");
+
+    let port: SerialPortLike | null = null;
+    try {
+      const files = await Promise.all(
+        MICROPYTHON_AGENT_FILES.map(async (file) => ({
+          ...file,
+          source: await fetch(file.sourceUrl).then((response) => {
+            if (!response.ok) {
+              throw new Error(`Cannot fetch ${file.sourceUrl}`);
+            }
+            return response.text();
+          }),
+        })),
+      );
+
+      port = await serial.requestPort();
+      await port.open({ baudRate: 115200 });
+      await writeSerialText(port, "\x03\x03\r\n");
+      await delay(500);
+
+      for (const file of files) {
+        await writeSerialText(port, buildMicroPythonFileWriteCommand(file.devicePath, file.source));
+        await delay(900);
+      }
+
+      await writeSerialText(port, "import machine\r\nmachine.reset()\r\n");
+      await port.close();
+      setInstallState("agentUploaded");
+      setLyraMessage("อัปโหลด RoboForge MicroPython Agent แล้ว ใส่ Wi-Fi แล้วกด Provision over USB");
+    } catch {
+      if (port) {
+        try {
+          await port.close();
+        } catch {
+          // Port may already be closed by reset.
+        }
+      }
+      setInstallState("runtimeReady");
+      setLyraMessage("อัปโหลดไฟล์ยังไม่สำเร็จ ให้กด EN/RST บน ESP32 แล้วลอง Upload agent อีกครั้ง");
     }
   }
 
@@ -466,7 +509,7 @@ export function ConnectScreen() {
             Connect
             <span>Rover</span>
           </h1>
-          <p>ครั้งแรกใช้คอมลง RoboForge Agent ให้ ESP32 แล้วมือถือจะใช้เชื่อมต่อ ทดสอบ และขับต่อได้</p>
+          <p>ครั้งแรกใช้คอมลง MicroPython และ RoboForge Agent ให้ ESP32 แล้วมือถือจะใช้เชื่อมต่อ ทดสอบ และขับต่อได้</p>
         </section>
 
         <ConnectionProgress activeStep={activeStep} />
@@ -486,7 +529,7 @@ export function ConnectScreen() {
           </span>
           <div>
             <h2>มือถือใช้ต่อได้ หลัง install ครั้งแรก</h2>
-            <p>ถ้าเปิดหน้านี้บนมือถือ ให้ส่งลิงก์นี้ไปคอมแล้วเสียบ ESP32 ผ่าน USB เพื่อลง firmware ก่อน</p>
+            <p>ถ้าเปิดหน้านี้บนมือถือ ให้ส่งลิงก์นี้ไปคอมแล้วเสียบ ESP32 ผ่าน USB เพื่อลง MicroPython ก่อน</p>
           </div>
           <Button
             size="sm"
@@ -506,8 +549,8 @@ export function ConnectScreen() {
             <span className="connect-card-icon">
               <Laptop data-icon="inline-start" />
             </span>
-            <div>
-              <h2>Install firmware บนคอมครั้งเดียว</h2>
+              <div>
+              <h2>Install MicroPython บนคอมครั้งเดียว</h2>
               <p>{installCopy(brokerUrl)} · ใช้ Chrome/Edge desktop + สาย USB data</p>
             </div>
           </div>
@@ -559,12 +602,23 @@ export function ConnectScreen() {
 
           <div className="connect-installer-widget">
             <div>
-              <strong>Firmware package</strong>
-              <small>ติดตั้ง RoboForge MQTT Agent ลง ESP32 ผ่าน browser</small>
+              <strong>1. MicroPython runtime</strong>
+              <small>ติดตั้ง MicroPython v1.28.0 สำหรับ ESP32/WROOM ผ่าน browser</small>
             </div>
             <div className="esp-install-button-wrap" suppressHydrationWarning>
-              {createElement("esp-web-install-button", { manifest: INSTALL_MANIFEST_URL } as Record<string, string>)}
+              {createElement("esp-web-install-button", { manifest: MICROPYTHON_RUNTIME_MANIFEST_URL } as Record<string, string>)}
             </div>
+          </div>
+
+          <div className="connect-installer-widget">
+            <div>
+              <strong>2. RoboForge agent files</strong>
+              <small>อัปโหลด boot.py และ main.py เข้า MicroPython filesystem</small>
+            </div>
+            <Button disabled={installState === "agentUploading"} onClick={() => void uploadMicroPythonAgent()} variant="secondary">
+              <FileCode2 data-icon="inline-start" />
+              {installState === "agentUploading" ? "Uploading" : "Upload agent"}
+            </Button>
           </div>
 
           <div className="connect-actions-row">
@@ -580,7 +634,7 @@ export function ConnectScreen() {
 
           <p className={installState === "unsupported" ? "connect-warning" : "connect-help"}>
             {serialSupported
-              ? "Web Serial พร้อมใช้: หลังลง firmware ให้กด Provision เพื่อส่งค่า Wi-Fi/broker เข้า ESP32"
+              ? "Web Serial พร้อมใช้: หลังลง MicroPython และอัปโหลด agent ให้กด Provision เพื่อส่งค่า Wi-Fi/broker เข้า ESP32"
               : "ถ้าไม่เห็นตัวเลือก serial ให้เปิดบน Chrome หรือ Edge desktop"}
           </p>
         </section>
@@ -681,7 +735,7 @@ export function ConnectScreen() {
         <AdvancedConnectionDetails
           broker={brokerUrl}
           commandTopic={topics.command}
-          mode="RoboForge MQTT Agent + desktop Web Serial install"
+          mode="RoboForge MicroPython Agent + desktop Web Serial install"
           robotId={robotId}
           statusTopic={topics.status}
         />

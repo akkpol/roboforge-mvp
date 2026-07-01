@@ -1,0 +1,16 @@
+{
+  "name": "RoboForge MicroPython Runtime",
+  "version": "MicroPython v1.28.0 ESP32_GENERIC",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        {
+          "path": "/firmware/micropython/ESP32_GENERIC-20260406-v1.28.0.bin",
+          "offset": 4096
+        }
+      ]
+    }
+  ]
+}

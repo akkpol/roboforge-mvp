@@ -16,7 +16,7 @@ export function RoverStage({ label = "Rover-01 friendly robot on a soft summon c
         aria-hidden="true"
         className="platform-asset"
         height={luminaAssets.platform.height}
-        priority={variant === "hero"}
+        priority
         src={luminaAssets.platform.src}
         width={luminaAssets.platform.width}
       />
@@ -25,7 +25,7 @@ export function RoverStage({ label = "Rover-01 friendly robot on a soft summon c
         alt={label}
         className="rover-asset"
         height={luminaAssets.rover.height}
-        priority={variant === "hero"}
+        priority
         src={luminaAssets.rover.src}
         width={luminaAssets.rover.width}
       />
