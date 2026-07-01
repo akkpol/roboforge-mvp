@@ -10,7 +10,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "RoboForge Lumina",
   description:
-    "A soft anime robot garage for setting up Rover-01 with Lyra.",
+    "A soft anime RoboForge home screen for setting up Rover-01 with Lyra.",
   icons: {
     icon: "/favicon.svg",
   },

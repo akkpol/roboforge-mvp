@@ -99,7 +99,7 @@ export const robotItems: readonly RobotItem[] = [
 ] as const;
 
 export const navItems: readonly NavItem[] = [
-  { Icon: Home, href: "/", key: "garage", label: "Garage", state: "ready" },
+  { Icon: Home, href: "/", key: "garage", label: "Home", state: "ready" },
   { Icon: Flag, key: "missions", label: "Missions", state: "soon" },
   { Icon: Wrench, key: "engineer", label: "Engineer", state: "soon" },
   { Icon: ShoppingCart, key: "store", label: "Store", state: "soon" },

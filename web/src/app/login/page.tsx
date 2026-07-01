@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Image from "next/image";
 import { AuthForm } from "@/components/auth-form";
 
 type LoginPageProps = {
@@ -51,15 +52,19 @@ function authMessage(
 const loginCopy = {
   en: {
     fallback: "Loading auth...",
-    title: "Return to Lumina Garage.",
+    eyebrow: "RoboForge ID",
+    status: "RoboForge is ready",
+    title: "Welcome back to RoboForge",
     body:
-      "Login brings you back to the Lumina Garden Garage home screen. No dashboard detour in this restart.",
+      "Sign in to return to the RoboForge home screen, connection tools, and your builder profile.",
   },
   th: {
     fallback: "กำลังโหลดระบบเข้าสู่ระบบ...",
-    title: "กลับเข้า Lumina Garage",
+    eyebrow: "RoboForge ID",
+    status: "หน้า RoboForge พร้อมใช้งาน",
+    title: "กลับเข้าสู่ RoboForge",
     body:
-      "เข้าสู่ระบบแล้วจะกลับมาหน้าหลัก Lumina Garden Garage ที่เราสร้างไว้นี้ ไม่พาไป dashboard เก่า",
+      "เข้าสู่ระบบเพื่อกลับไปยังหน้า RoboForge เครื่องมือเชื่อมต่อ และโปรไฟล์ของคุณ",
   },
 } as const;
 
@@ -73,8 +78,24 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="auth-page">
       <section className="auth-copy">
+        <span className="auth-eyebrow">{copy.eyebrow}</span>
         <h1>{copy.title}</h1>
         <p>{copy.body}</p>
+        <div className="auth-visual" aria-hidden="true">
+          <div className="auth-visual-orbit" />
+          <Image
+            alt=""
+            className="auth-visual-guide"
+            height={420}
+            priority
+            src="/assets/lumina/lyra-guide-thigh-up.png"
+            style={{ height: "auto" }}
+            width={320}
+          />
+          <div className="auth-visual-panel">
+            <span>{copy.status}</span>
+          </div>
+        </div>
       </section>
       <Suspense fallback={<div className="auth-card">{copy.fallback}</div>}>
         <AuthForm

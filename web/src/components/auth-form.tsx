@@ -1,6 +1,15 @@
 "use client";
 
-import { LockKeyhole, Mail, UserPlus } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserPlus,
+} from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -20,6 +29,7 @@ const authCopy = {
     email: "Email",
     emailAccess: "Email access",
     envMissing: "Add Supabase env vars first, then restart the dev server.",
+    formIntro: "Use Google for the fastest path, or keep a password-based RoboForge account.",
     google: "Continue with Google",
     googleBusy: "Opening Google...",
     login: "Login",
@@ -27,10 +37,14 @@ const authCopy = {
     namePlaceholder: "Akkapol",
     password: "Password",
     passwordPlaceholder: "At least 6 characters",
-    routeNote: "After login, you return to `/`: the Lumina Garden Garage home screen.",
+    ready: "Supabase Auth ready",
+    routeNote: "After login you return to the RoboForge home screen.",
+    secure: "Session cookies keep your login state available to server-rendered routes.",
     signUp: "Sign up",
     signupNeedsConfirmation:
       "Account created. Check email confirmation if it is enabled.",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     working: "Working...",
   },
   th: {
@@ -40,6 +54,7 @@ const authCopy = {
     email: "อีเมล",
     emailAccess: "เข้าด้วยอีเมล",
     envMissing: "ตั้งค่าตัวแปร Supabase ก่อน แล้ว restart dev server",
+    formIntro: "ใช้ Google เพื่อเข้าเร็วที่สุด หรือใช้อีเมลกับรหัสผ่านสำหรับบัญชี RoboForge โดยตรง",
     google: "เข้าสู่ระบบด้วย Google",
     googleBusy: "กำลังเปิด Google...",
     login: "เข้าสู่ระบบ",
@@ -47,10 +62,14 @@ const authCopy = {
     namePlaceholder: "Akkapol",
     password: "รหัสผ่าน",
     passwordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
-    routeNote: "หลังเข้าสู่ระบบสำเร็จ ระบบจะกลับไปที่ `/` คือหน้า Lumina Garden Garage หลัก",
+    ready: "Supabase Auth พร้อมใช้งาน",
+    routeNote: "หลังเข้าสู่ระบบสำเร็จ ระบบจะพากลับไปที่หน้า RoboForge",
+    secure: "ระบบใช้ session cookie เพื่อจำสถานะการเข้าสู่ระบบอย่างปลอดภัย",
     signUp: "สมัครบัญชี",
     signupNeedsConfirmation:
       "สร้างบัญชีแล้ว ถ้าเปิดการยืนยันอีเมลไว้ ให้เช็คกล่องอีเมลก่อนเข้าใช้งาน",
+    showPassword: "แสดงรหัสผ่าน",
+    hidePassword: "ซ่อนรหัสผ่าน",
     working: "กำลังทำงาน...",
   },
 } as const;
@@ -123,8 +142,10 @@ export function AuthForm({
   const [name, setName] = useState("");
   const [message, setMessage] = useState(initialMessage);
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const configured = useMemo(() => isSupabaseConfigured(), []);
   const busy = busyAction !== null;
+  const messageTone = !configured ? "is-warning" : message ? "is-info" : "";
 
   async function continueWithGoogle() {
     setMessage("");
@@ -191,16 +212,30 @@ export function AuthForm({
 
   return (
     <section className="auth-card">
+      <div className="auth-card-head">
+        <div>
+          <p className="auth-kicker">{copy.ready}</p>
+          <h2>{mode === "sign-in" ? copy.login : copy.createAccount}</h2>
+        </div>
+        <ShieldCheck aria-hidden="true" />
+      </div>
+
+      <p className="auth-form-intro">{copy.formIntro}</p>
+
       <div className="mode-tabs" role="tablist" aria-label="Auth mode">
         <button
+          aria-selected={mode === "sign-in"}
           className={mode === "sign-in" ? "is-active" : ""}
+          role="tab"
           type="button"
           onClick={() => setMode("sign-in")}
         >
           {copy.login}
         </button>
         <button
+          aria-selected={mode === "sign-up"}
           className={mode === "sign-up" ? "is-active" : ""}
+          role="tab"
           type="button"
           onClick={() => setMode("sign-up")}
         >
@@ -228,24 +263,25 @@ export function AuthForm({
 
       <form onSubmit={submit}>
         {mode === "sign-up" ? (
-          <label>
-            {copy.name}
-            <span>
-              <UserPlus size={18} />
+          <label className="auth-field">
+            <span className="auth-label">{copy.name}</span>
+            <span className="auth-input-shell">
+              <UserPlus aria-hidden="true" />
               <input
                 autoComplete="name"
                 name="name"
                 onChange={(event) => setName(event.target.value)}
                 placeholder={copy.namePlaceholder}
+                required
                 value={name}
               />
             </span>
           </label>
         ) : null}
-        <label>
-          {copy.email}
-          <span>
-            <Mail size={18} />
+        <label className="auth-field">
+          <span className="auth-label">{copy.email}</span>
+          <span className="auth-input-shell">
+            <Mail aria-hidden="true" />
             <input
               autoComplete="email"
               name="email"
@@ -257,10 +293,10 @@ export function AuthForm({
             />
           </span>
         </label>
-        <label>
-          {copy.password}
-          <span>
-            <LockKeyhole size={18} />
+        <label className="auth-field">
+          <span className="auth-label">{copy.password}</span>
+          <span className="auth-input-shell">
+            <LockKeyhole aria-hidden="true" />
             <input
               autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
               minLength={6}
@@ -268,9 +304,17 @@ export function AuthForm({
               onChange={(event) => setPassword(event.target.value)}
               placeholder={copy.passwordPlaceholder}
               required
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
             />
+            <button
+              aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+              className="auth-password-toggle"
+              onClick={() => setShowPassword((value) => !value)}
+              type="button"
+            >
+              {showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+            </button>
           </span>
         </label>
 
@@ -284,10 +328,23 @@ export function AuthForm({
         </Button>
       </form>
 
+      <p className="auth-secure-note">
+        <CheckCircle2 aria-hidden="true" />
+        {copy.secure}
+      </p>
+
       {!configured ? (
-        <p className="form-message is-warning">{copy.configuredWarning}</p>
+        <p className="form-message is-warning" role="status">
+          <AlertTriangle aria-hidden="true" />
+          {copy.configuredWarning}
+        </p>
       ) : null}
-      {message ? <p className="form-message">{message}</p> : null}
+      {message ? (
+        <p className={`form-message ${messageTone}`} aria-live="polite" role="status">
+          <AlertTriangle aria-hidden="true" />
+          {message}
+        </p>
+      ) : null}
     </section>
   );
 }
