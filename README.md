@@ -1,34 +1,41 @@
 # RoboForge MVP
 
-RoboForge is a plug-and-play setup flow for people who source their own ESP32 rover kit. The product path is:
+RoboForge is a plug-and-play setup flow for people who source their own ESP32 rover kit. The source of truth is MicroPython on an ESP32 DevKit/WROOM board with the ESP32S 30P expansion base.
 
-1. Open `https://roboforge.app/install` on a desktop Chrome or Edge browser.
-2. Connect an ESP32 DevKit by USB and install the RoboForge MQTT Agent firmware.
-3. Enter the user Wi-Fi credentials, robot ID, and RoboForge broker settings in the installer.
-4. Open `https://roboforge.app/connect` on desktop or mobile.
-5. Let the app find the robot, read status, send STOP, and run short raised-wheel tests.
+## Product Path
 
-Desktop is required only for the first firmware install because browsers expose USB serial flashing through desktop Web Serial/WebUSB. After the ESP32 has the agent and Wi-Fi config, the phone can connect to the same RoboForge web app for testing and driving.
+1. Open `https://roboforge.app/install` on desktop Chrome or Edge.
+2. Connect the ESP32 DevKit by USB with a real data cable.
+3. Flash the official ESP32/WROOM MicroPython runtime from the RoboForge installer.
+4. Upload the RoboForge MicroPython Agent files: `boot.py` and `main.py`.
+5. Provision Wi-Fi 2.4GHz, robot ID, token, and RoboForge MQTT broker settings over USB.
+6. Open `https://roboforge.app/connect` on desktop or mobile.
+7. Let the app find the robot, read status, send STOP, and run short raised-wheel tests.
+
+Desktop is required only for the first MicroPython install and USB provisioning. After that, the phone can use the same RoboForge web app for connection checks, safety tests, and driving.
 
 ## Source Of Truth
 
 The current RoboForge flow is:
 
-- Self-sourced ESP32 rover kit.
+- Self-sourced ESP32 DevKit/WROOM rover kit.
+- ESP32S 30P expansion base is supported by the pin plan below.
 - RoboForge Web Installer at `/install`.
 - RoboForge guided connection doctor at `/connect`.
 - RoboForge MQTT broker configured through environment variables.
+- MicroPython firmware in `firmware/boot.py` and `firmware/main.py`.
 - MQTT topics scoped per robot:
   - `rf/{robotId}/cmd`
   - `rf/{robotId}/status`
 
-The app must not ask users to type raw MQTT topics, JSON payloads, or use a third-party MQTT console as the main path. Thonny, MicroPython examples, and public MQTT demo pages are fallback or learning tools only.
+The app must not ask users to type raw MQTT topics, JSON payloads, or use a third-party MQTT console as the main path. Thonny and public MQTT demo pages are fallback or learning references only.
 
 ## User Responsibilities
 
 The user needs:
 
-- ESP32 DevKit.
+- ESP32 DevKit/WROOM board.
+- ESP32S 30P expansion base.
 - L298N motor driver.
 - Two TT DC motors.
 - 2S 18650 battery pack with BMS, fuse, and physical power switch.
@@ -36,14 +43,31 @@ The user needs:
 - A 2.4GHz Wi-Fi network or hotspot.
 - Optional HC-SR04P ultrasonic sensor for obstacle avoid mode.
 
-The installer guides the checklist and wiring assumptions before provisioning firmware.
+## Pin Plan
+
+Use this wiring for the RoboForge MicroPython Agent:
+
+| Part | ESP32 GPIO |
+| --- | --- |
+| L298N ENA | GPIO25 |
+| L298N IN1 | GPIO26 |
+| L298N IN2 | GPIO27 |
+| L298N ENB | GPIO33 |
+| L298N IN3 | GPIO32 |
+| L298N IN4 | GPIO17 |
+| Battery divider ADC | GPIO34 |
+| HC-SR04P TRIG | GPIO18 |
+| HC-SR04P ECHO | GPIO19 |
+
+The motor driver, ESP32, and sensor must share common GND. Remove the ENA/ENB jumpers from the L298N when using PWM from GPIO25/GPIO33.
 
 ## App Responsibilities
 
 The web app handles:
 
 - Generating and storing a robot ID and install token in the browser.
-- Installing the firmware package through the browser installer.
+- Flashing MicroPython runtime through the browser installer.
+- Uploading `boot.py` and `main.py` to the MicroPython filesystem over USB serial.
 - Sending Wi-Fi, broker host, broker port, TLS flag, robot ID, topic prefix, and token to the ESP32 over USB serial.
 - Connecting to MQTT through `NEXT_PUBLIC_ROBOFORGE_MQTT_WS_URL`.
 - Subscribing to `rf/{robotId}/status`.
@@ -54,16 +78,17 @@ The Wi-Fi password is used only to provision the ESP32 over USB serial. The web 
 
 ## Firmware Responsibilities
 
-The ESP32 firmware is the RoboForge MQTT Agent. It should:
+The ESP32 firmware is the RoboForge MicroPython Agent. It:
 
-- Join the configured 2.4GHz Wi-Fi network.
-- Connect to the matching RoboForge MQTT broker host, port, and TLS setting.
-- Subscribe to `rf/{robotId}/cmd`.
-- Publish telemetry to `rf/{robotId}/status`.
-- Support commands: `status`, `stop`, `drive`, `avoid`, and `config`.
-- Drive the L298N motor outputs with a short deadman timeout.
-- Publish battery telemetry and optional HC-SR04P distance readings.
-- Stop motors when commands time out or broker connectivity is lost.
+- Runs from MicroPython source files: `boot.py` and `main.py`.
+- Joins the configured 2.4GHz Wi-Fi network.
+- Connects to the matching RoboForge MQTT broker host, port, and TLS setting.
+- Subscribes to `rf/{robotId}/cmd`.
+- Publishes telemetry to `rf/{robotId}/status`.
+- Supports commands: `status`, `stop`, `drive`, `avoid`, and `config`.
+- Drives the L298N motor outputs with a short deadman timeout.
+- Publishes battery telemetry and optional HC-SR04P distance readings.
+- Stops motors when commands time out, obstacle avoid triggers, or broker connectivity is lost.
 
 ## Development
 
@@ -77,11 +102,14 @@ npm run test:foundation
 npm run build
 ```
 
-Firmware:
+Firmware source files:
 
-```powershell
-cd firmware
-platformio run
+```text
+firmware/boot.py
+firmware/main.py
+web/public/firmware/micropython/boot.py
+web/public/firmware/micropython/main.py
+web/public/firmware/micropython/manifest.json
 ```
 
 Important environment variable:

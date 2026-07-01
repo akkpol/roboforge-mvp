@@ -9,7 +9,7 @@ type ConnectionMapNode = {
 
 const nodes: readonly ConnectionMapNode[] = [
   { Icon: Smartphone, label: "มือถือ", detail: "ใช้หลังติดตั้ง" },
-  { Icon: Laptop, label: "คอมครั้งแรก", detail: "Web Serial install" },
+  { Icon: Laptop, label: "คอมครั้งแรก", detail: "MicroPython install" },
   { Icon: Cloud, label: "RoboForge", detail: "MQTT broker" },
   { Icon: Cpu, label: "ESP32 Rover", detail: "ส่ง status" },
 ];
