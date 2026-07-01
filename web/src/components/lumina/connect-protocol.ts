@@ -1,66 +1,36 @@
-export const DEFAULT_ROBOFORGE_MQTT_WS_URL = "wss://mqtt.roboforge.app/mqtt";
-export const DEFAULT_TOPIC_ROOT = "rf";
 export const MICROPYTHON_RUNTIME_MANIFEST_URL = "/firmware/micropython/manifest.json";
 export const MICROPYTHON_AGENT_FILES = [
   { devicePath: "boot.py", sourceUrl: "/firmware/micropython/boot.py" },
   { devicePath: "main.py", sourceUrl: "/firmware/micropython/main.py" },
+  { devicePath: "microWebSrv.py", sourceUrl: "/firmware/micropython/microWebSrv.py" },
+  { devicePath: "microWebSocket.py", sourceUrl: "/firmware/micropython/microWebSocket.py" },
 ] as const;
 
 export type RobotCommandName = "avoid" | "config" | "drive" | "status" | "stop";
 
 export type RobotCommand =
-  | { cmd: "avoid"; enable: boolean }
-  | { cmd: "config"; avoid_distance_cm?: number; speed_limit?: number }
   | { cmd: "drive"; steering: number; throttle: number }
+  | { cmd: "stop" }
   | { cmd: "status" }
-  | { cmd: "stop" };
+  | { cmd: "avoid"; enable: boolean }
+  | { cmd: "config"; avoid_distance_cm?: number; speed_limit?: number };
 
 export type RobotStatus = {
-  avoid?: boolean;
-  battery_pct?: number;
-  battery_v?: number;
-  distance_cm?: number;
-  firmware?: string;
-  left?: number;
-  online?: boolean;
-  right?: number;
   robot_id?: string;
-  rssi?: number;
+  firmware?: string;
+  online?: boolean;
+  battery_v?: number;
+  battery_pct?: number;
+  distance_cm?: number;
+  avoid?: boolean;
   speed_limit?: number;
-};
-
-export type RobotTopics = {
-  command: string;
-  status: string;
+  left?: number;
+  right?: number;
+  rssi?: number;
 };
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
-}
-
-export function getMqttWebSocketUrl() {
-  return process.env.NEXT_PUBLIC_ROBOFORGE_MQTT_WS_URL || DEFAULT_ROBOFORGE_MQTT_WS_URL;
-}
-
-export function brokerHostFromWebSocket(url: string) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "mqtt.roboforge.app";
-  }
-}
-
-export function brokerPortFromWebSocket(url: string) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.port) {
-      return Number(parsed.port);
-    }
-
-    return parsed.protocol === "wss:" ? 8883 : 1883;
-  } catch {
-    return 8883;
-  }
 }
 
 export function normalizeRobotId(value: string) {
@@ -92,16 +62,6 @@ export function createInstallToken(seed = Math.random()) {
   return `rft-${suffix}`;
 }
 
-export function buildRobotTopics(robotId: string, root = DEFAULT_TOPIC_ROOT): RobotTopics {
-  const safeRoot = normalizeRobotId(root).replace(/^rf-rover$/, DEFAULT_TOPIC_ROOT);
-  const safeRobotId = normalizeRobotId(robotId);
-
-  return {
-    command: `${safeRoot}/${safeRobotId}/cmd`,
-    status: `${safeRoot}/${safeRobotId}/status`,
-  };
-}
-
 export function buildRobotCommand(command: RobotCommand): RobotCommand {
   if (command.cmd === "drive") {
     return {
@@ -110,7 +70,6 @@ export function buildRobotCommand(command: RobotCommand): RobotCommand {
       throttle: clamp(command.throttle, -1, 1),
     };
   }
-
   if (command.cmd === "config") {
     return {
       cmd: "config",
@@ -118,10 +77,12 @@ export function buildRobotCommand(command: RobotCommand): RobotCommand {
         typeof command.avoid_distance_cm === "number"
           ? Math.round(clamp(command.avoid_distance_cm, 10, 80))
           : undefined,
-      speed_limit: typeof command.speed_limit === "number" ? clamp(command.speed_limit, 0.1, 0.8) : undefined,
+      speed_limit:
+        typeof command.speed_limit === "number"
+          ? clamp(command.speed_limit, 0.1, 0.8)
+          : undefined,
     };
   }
-
   return command;
 }
 
@@ -130,22 +91,15 @@ export function serializeRobotCommand(command: RobotCommand) {
 }
 
 export function buildProvisionPayload(input: {
-  brokerUrl: string;
-  installToken: string;
   robotId: string;
   wifiPassword: string;
   wifiSsid: string;
 }) {
   return {
     cmd: "provision",
-    mqtt_host: brokerHostFromWebSocket(input.brokerUrl),
-    mqtt_port: brokerPortFromWebSocket(input.brokerUrl),
-    mqtt_tls: input.brokerUrl.startsWith("wss://"),
+    ssid: input.wifiSsid.trim(),
     password: input.wifiPassword,
     robot_id: normalizeRobotId(input.robotId),
-    ssid: input.wifiSsid.trim(),
-    token: input.installToken,
-    topic_prefix: DEFAULT_TOPIC_ROOT,
   };
 }
 
@@ -189,15 +143,12 @@ export function parseRobotStatus(input: unknown): RobotStatus {
   if (typeof record.online === "boolean") {
     status.online = record.online;
   }
-
   if (typeof record.avoid === "boolean") {
     status.avoid = record.avoid;
   }
-
   if (typeof record.robot_id === "string") {
     status.robot_id = record.robot_id;
   }
-
   if (typeof record.firmware === "string") {
     status.firmware = record.firmware;
   }

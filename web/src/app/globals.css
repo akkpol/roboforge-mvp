@@ -2015,11 +2015,7 @@ img {
 
 .connection-progress-card,
 .connection-visual-card,
-.connection-step-card,
-.advanced-details,
-.lyra-tip,
-.connection-actions,
-.connection-safety-note {
+.lyra-tip {
   border: 1px solid var(--line);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(18px);
@@ -2027,20 +2023,23 @@ img {
 
 .connection-progress-card {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-  padding: 9px 12px;
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.82);
 }
 
 .connection-progress-header {
-  display: contents;
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
 }
 
 .connection-progress-header strong {
-  padding: 7px 13px;
+  padding: 7px 11px;
   border: 1px solid rgba(53, 177, 145, 0.5);
   border-radius: 999px;
   color: #16896c;
@@ -2051,7 +2050,11 @@ img {
 }
 
 .connection-progress-header span {
-  display: none;
+  color: #315981;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .connection-steps {
@@ -2084,6 +2087,8 @@ img {
   border: 2px solid #d4deea;
   border-radius: 999px;
   background: #eef4fb;
+  font-size: 9px;
+  line-height: 1;
 }
 
 .connection-step-dot svg {
@@ -3766,8 +3771,10 @@ img {
 
   .connection-shell .connection-safety-note {
     grid-area: safety;
-    align-self: stretch;
-    min-height: 56px;
+    align-self: start;
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 10px 12px;
     border-radius: 18px;
   }
 
@@ -3863,13 +3870,37 @@ img {
   color: #a35f00;
 }
 
-.connection-shell .connect-check-grid {
+.connection-shell .connect-required-list,
+.connection-shell .connect-safety-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
 
-.connection-shell .connect-check-grid label,
+.connection-shell .connect-required-list div,
+.connection-shell .connect-safety-list div {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(123, 162, 204, 0.2);
+  border-radius: 14px;
+  color: #315981;
+  background: rgba(255, 255, 255, 0.62);
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  font-size: 10.4px;
+  font-weight: 700;
+  line-height: 1.24;
+}
+
+.connection-shell .connect-required-list svg,
+.connection-shell .connect-safety-list svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: #16896c;
+}
+
 .connection-shell .connect-safety-toggle {
   display: flex;
   min-width: 0;
@@ -3886,14 +3917,12 @@ img {
   line-height: 1.18;
 }
 
-.connection-shell .connect-check-grid label.is-checked,
 .connection-shell .connect-safety-toggle.is-checked {
   border-color: rgba(69, 196, 157, 0.46);
   color: #126b56;
   background: rgba(235, 255, 247, 0.82);
 }
 
-.connection-shell .connect-check-grid input,
 .connection-shell .connect-safety-toggle input {
   width: 16px;
   height: 16px;
@@ -3917,6 +3946,12 @@ img {
   font-weight: 700;
 }
 
+.connection-shell .connect-field-grid small {
+  color: var(--muted);
+  font-size: 9.6px;
+  font-weight: 700;
+}
+
 .connection-shell .connect-field-grid input {
   width: 100%;
   min-width: 0;
@@ -3932,6 +3967,11 @@ img {
 .connection-shell .connect-installer-widget,
 .connection-shell .connect-status-grid,
 .connection-shell .connect-avoid-row {
+  display: grid;
+  gap: 8px;
+}
+
+.connection-shell .connect-install-flow {
   display: grid;
   gap: 8px;
 }
@@ -4015,6 +4055,32 @@ img {
   min-height: 44px;
 }
 
+.connection-shell .connect-safety-toggle span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.connection-shell .connect-safety-toggle strong,
+.connection-shell .connect-safety-toggle small {
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+  line-height: 1.22;
+}
+
+.connection-shell .connect-safety-toggle strong {
+  color: inherit;
+  font-size: 10.8px;
+}
+
+.connection-shell .connect-safety-toggle small {
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.connection-shell .connect-safety-toggle.is-checked small {
+  color: #287b68;
+}
+
 .connection-shell .connect-test-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4028,6 +4094,29 @@ img {
 .connection-shell .connect-avoid-row input[type="range"] {
   width: 100%;
   accent-color: var(--primary-strong);
+}
+
+.connection-shell .connect-optional-details {
+  display: grid;
+  gap: 8px;
+  color: #315981;
+  font-family: "Noto Sans Thai", Rajdhani, sans-serif;
+}
+
+.connection-shell .connect-optional-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 10.6px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.connection-shell .connect-optional-details[open] summary {
+  color: #173762;
+}
+
+.connection-shell .connect-optional-details .connect-avoid-row {
+  margin-top: 8px;
 }
 
 @media (min-width: 480px) {
@@ -4048,14 +4137,21 @@ img {
     grid-column: 1 / -1;
   }
 
-  .connection-shell .connect-installer-widget,
-  .connection-shell .connect-actions-row,
-  .connection-shell .connect-avoid-row {
+  .connection-shell .connect-required-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .connection-shell .connect-installer-widget {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .connection-shell .connect-actions-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .connection-shell .connect-avoid-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: end;
   }
 }
 
@@ -4065,15 +4161,14 @@ img {
   }
 
   .connection-shell .connection-content {
-    grid-template-columns: minmax(300px, 0.88fr) minmax(360px, 1.12fr);
+    grid-template-columns: minmax(360px, 1fr) minmax(320px, 0.8fr);
     grid-template-areas:
       "hero visual"
       "progress visual"
-      "mobile installer"
-      "doctor installer"
-      "test installer"
-      "advanced lyra"
-      "safety lyra";
+      "installer doctor"
+      "installer mobile"
+      "test lyra"
+      "advanced safety";
     gap: 12px;
   }
 
@@ -4102,13 +4197,20 @@ img {
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
 
-  .connection-shell .connect-installer-card,
-  .connection-shell .connect-test-card {
+  .connection-shell .connect-installer-card {
     align-self: stretch;
   }
 
-  .connection-shell .connect-check-grid {
+  .connection-shell .connect-test-card {
+    align-self: start;
+  }
+
+  .connection-shell .connect-actions-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .connection-shell .connect-safety-list {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -4122,22 +4224,22 @@ img {
   }
 
   .connection-shell .connection-content {
-    grid-template-columns: minmax(260px, 0.7fr) minmax(360px, 1fr) minmax(340px, 0.9fr);
+    grid-template-columns: minmax(360px, 0.95fr) minmax(360px, 1fr) minmax(320px, 0.78fr);
     grid-template-areas:
-      "hero visual installer"
-      "progress visual installer"
-      "mobile doctor installer"
-      "test advanced lyra"
-      "safety safety lyra";
+      "hero visual mobile"
+      "progress visual doctor"
+      "installer test lyra"
+      "installer test safety"
+      "advanced . .";
     align-items: start;
   }
 
   .connection-shell .connection-visual-card {
-    min-height: 420px;
+    min-height: 360px;
   }
 
-  .connection-shell .connect-check-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .connection-shell .connect-required-list {
+    grid-template-columns: 1fr;
   }
 }
 
