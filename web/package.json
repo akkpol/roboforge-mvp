@@ -11,12 +11,15 @@
     "test:foundation": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^3.0.5",
+    "@ai-sdk/react": "^4.0.15",
     "@fontsource/noto-sans-thai": "^5.2.8",
     "@fontsource/rajdhani": "^5.2.7",
     "@radix-ui/react-slot": "^1.3.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.0",
     "@tailwindcss/postcss": "^4.3.1",
+    "ai": "^7.0.14",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.18.0",

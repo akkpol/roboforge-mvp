@@ -5,6 +5,7 @@ import "@fontsource/rajdhani/700.css";
 import "@fontsource/noto-sans-thai/400.css";
 import "@fontsource/noto-sans-thai/600.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LyraChat } from "@/components/lumina/lyra-chat";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="th" suppressHydrationWarning>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
+        <LyraChat />
       </body>
     </html>
   );

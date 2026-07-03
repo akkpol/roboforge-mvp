@@ -1,0 +1,232 @@
+{
+  "generatedAt": "2026-07-02T16:54:34.842Z",
+  "summary": {
+    "status": "ok",
+    "url": "http://127.0.0.1:3000/connect",
+    "reference": {
+      "source": "docs/design-reference/connection-quest/prototype.png",
+      "intrinsicWidth": 866,
+      "intrinsicHeight": 1815,
+      "inferredCssWidth": 430,
+      "inferredCssHeight": 1337,
+      "shellPaddingBottom": 24,
+      "scale": 2.013953488372093
+    },
+    "viewport": {
+      "width": 430,
+      "height": 900
+    },
+    "documentHeight": 1361,
+    "targetDocumentHeight": 1361,
+    "documentOverflow": 0,
+    "worstSections": [
+      {
+        "key": "doctor",
+        "label": "After-install card",
+        "maxAbsDelta": 0.5,
+        "heightDelta": 0.5,
+        "bottomDelta": 0.1
+      },
+      {
+        "key": "mobile",
+        "label": "Mobile note card",
+        "maxAbsDelta": 0.4,
+        "heightDelta": 0.4,
+        "bottomDelta": 0.1
+      },
+      {
+        "key": "installer",
+        "label": "Installer card",
+        "maxAbsDelta": 0.4,
+        "heightDelta": -0.4,
+        "bottomDelta": -0.3
+      },
+      {
+        "key": "hero",
+        "label": "Title copy",
+        "maxAbsDelta": 0.3,
+        "heightDelta": -0.3,
+        "bottomDelta": -0.3
+      }
+    ]
+  },
+  "sections": [
+    {
+      "key": "topbar",
+      "label": "Top bar",
+      "selector": ".lumina-topbar",
+      "rect": {
+        "top": 14,
+        "height": 54,
+        "bottom": 68,
+        "width": 398
+      },
+      "target": {
+        "top": 14,
+        "height": 54,
+        "bottom": 68
+      },
+      "tolerance": 8,
+      "topDelta": 0,
+      "heightDelta": 0,
+      "bottomDelta": 0,
+      "maxAbsDelta": 0,
+      "status": "ok"
+    },
+    {
+      "key": "hero",
+      "label": "Title copy",
+      "selector": ".connection-hero-copy",
+      "rect": {
+        "top": 70,
+        "height": 104.7,
+        "bottom": 174.7,
+        "width": 398
+      },
+      "target": {
+        "top": 70,
+        "height": 105,
+        "bottom": 175
+      },
+      "tolerance": 12,
+      "topDelta": 0,
+      "heightDelta": -0.3,
+      "bottomDelta": -0.3,
+      "maxAbsDelta": 0.3,
+      "status": "ok"
+    },
+    {
+      "key": "progress",
+      "label": "Progress rail",
+      "selector": ".connection-progress-card",
+      "rect": {
+        "top": 178.7,
+        "height": 100,
+        "bottom": 278.7,
+        "width": 398
+      },
+      "target": {
+        "top": 179,
+        "height": 100,
+        "bottom": 279
+      },
+      "tolerance": 12,
+      "topDelta": -0.3,
+      "heightDelta": 0,
+      "bottomDelta": -0.3,
+      "maxAbsDelta": 0.3,
+      "status": "ok"
+    },
+    {
+      "key": "mobile",
+      "label": "Mobile note card",
+      "selector": ".connect-mobile-brief",
+      "rect": {
+        "top": 282.7,
+        "height": 121.4,
+        "bottom": 404.1,
+        "width": 398
+      },
+      "target": {
+        "top": 283,
+        "height": 121,
+        "bottom": 404
+      },
+      "tolerance": 16,
+      "topDelta": -0.3,
+      "heightDelta": 0.4,
+      "bottomDelta": 0.1,
+      "maxAbsDelta": 0.4,
+      "status": "ok"
+    },
+    {
+      "key": "installer",
+      "label": "Installer card",
+      "selector": ".connect-installer-card",
+      "rect": {
+        "top": 408.1,
+        "height": 429.6,
+        "bottom": 837.7,
+        "width": 398
+      },
+      "target": {
+        "top": 408,
+        "height": 430,
+        "bottom": 838
+      },
+      "tolerance": 16,
+      "topDelta": 0.1,
+      "heightDelta": -0.4,
+      "bottomDelta": -0.3,
+      "maxAbsDelta": 0.4,
+      "status": "ok"
+    },
+    {
+      "key": "doctor",
+      "label": "After-install card",
+      "selector": ".connect-doctor-card",
+      "rect": {
+        "top": 841.7,
+        "height": 258.5,
+        "bottom": 1100.1,
+        "width": 398
+      },
+      "target": {
+        "top": 842,
+        "height": 258,
+        "bottom": 1100
+      },
+      "tolerance": 16,
+      "topDelta": -0.3,
+      "heightDelta": 0.5,
+      "bottomDelta": 0.1,
+      "maxAbsDelta": 0.5,
+      "status": "ok"
+    },
+    {
+      "key": "lyra",
+      "label": "Lyra tip",
+      "selector": ".lyra-tip",
+      "rect": {
+        "top": 1104.1,
+        "height": 84,
+        "bottom": 1188.1,
+        "width": 398
+      },
+      "target": {
+        "top": 1104,
+        "height": 84,
+        "bottom": 1188
+      },
+      "tolerance": 12,
+      "topDelta": 0.1,
+      "heightDelta": 0,
+      "bottomDelta": 0.1,
+      "maxAbsDelta": 0.1,
+      "status": "ok"
+    },
+    {
+      "key": "bottomNav",
+      "label": "Bottom nav",
+      "selector": ".bottom-nav",
+      "rect": {
+        "top": 1198.1,
+        "height": 59,
+        "bottom": 1257.1,
+        "width": 398
+      },
+      "target": {
+        "top": 1198,
+        "height": 59,
+        "bottom": 1257
+      },
+      "tolerance": 12,
+      "topDelta": 0.1,
+      "heightDelta": 0,
+      "bottomDelta": 0.1,
+      "maxAbsDelta": 0.1,
+      "status": "ok"
+    }
+  ],
+  "screenshotPath": "web/.qa-connect/connect-measured-mobile.png"
+}
