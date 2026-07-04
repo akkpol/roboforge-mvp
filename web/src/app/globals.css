@@ -288,6 +288,18 @@ img {
   height: 27px;
 }
 
+.round-action--creator {
+  border-color: rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.08);
+  color: #7c3aed;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.round-action--creator:hover {
+  background: rgba(139, 92, 246, 0.18);
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.28);
+}
+
 .round-action.has-dot::after {
   position: absolute;
   top: 8px;

@@ -50,10 +50,6 @@ export async function updateSession(request: NextRequest) {
   const { data, error } = await supabase.auth.getClaims();
   const user = error ? null : data?.claims;
 
-  if (pathname === "/" && !user) {
-    return NextResponse.redirect(loginUrl(request));
-  }
-
   if (pathname === "/login" && user) {
     const redirectTarget = cleanRedirect(request.nextUrl.searchParams.get("redirect"));
     return NextResponse.redirect(new URL(redirectTarget, request.url));
