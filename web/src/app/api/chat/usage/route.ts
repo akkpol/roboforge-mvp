@@ -18,6 +18,8 @@ function getServiceClient() {
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const userId: string | null = body?.userId?.trim() || null;
+  const readonly: boolean = body?.readonly === true; // check only, don't deduct
+
   if (!userId || userId.length < 3) {
     return NextResponse.json({ error: "Missing userId" }, { status: 400 });
   }
@@ -25,7 +27,6 @@ export async function POST(req: NextRequest) {
   const month = getMonth();
   const supabase = getServiceClient();
   if (!supabase) {
-    // Fallback: if no DB config, just allow
     return NextResponse.json({ allowed: true, count: 0, remaining: 9, limit: MONTH_LIMIT, month, fallback: true });
   }
 
@@ -38,6 +39,19 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     const currentCount = row?.count ?? 0;
+
+    if (readonly) {
+      // Read-only: just return current count, no deduction
+      return NextResponse.json({
+        allowed: currentCount < MONTH_LIMIT,
+        count: currentCount,
+        remaining: Math.max(0, MONTH_LIMIT - currentCount),
+        limit: MONTH_LIMIT,
+        month,
+      });
+    }
+
+    // Deduct mode: increment if allowed
     const allowed = currentCount < MONTH_LIMIT;
 
     if (allowed) {
@@ -60,7 +74,6 @@ export async function POST(req: NextRequest) {
       month,
     });
   } catch (err) {
-    // Table doesn't exist or DB error — allow anyway
     return NextResponse.json({ allowed: true, count: 0, remaining: 9, limit: MONTH_LIMIT, month, error: String(err) });
   }
 }
