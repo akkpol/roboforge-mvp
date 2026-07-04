@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Send, Sparkles, MessageCircle } from "lucide-react";
+import { useLyraChat } from "@/lib/LyraChatContext";
 
 const MAX_PER_MONTH = 10;
 
@@ -18,7 +19,7 @@ function getUserId(): string {
 }
 
 export function LyraChat() {
-  const [open, setOpen] = useState(false);
+  const { open, setOpen } = useLyraChat();
   const [messages, setMessages] = useState<Array<{ id: string; role: string; text: string }>>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);

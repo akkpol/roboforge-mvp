@@ -8,6 +8,7 @@ import { HeroScene } from "./hero-scene";
 import { MissionCard } from "./mission-card";
 import { RobotShelf } from "./robot-shelf";
 import { TopBar } from "./top-bar";
+import { useLyraChat } from "@/lib/LyraChatContext";
 
 type GarageScreenProps = {
   isConnected?: boolean;
@@ -22,6 +23,7 @@ export function GarageScreen({
 }: GarageScreenProps) {
   const [activeRobot, setActiveRobot] = useState(0);
   const [roverLinked, setRoverLinked] = useState(false);
+  const { setOpen: openLyraChat } = useLyraChat();
   const [, setLyraLine] = useState(
     isConnected
       ? justConnected
@@ -46,7 +48,7 @@ export function GarageScreen({
           roverLinked={roverLinked}
           onConnect={connectRover}
           onMission={() => setLyraLine("พร้อมเริ่มภารกิจแรกแล้ว เลือกเส้นทางสั้น ๆ เพื่อทดสอบ Rover และเก็บข้อมูลรอบแรก")}
-          onTalk={() => setLyraLine("ถาม Lyra ได้เลย: ชิ้นส่วนไหนต่อก่อน หรือขั้นตอนไหนยังไม่ชัด")}
+          onTalk={() => openLyraChat(true)}
         />
         <HardwareGrid />
         <MissionCard isConnected={isConnected} />

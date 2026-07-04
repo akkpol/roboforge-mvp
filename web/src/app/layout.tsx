@@ -6,6 +6,7 @@ import "@fontsource/noto-sans-thai/400.css";
 import "@fontsource/noto-sans-thai/600.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LyraChat } from "@/components/lumina/lyra-chat";
+import { LyraChatProvider } from "@/lib/LyraChatContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,8 +26,10 @@ export default function RootLayout({
   return (
     <html lang="th" suppressHydrationWarning>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
-        <LyraChat />
+        <LyraChatProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+          <LyraChat />
+        </LyraChatProvider>
       </body>
     </html>
   );
