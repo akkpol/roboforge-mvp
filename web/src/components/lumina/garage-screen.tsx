@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ActionBar } from "./action-bar";
 import { BottomNav } from "./bottom-nav";
+import { CoffeeModal } from "./coffee-modal";
 import { HardwareGrid } from "./hardware-grid";
 import { HeroScene } from "./hero-scene";
 import { MissionCard } from "./mission-card";
@@ -23,6 +24,7 @@ export function GarageScreen({
 }: GarageScreenProps) {
   const [activeRobot, setActiveRobot] = useState(0);
   const [roverLinked, setRoverLinked] = useState(false);
+  const [coffeeOpen, setCoffeeOpen] = useState(false);
   const { setOpen: openLyraChat } = useLyraChat();
   const [, setLyraLine] = useState(
     isConnected
@@ -47,7 +49,7 @@ export function GarageScreen({
           isConnected={isConnected}
           roverLinked={roverLinked}
           onConnect={connectRover}
-          onMission={() => setLyraLine("พร้อมเริ่มภารกิจแรกแล้ว เลือกเส้นทางสั้น ๆ เพื่อทดสอบ Rover และเก็บข้อมูลรอบแรก")}
+          onCoffee={() => setCoffeeOpen(true)}
           onTalk={() => openLyraChat(true)}
         />
         <HardwareGrid />
@@ -55,6 +57,7 @@ export function GarageScreen({
         <RobotShelf activeRobot={activeRobot} onSelectRobot={setActiveRobot} />
       </div>
       <BottomNav active="garage" />
+      <CoffeeModal open={coffeeOpen} onClose={() => setCoffeeOpen(false)} />
     </main>
   );
 }
