@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Send, Sparkles, MessageCircle } from "lucide-react";
 import { useLyraChat } from "@/lib/LyraChatContext";
+import { useSupabaseSession } from "@/lib/useSupabaseSession";
 
 const MAX_PER_MONTH = 10;
 
@@ -19,6 +20,7 @@ function getUserId(): string {
 }
 
 export function LyraChat() {
+  const session = useSupabaseSession();
   const { open, setOpen } = useLyraChat();
   const [messages, setMessages] = useState<Array<{ id: string; role: string; text: string }>>([]);
   const [input, setInput] = useState("");
@@ -32,21 +34,25 @@ export function LyraChat() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  // เช็ค usage ทันทีตอนเปิด component
+  // เช็ค usage แบบ readonly (ไม่หัก) เมื่อ component mount
   useEffect(() => {
+    if (!session) return;
     checkUsage().then((r) => {
       remainingRef.current = r.remaining;
       setRemaining(r.remaining);
       setChecking(false);
     });
-  }, []);
+  }, [session]);
+
+  // ⛔ ถ้าไม่ล็อกอิน → ไม่แสดง chat เลย
+  if (!session) return null;
 
   async function checkUsage(): Promise<{ remaining: number; allowed: boolean }> {
     try {
       const res = await fetch("/api/chat/usage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: getUserId() }),
+        body: JSON.stringify({ userId: getUserId(), readonly: true }),
       });
       if (!res.ok) return { remaining: 0, allowed: false };
       const data = await res.json();
@@ -56,12 +62,13 @@ export function LyraChat() {
     }
   }
 
+  // หัก usage เฉพาะตอนส่ง message จริง
   async function deductUsage(): Promise<boolean> {
     try {
       const res = await fetch("/api/chat/usage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: getUserId() }),
+        body: JSON.stringify({ userId: getUserId(), readonly: false }),
       });
       if (!res.ok) return false;
       const data = await res.json();
@@ -90,18 +97,15 @@ export function LyraChat() {
     if (streaming || !text.trim()) return;
     setError(null);
 
-    // 1. Deduct usage
     const allowed = await deductUsage();
     if (!allowed) {
       setError(`เดือนนี้คุณใช้ครบ ${MAX_PER_MONTH} ครั้งแล้ว เดือนหน้ากลับมาใหม่นะครับ 🙏`);
       return;
     }
 
-    // 2. Add user message
     addMsg("user", text);
     setInput("");
 
-    // 3. Send API
     setStreaming(true);
     const assistantId = addMsg("assistant", "");
     const abort = new AbortController();
@@ -158,7 +162,7 @@ export function LyraChat() {
 
   return (
     <>
-      {/* 🔵 Floating button — ใหญ่ พร้อมข้อความ */}
+      {/* 🔵 Floating button — เฉพาะเมื่อล็อกอินแล้ว */}
       <button
         onClick={() => setOpen(true)}
         aria-label="คุยกับ Lyra"
