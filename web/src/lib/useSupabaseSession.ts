@@ -15,13 +15,15 @@ export function useSupabaseSession(): MiniSession {
     const supabase = createClient();
     if (!supabase) return;
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session as MiniSession);
+    supabase.auth.getSession().then(({ data }: { data: { session: MiniSession } }) => {
+      setSession(data.session);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s as MiniSession);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event: string, s: MiniSession) => {
+        setSession(s);
+      },
+    );
 
     return () => { listener?.subscription.unsubscribe(); };
   }, []);
