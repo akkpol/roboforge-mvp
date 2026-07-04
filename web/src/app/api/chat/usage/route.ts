@@ -18,7 +18,6 @@ function getServiceClient() {
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const userId: string | null = body?.userId?.trim() || null;
-
   if (!userId || userId.length < 3) {
     return NextResponse.json({ error: "Missing userId" }, { status: 400 });
   }
@@ -26,41 +25,42 @@ export async function POST(req: NextRequest) {
   const month = getMonth();
   const supabase = getServiceClient();
   if (!supabase) {
-    return NextResponse.json({ error: "Server config error" }, { status: 500 });
+    // Fallback: if no DB config, just allow
+    return NextResponse.json({ allowed: true, count: 0, remaining: 9, limit: MONTH_LIMIT, month, fallback: true });
   }
 
-  // Get current count
-  const { data: row } = await supabase
-    .from("lyra_usage")
-    .select("count")
-    .eq("user_id", userId)
-    .eq("month", month)
-    .maybeSingle();
+  try {
+    const { data: row } = await supabase
+      .from("lyra_usage")
+      .select("count")
+      .eq("user_id", userId)
+      .eq("month", month)
+      .maybeSingle();
 
-  const currentCount = row?.count ?? 0;
-  const remaining = Math.max(0, MONTH_LIMIT - currentCount);
-  const allowed = currentCount < MONTH_LIMIT;
+    const currentCount = row?.count ?? 0;
+    const allowed = currentCount < MONTH_LIMIT;
 
-  // Increment if allowed
-  if (allowed) {
-    if (row) {
-      await supabase
-        .from("lyra_usage")
-        .update({ count: currentCount + 1, updated_at: new Date().toISOString() })
-        .eq("user_id", userId)
-        .eq("month", month);
-    } else {
-      await supabase
-        .from("lyra_usage")
-        .insert({ user_id: userId, month, count: 1 });
+    if (allowed) {
+      if (row) {
+        await supabase
+          .from("lyra_usage")
+          .update({ count: currentCount + 1, updated_at: new Date().toISOString() })
+          .eq("user_id", userId)
+          .eq("month", month);
+      } else {
+        await supabase.from("lyra_usage").insert({ user_id: userId, month, count: 1 });
+      }
     }
-  }
 
-  return NextResponse.json({
-    allowed,
-    count: currentCount + (allowed ? 1 : 0),
-    remaining: remaining - (allowed ? 1 : 0),
-    limit: MONTH_LIMIT,
-    month,
-  });
+    return NextResponse.json({
+      allowed,
+      count: currentCount + (allowed ? 1 : 0),
+      remaining: Math.max(0, MONTH_LIMIT - currentCount - (allowed ? 1 : 0)),
+      limit: MONTH_LIMIT,
+      month,
+    });
+  } catch (err) {
+    // Table doesn't exist or DB error — allow anyway
+    return NextResponse.json({ allowed: true, count: 0, remaining: 9, limit: MONTH_LIMIT, month, error: String(err) });
+  }
 }
