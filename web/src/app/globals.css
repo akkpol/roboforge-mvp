@@ -288,16 +288,24 @@ img {
   height: 27px;
 }
 
-.round-action--creator {
-  border-color: rgba(139, 92, 246, 0.35);
-  background: rgba(139, 92, 246, 0.08);
+.creator-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
   color: #7c3aed;
-  transition: background 0.2s, box-shadow 0.2s;
+  background: rgba(139, 92, 246, 0.06);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
 }
 
-.round-action--creator:hover {
-  background: rgba(139, 92, 246, 0.18);
-  box-shadow: 0 0 18px rgba(139, 92, 246, 0.28);
+.creator-badge:hover {
+  background: rgba(139, 92, 246, 0.14);
+  border-color: rgba(139, 92, 246, 0.45);
 }
 
 .round-action.has-dot::after {
@@ -1294,6 +1302,43 @@ img {
   padding: 14px;
   border-radius: 26px;
   background: rgba(255, 255, 255, 0.82);
+}
+
+.profile-guest-card {
+  place-items: center;
+  text-align: center;
+  padding: 32px 14px;
+  gap: 16px;
+}
+
+.profile-guest-card h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #18335d;
+  margin: 0;
+}
+
+.profile-guest-card p {
+  font-size: 14px;
+  color: #5a7a9a;
+  margin: 0;
+  max-width: 280px;
+}
+
+.profile-guest-avatar {
+  display: grid;
+  width: 80px;
+  height: 80px;
+  place-items: center;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(46, 140, 240, 0.2));
+  border: 2px dashed rgba(139, 92, 246, 0.32);
+}
+
+.profile-guest-avatar span {
+  font-size: 24px;
+  font-weight: 800;
+  color: #7c3aed;
 }
 
 .profile-avatar-panel {

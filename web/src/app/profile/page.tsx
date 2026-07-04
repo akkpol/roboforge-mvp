@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { ProfileScreen } from "@/components/lumina/profile-screen";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -23,7 +22,17 @@ export default async function ProfilePage() {
   const user = data.user;
 
   if (!user) {
-    redirect("/login?redirect=/profile&lang=th");
+    return (
+      <ProfileScreen
+        avatarPath={null}
+        avatarUrl={null}
+        displayName="Guest"
+        email={null}
+        isConnected={false}
+        phoneNumber={null}
+        userId={null}
+      />
+    );
   }
 
   const { data: profile } = (await supabase

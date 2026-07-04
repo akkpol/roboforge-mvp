@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
-import { Camera, CheckCircle2, LogOut, Mail, Save, Upload, UserRound } from "lucide-react";
+import { Camera, CheckCircle2, LogOut, LogIn, Mail, Save, Upload, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { BottomNav } from "./bottom-nav";
@@ -16,7 +16,7 @@ export type ProfileScreenProps = {
   email: string | null;
   isConnected: boolean;
   phoneNumber?: string | null;
-  userId: string;
+  userId: string | null;
 };
 
 const AVATAR_BUCKET = "profile-avatars";
@@ -250,6 +250,21 @@ export function ProfileScreen({
           </div>
         </section>
 
+        {!userId ? (
+          <section className="profile-form-card profile-guest-card" aria-label="เข้าสู่ระบบเพื่อดูโปรไฟล์">
+            <div className="profile-guest-avatar">
+              <span>RF</span>
+            </div>
+            <h2>กรุณาเข้าสู่ระบบ</h2>
+            <p>เข้าสู่ระบบเพื่อจัดการโปรไฟล์และหุ่นยนต์ของคุณ</p>
+            <Button asChild size="default" variant="primary">
+              <Link href="/login?redirect=/profile&lang=th">
+                <LogIn data-icon="inline-start" />
+                เข้าสู่ระบบ
+              </Link>
+            </Button>
+          </section>
+        ) : (
         <form className="profile-form-card" onSubmit={handleSubmit}>
           <section className="profile-avatar-panel" aria-label="รูปโปรไฟล์">
             <button
@@ -353,6 +368,7 @@ export function ProfileScreen({
             </Button>
           </section>
         </form>
+        )}
       </div>
       <BottomNav active="profile" />
     </main>
