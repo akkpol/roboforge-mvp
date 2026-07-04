@@ -9,7 +9,7 @@ import {
 import { luminaAssets } from "./assets";
 
 export type HardwareItem = {
-  key: "esp32" | "hcsr04" | "l298n" | "motor1" | "motor2" | "motor3" | "motor4" | "battery";
+  key: "esp32" | "l298n" | "motor1" | "motor2" | "motor3" | "motor4" | "battery";
   image: string;
   name: string;
   ariaLabel: string;
@@ -38,13 +38,6 @@ export const hardwareItems: readonly HardwareItem[] = [
     name: "ESP32",
     ariaLabel: "ESP32 controller board connected",
     tone: "mint",
-  },
-  {
-    key: "hcsr04",
-    image: luminaAssets.hardwareIllustrations.hcsr04,
-    name: "HC-SR04",
-    ariaLabel: "HC-SR04 ultrasonic sensor connected",
-    tone: "sky",
   },
   {
     key: "l298n",

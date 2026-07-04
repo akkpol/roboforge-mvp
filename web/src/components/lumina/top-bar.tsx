@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Bell, Bot, LogOut, Settings } from "lucide-react";
+import { ArrowLeft, Bell, Bot, ExternalLink, LogOut, Settings } from "lucide-react";
 
 type TopBarProps = {
   backHref?: string;
@@ -30,6 +30,16 @@ export function TopBar({ backHref = "/", backLabel = "กลับหน้า R
         </Link>
       </div>
       <div className="top-actions" aria-label="RoboForge controls">
+        <a
+          className="round-action round-action--creator"
+          href="https://akkapol-systems.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Created by akkapol — view portfolio"
+          title="Created by akkapol"
+        >
+          <ExternalLink data-icon="inline-start" />
+        </a>
         <button className="round-action has-dot" type="button" aria-label="Notifications">
           <Bell data-icon="inline-start" />
         </button>
