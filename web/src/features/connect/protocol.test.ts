@@ -11,7 +11,7 @@ import {
   normalizeRobotId,
   parseRobotStatus,
   serializeRobotCommand,
-} from "./connect-protocol";
+} from "./protocol";
 
 describe("connect protocol", () => {
   it("keeps browser installer files synced with the firmware source", () => {

@@ -1,5 +1,8 @@
-import { ConnectScreen } from "@/components/lumina/connect-screen";
+import { ConnectWizard } from "@/features/connect/connect-wizard";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export default function ConnectPage() {
-  return <ConnectScreen />;
+export default async function ConnectPage() {
+  const supabase = await createServerSupabaseClient();
+  const { data } = (await supabase?.auth.getUser()) ?? { data: { user: null } };
+  return <ConnectWizard isAuthenticated={Boolean(data.user)} />;
 }
