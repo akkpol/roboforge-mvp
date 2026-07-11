@@ -26,6 +26,15 @@ function freshProgress(robotId: string): SetupProgress {
   return { completed: [], robotId, version: 1 };
 }
 
+function contiguousCompleted(value: readonly unknown[]) {
+  const completed: SetupStepId[] = [];
+  for (const step of SETUP_STEPS) {
+    if (!value.includes(step)) break;
+    completed.push(step);
+  }
+  return completed;
+}
+
 function nextStep(completed: readonly SetupStepId[]): SetupStepId {
   return SETUP_STEPS.find((step) => !completed.includes(step)) ?? "handoff";
 }
@@ -40,7 +49,7 @@ export function parseSetupProgress(value: string | null, fallbackRobotId: string
     }
 
     const storedCompleted = Array.isArray(input.completed) ? input.completed : [];
-    const completed = SETUP_STEPS.filter((step) => storedCompleted.includes(step));
+    const completed = contiguousCompleted(storedCompleted);
 
     return { completed, robotId: input.robotId, version: 1 };
   } catch {
@@ -57,10 +66,11 @@ export function serializeSetupProgress(progress: SetupProgress) {
 }
 
 export function createSetupState(robotId: string, progress = freshProgress(robotId)): SetupState {
-  const step = nextStep(progress.completed);
+  const normalizedProgress = { ...progress, completed: contiguousCompleted(progress.completed) };
+  const step = nextStep(normalizedProgress.completed);
   return {
-    progress,
-    status: progress.completed.length === SETUP_STEPS.length ? "success" : "active",
+    progress: normalizedProgress,
+    status: normalizedProgress.completed.length === SETUP_STEPS.length ? "success" : "active",
     step,
   };
 }

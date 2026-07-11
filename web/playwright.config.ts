@@ -5,6 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   reporter: "line",
   testDir: "./tests",
+  testIgnore: "production.spec.ts",
   use: {
     baseURL: "http://127.0.0.1:3100",
     channel: "chrome",

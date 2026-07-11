@@ -5,6 +5,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { LogIn, Send, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { readTextDelta } from "./lyra-stream";
 
 const MONTHLY_LIMIT = 10;
 const QUICK_QUESTIONS = ["ESP32 ใช้ pin อะไร?", "ต่อ Wi-Fi ไม่ได้", "วิธีติดตั้ง firmware"] as const;
@@ -29,15 +30,20 @@ export default function LyraDialog({ isAuthenticated, onOpenChange, open }: Lyra
 
   const readUsage = useCallback(async (readonly: boolean) => {
     if (!deviceIdRef.current) return false;
-    const response = await fetch("/api/chat/usage", {
-      body: JSON.stringify({ readonly, userId: deviceIdRef.current }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    });
-    if (!response.ok) return false;
-    const data = (await response.json()) as { allowed?: boolean; remaining?: number };
-    setRemaining(typeof data.remaining === "number" ? data.remaining : 0);
-    return data.allowed === true;
+    try {
+      const response = await fetch("/api/chat/usage", {
+        body: JSON.stringify({ readonly, userId: deviceIdRef.current }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      if (!response.ok) throw new Error("usage unavailable");
+      const data = (await response.json()) as { allowed?: boolean; remaining?: number };
+      setRemaining(typeof data.remaining === "number" ? data.remaining : 0);
+      return data.allowed === true;
+    } catch {
+      setError("เชื่อมต่อบริการ Lyra ไม่สำเร็จ กรุณาลองใหม่");
+      return null;
+    }
   }, []);
 
   useEffect(() => {
@@ -56,7 +62,9 @@ export default function LyraDialog({ isAuthenticated, onOpenChange, open }: Lyra
     const value = text.trim();
     if (!value || streaming) return;
     setError("");
-    if (!(await readUsage(false))) {
+    const usageAllowed = await readUsage(false);
+    if (usageAllowed === null) return;
+    if (!usageAllowed) {
       setError(`เดือนนี้ใช้ Lyra ครบ ${MONTHLY_LIMIT} ครั้งแล้ว`);
       return;
     }
@@ -81,6 +89,7 @@ export default function LyraDialog({ isAuthenticated, onOpenChange, open }: Lyra
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let assistantText = "";
       while (true) {
         const { done, value: chunk } = await reader.read();
         if (done) break;
@@ -88,18 +97,24 @@ export default function LyraDialog({ isAuthenticated, onOpenChange, open }: Lyra
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
         for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const event = JSON.parse(line.slice(6)) as { delta?: string; type?: string };
-            if (event.type === "text-delta" && event.delta) {
-              setMessages((current) => current.map((message) =>
-                message.id === assistantId ? { ...message, text: message.text + event.delta } : message,
-              ));
-            }
-          } catch {
-            continue;
-          }
+          const delta = readTextDelta(line);
+          if (!delta) continue;
+          assistantText += delta;
+          setMessages((current) => current.map((message) =>
+            message.id === assistantId ? { ...message, text: message.text + delta } : message,
+          ));
         }
+      }
+      const finalDelta = readTextDelta(buffer);
+      if (finalDelta) {
+        assistantText += finalDelta;
+        setMessages((current) => current.map((message) =>
+          message.id === assistantId ? { ...message, text: message.text + finalDelta } : message,
+        ));
+      }
+      if (!assistantText.trim()) {
+        setMessages((current) => current.filter((message) => message.id !== assistantId));
+        setError("Lyra ยังตอบไม่ได้ในตอนนี้ กรุณาลองใหม่");
       }
     } catch (caught) {
       setMessages((current) => current.filter((message) => message.id !== assistantId));

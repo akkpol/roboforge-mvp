@@ -44,6 +44,22 @@ function delay(milliseconds: number) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
+function readStoredProgress() {
+  try {
+    return window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function persistProgress(progress: ReturnType<typeof createSetupState>["progress"]) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, serializeSetupProgress(progress));
+  } catch {
+    // Setup remains usable when storage is blocked or full.
+  }
+}
+
 async function writeSerialText(port: SerialPortLike, text: string) {
   const writer = port.writable?.getWriter();
   if (!writer) throw new Error("ไม่พบช่องทางเขียนข้อมูลผ่าน USB");
@@ -61,13 +77,13 @@ export function ConnectWizard({ isAuthenticated }: { isAuthenticated: boolean })
 
   useEffect(() => {
     const fallbackRobotId = createRobotId();
-    const progress = parseSetupProgress(window.localStorage.getItem(STORAGE_KEY), fallbackRobotId);
+    const progress = parseSetupProgress(readStoredProgress(), fallbackRobotId);
     setSetup(createSetupState(progress.robotId, progress));
     setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(STORAGE_KEY, serializeSetupProgress(setup.progress));
+    if (hydrated) persistProgress(setup.progress);
   }, [hydrated, setup.progress]);
 
   useEffect(() => {
@@ -87,7 +103,7 @@ export function ConnectWizard({ isAuthenticated }: { isAuthenticated: boolean })
   function resetProgress() {
     const next = createSetupState(createRobotId());
     setSetup(next);
-    window.localStorage.setItem(STORAGE_KEY, serializeSetupProgress(next.progress));
+    persistProgress(next.progress);
   }
 
   async function copyDesktopLink() {

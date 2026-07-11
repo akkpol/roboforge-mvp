@@ -83,4 +83,19 @@ describe("setup state", () => {
       ),
     ).toEqual({ completed: [], robotId: "rf-new", version: 1 });
   });
+
+  it("keeps only the longest contiguous prefix from semantically corrupted progress", () => {
+    expect(parseSetupProgress(
+      JSON.stringify({ completed: ["runtime"], robotId: "rf-saved", version: 1 }),
+      "rf-new",
+    ).completed).toEqual([]);
+    expect(parseSetupProgress(
+      JSON.stringify({ completed: ["prepare", "agent"], robotId: "rf-saved", version: 1 }),
+      "rf-new",
+    ).completed).toEqual(["prepare"]);
+    expect(parseSetupProgress(
+      JSON.stringify({ completed: ["prepare", "prepare", "runtime"], robotId: "rf-saved", version: 1 }),
+      "rf-new",
+    ).completed).toEqual(["prepare", "runtime"]);
+  });
 });

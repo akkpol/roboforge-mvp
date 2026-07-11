@@ -46,6 +46,7 @@ test("utility dialogs close with Escape and return focus", async ({ page }) => {
 
   await lyraButton.click();
   await expect(page.getByRole("dialog", { name: "คุยกับ Lyra" })).toBeVisible();
+  await expectNoSeriousA11yIssues(page);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "คุยกับ Lyra" })).toBeHidden();
   await expect(lyraButton).toBeFocused();
@@ -53,6 +54,16 @@ test("utility dialogs close with Escape and return focus", async ({ page }) => {
   const supportButton = page.getByRole("button", { name: "เลี้ยงกาแฟผู้พัฒนา" });
   await supportButton.click();
   await expect(page.getByRole("dialog", { name: "เลี้ยงกาแฟผู้พัฒนา" })).toBeVisible();
+  await expectNoSeriousA11yIssues(page);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "เลี้ยงกาแฟผู้พัฒนา" })).toBeHidden();
+  await expect(supportButton).toBeFocused();
+});
+
+test("keyboard navigation starts with a visible, meaningful control", async ({ page }) => {
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "RoboForge home" })).toBeFocused();
 });
 
 test("auth and guest profile share the new product language", async ({ page }) => {
