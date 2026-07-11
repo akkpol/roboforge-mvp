@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft, Bot } from "lucide-react";
 import { AuthForm } from "@/components/auth-form";
 
 type LoginPageProps = {
@@ -76,34 +78,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const copy = loginCopy[locale];
 
   return (
-    <main className="auth-page">
-      <section className="auth-copy">
-        <span className="auth-eyebrow">{copy.eyebrow}</span>
-        <h1>{copy.title}</h1>
-        <p>{copy.body}</p>
-        <div className="auth-visual" aria-hidden="true">
-          <div className="auth-visual-orbit" />
-          <Image
-            alt=""
-            className="auth-visual-guide"
-            height={420}
-            priority
-            src="/assets/lumina/lyra-guide-thigh-up.png"
-            style={{ height: "auto" }}
-            width={320}
-          />
-          <div className="auth-visual-panel">
-            <span>{copy.status}</span>
-          </div>
+    <main className="relative isolate min-h-dvh overflow-hidden px-4 py-6 sm:px-6 lg:grid lg:place-items-center lg:px-8">
+      <Image alt="" className="-z-20 object-cover opacity-30" fill priority sizes="100vw" src="/assets/lumina/garage-background-wide.png" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-white/95 via-sky-50/90 to-violet-50/95" />
+      <div className="mx-auto w-full max-w-6xl">
+        <Link aria-label="กลับหน้าหลัก RoboForge" className="inline-flex items-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-white/70" href="/"><ArrowLeft className="size-4" /><span className="grid size-8 place-items-center rounded-xl bg-blue-600 text-white"><Bot className="size-4" /></span>ROBOFORGE</Link>
+        <div className="mt-5 grid items-center gap-8 lg:grid-cols-5 lg:gap-14">
+          <section className="relative min-h-72 overflow-hidden rounded-3xl border border-white/80 bg-white/70 p-7 sm:p-10 lg:col-span-3 lg:min-h-96">
+            <p className="text-sm font-semibold text-blue-700">{copy.eyebrow}</p>
+            <h1 className="mt-3 max-w-xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">{copy.title}</h1>
+            <p className="mt-4 max-w-lg text-base leading-7 text-slate-600">{copy.body}</p>
+            <Image alt="Lyra ผู้ช่วย RoboForge" className="absolute bottom-0 right-0 h-72 w-auto object-contain object-bottom sm:h-96" height={420} priority sizes="(min-width: 1024px) 24rem, 16rem" src="/assets/lumina/lyra-guide-thigh-up.png" width={320} />
+            <p className="absolute bottom-5 left-6 rounded-2xl bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-lg sm:bottom-8 sm:left-8">{copy.status}</p>
+          </section>
+          <div className="lg:col-span-2"><Suspense fallback={<div className="rounded-3xl bg-white p-8 text-sm text-slate-500">{copy.fallback}</div>}><AuthForm initialMessage={initialMessage} locale={locale} redirectTo={redirectTo} /></Suspense></div>
         </div>
-      </section>
-      <Suspense fallback={<div className="auth-card">{copy.fallback}</div>}>
-        <AuthForm
-          initialMessage={initialMessage}
-          locale={locale}
-          redirectTo={redirectTo}
-        />
-      </Suspense>
+      </div>
     </main>
   );
 }
