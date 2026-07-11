@@ -5,14 +5,11 @@ import "@fontsource/rajdhani/700.css";
 import "@fontsource/noto-sans-thai/400.css";
 import "@fontsource/noto-sans-thai/600.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { LyraChat } from "@/components/lumina/lyra-chat";
-import { LyraChatProvider } from "@/lib/LyraChatContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RoboForge Lumina",
-  description:
-    "A soft anime RoboForge home screen for setting up Rover-01 with Lyra.",
+  title: "RoboForge",
+  description: "ติดตั้ง เชื่อมต่อ และเริ่มควบคุม ESP32 Rover ทีละขั้น",
   icons: {
     icon: "/favicon.svg",
   },
@@ -26,10 +23,7 @@ export default function RootLayout({
   return (
     <html lang="th" suppressHydrationWarning>
       <body>
-        <LyraChatProvider>
-          <ThemeProvider>{children}</ThemeProvider>
-          <LyraChat />
-        </LyraChatProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
