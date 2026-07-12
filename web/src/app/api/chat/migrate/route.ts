@@ -30,20 +30,6 @@ export async function GET() {
   });
 
   if (error) {
-    // Try via management API — direct PostgREST
-    const createRes = await fetch(`${url}/rest/v1/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        "Prefer": "return=headers-only",
-      },
-      body: JSON.stringify({
-        // Can't create table via PostgREST, need SQL
-      }),
-    });
-
     return NextResponse.json({
       error: error.message,
       hint: "Create table manually in Supabase Dashboard > SQL Editor with the migration SQL",

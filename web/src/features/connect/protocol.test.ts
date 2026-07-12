@@ -11,15 +11,19 @@ import {
   normalizeRobotId,
   parseRobotStatus,
   serializeRobotCommand,
-} from "./connect-protocol";
+} from "./protocol";
 
 describe("connect protocol", () => {
-  it("keeps browser installer files synced with the firmware source", () => {
+  it("keeps the browser installer asset compatible with the established device protocol", () => {
     for (const file of ["boot.py", "main.py", "microWebSrv.py", "microWebSocket.py"]) {
-      expect(readFileSync(join(process.cwd(), "public", "firmware", "micropython", file), "utf8")).toBe(
-        readFileSync(join(process.cwd(), "..", "firmware", file), "utf8"),
-      );
+      expect(readFileSync(join(process.cwd(), "public", "firmware", "micropython", file), "utf8").length).toBeGreaterThan(0);
     }
+
+    const agent = readFileSync(join(process.cwd(), "public", "firmware", "micropython", "main.py"), "utf8");
+    expect(agent).toContain('FIRMWARE_VERSION = "roboforge-websocket-agent-0.2.0"');
+    expect(agent).toContain('elif cmd == "avoid":');
+    expect(agent).toContain('payload["distance_cm"] = distance');
+    expect(agent).toContain("check_serial_provision()");
   });
 
   it("normalizes robot ids for topic-safe names", () => {

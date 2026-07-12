@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "qa:connect": "node scripts/measure-connect-composition.mjs",
-    "test:foundation": "vitest run --passWithNoTests"
+    "test:foundation": "vitest run --passWithNoTests",
+    "test:e2e": "playwright test",
+    "test:smoke": "npm run build && playwright test --config playwright.production.config.ts"
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^3.0.5",
@@ -33,6 +35,8 @@
     "tailwindcss": "^4.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

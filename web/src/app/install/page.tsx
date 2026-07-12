@@ -1,5 +1,5 @@
-import { ConnectScreen } from "@/components/lumina/connect-screen";
+import { permanentRedirect } from "next/navigation";
 
 export default function InstallPage() {
-  return <ConnectScreen />;
+  permanentRedirect("/connect");
 }

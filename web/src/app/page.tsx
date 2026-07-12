@@ -1,4 +1,4 @@
-import { GarageScreen } from "@/components/lumina/garage-screen";
+import { HomeDashboard } from "@/features/home/home-dashboard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type HomePageProps = {
@@ -29,7 +29,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       : null;
 
   return (
-    <GarageScreen
+    <HomeDashboard
       isConnected={Boolean(user)}
       justConnected={firstParam(params.connected) === "1" && Boolean(user)}
       userName={profileName ?? (typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null)}

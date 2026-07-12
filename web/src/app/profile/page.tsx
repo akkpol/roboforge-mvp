@@ -1,4 +1,4 @@
-import { ProfileScreen } from "@/components/lumina/profile-screen";
+import { ProfileScreen } from "@/features/profile/profile-screen";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type OwnerProfile = {

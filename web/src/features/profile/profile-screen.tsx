@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { Camera, CheckCircle2, LogOut, LogIn, Mail, Save, Upload, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Status } from "@/components/ui/status";
+import { AppShell } from "@/features/shell/app-shell";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
-import { BottomNav } from "./bottom-nav";
-import { TopBar } from "./top-bar";
 
 export type ProfileScreenProps = {
   avatarPath?: string | null;
@@ -239,138 +239,46 @@ export function ProfileScreen({
     }
   }
 
+  const fieldShellClass = "mt-2 flex items-center rounded-2xl border border-slate-200 bg-white px-3 text-slate-500 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-100";
+  const inputClass = "w-full border-0 bg-transparent px-3 py-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 read-only:text-slate-500";
+
   return (
-    <main className="lumina-shell profile-shell">
-      <TopBar isConnected={isConnected} />
-      <div className="profile-content">
-        <section className="profile-hero" aria-labelledby="profile-title">
-          <div className="profile-hero-copy">
-            <h1 id="profile-title">โปรไฟล์ของคุณ</h1>
-            <p>จัดการข้อมูลพื้นฐานของบัญชี RoboForge นี้เท่านั้น</p>
-          </div>
-        </section>
+    <AppShell active="profile" isAuthenticated={isConnected}>
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-6"><Status tone={isConnected ? "ready" : "muted"}>{isConnected ? "บัญชีพร้อม" : "Guest"}</Status><h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl" id="profile-title">โปรไฟล์ของคุณ</h1><p className="mt-2 text-sm leading-6 text-slate-600">บัญชีและหุ่นยนต์ของคุณอยู่ในที่เดียว</p></header>
 
         {!userId ? (
-          <section className="profile-form-card profile-guest-card" aria-label="เข้าสู่ระบบเพื่อดูโปรไฟล์">
-            <div className="profile-guest-avatar">
-              <span>RF</span>
-            </div>
-            <h2>กรุณาเข้าสู่ระบบ</h2>
-            <p>เข้าสู่ระบบเพื่อจัดการโปรไฟล์และหุ่นยนต์ของคุณ</p>
-            <Button asChild size="default" variant="primary">
-              <Link href="/login?redirect=/profile&lang=th">
-                <LogIn data-icon="inline-start" />
-                เข้าสู่ระบบ
-              </Link>
-            </Button>
+          <section aria-label="เข้าสู่ระบบเพื่อดูโปรไฟล์" className="grid min-h-96 place-items-center rounded-3xl border border-white/80 bg-white/95 p-8 text-center shadow-xl shadow-blue-950/5">
+            <div className="max-w-md"><div className="mx-auto grid size-20 place-items-center rounded-3xl bg-blue-50 text-2xl font-bold text-blue-700">RF</div><h2 className="mt-5 text-2xl font-bold text-slate-950">กรุณาเข้าสู่ระบบ</h2><p className="mt-2 text-sm leading-6 text-slate-600">เข้าสู่ระบบเพื่อจัดการโปรไฟล์ รูปประจำตัว และ Rover ของคุณ</p><Button asChild className="mt-6"><Link href="/login?redirect=/profile&lang=th"><LogIn className="size-4" />เข้าสู่ระบบ</Link></Button></div>
           </section>
         ) : (
-        <form className="profile-form-card" onSubmit={handleSubmit}>
-          <section className="profile-avatar-panel" aria-label="รูปโปรไฟล์">
-            <button
-              aria-label="เลือกรูปโปรไฟล์"
-              className="profile-avatar-button"
-              disabled={isPreparingAvatar || isSaving}
-              onClick={() => fileInputRef.current?.click()}
-              type="button"
-            >
-              {previewUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img alt="" src={previewUrl} />
-              ) : (
-                <span>{getInitials(name)}</span>
-              )}
-              <i aria-hidden="true">
-                <Camera data-icon="inline-start" />
-              </i>
-            </button>
-            <div className="profile-avatar-copy">
-              <h2>รูปโปรไฟล์</h2>
-              <p>ใช้ JPG, PNG หรือ WebP ไม่เกิน 5MB ระบบจะย่อเป็น WebP ไม่เกิน 512KB ก่อนอัปโหลด</p>
-              <Button
-                disabled={isPreparingAvatar || isSaving}
-                onClick={() => fileInputRef.current?.click()}
-                size="sm"
-                type="button"
-                variant="secondary"
-              >
-                <Upload data-icon="inline-start" />
-                {isPreparingAvatar ? "กำลังเตรียมรูป" : "อัปโหลดรูป"}
-              </Button>
-              <input
-                accept="image/jpeg,image/png,image/webp"
-                className="profile-file-input"
-                onChange={handleAvatarChange}
-                ref={fileInputRef}
-                type="file"
-              />
-            </div>
-          </section>
+          <form className="grid gap-5 lg:grid-cols-3" onSubmit={handleSubmit}>
+            <section aria-label="รูปโปรไฟล์" className="rounded-3xl border border-white/80 bg-white/95 p-6 shadow-xl shadow-blue-950/5">
+              <button aria-label="เลือกรูปโปรไฟล์" className="group relative mx-auto grid size-40 place-items-center overflow-hidden rounded-3xl bg-blue-50 text-4xl font-bold text-blue-700 outline-none focus-visible:ring-4 focus-visible:ring-blue-200" disabled={isPreparingAvatar || isSaving} onClick={() => fileInputRef.current?.click()} type="button">
+                {previewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img alt="" className="size-full object-cover" src={previewUrl} />
+                ) : <span>{getInitials(name)}</span>}
+                <span aria-hidden="true" className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg"><Camera className="size-5" /></span>
+              </button>
+              <h2 className="mt-5 text-center text-lg font-bold text-slate-950">รูปโปรไฟล์</h2><p className="mt-2 text-center text-xs leading-5 text-slate-500">JPG, PNG หรือ WebP ไม่เกิน 5MB ระบบจะย่อเป็น WebP ก่อนอัปโหลด</p>
+              <Button className="mt-5 w-full" disabled={isPreparingAvatar || isSaving} onClick={() => fileInputRef.current?.click()} size="sm" type="button" variant="secondary"><Upload className="size-4" />{isPreparingAvatar ? "กำลังเตรียมรูป" : "อัปโหลดรูป"}</Button>
+              <input accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} ref={fileInputRef} type="file" />
+            </section>
 
-          <section className="profile-field-list" aria-label="ข้อมูลบัญชี">
-            <label className="profile-field">
-              <span>ชื่อที่แสดง</span>
-              <div>
-                <UserRound data-icon="inline-start" />
-                <input
-                  autoComplete="name"
-                  maxLength={80}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="ชื่อของคุณ"
-                  required
-                  value={name}
-                />
+            <section aria-label="ข้อมูลบัญชี" className="rounded-3xl border border-white/80 bg-white/95 p-5 shadow-xl shadow-blue-950/5 sm:p-7 lg:col-span-2">
+              <h2 className="text-xl font-bold text-slate-950">ข้อมูลบัญชี</h2>
+              <div className="mt-5 grid gap-4">
+                <label className="text-sm font-semibold text-slate-700">ชื่อที่แสดง<span className={fieldShellClass}><UserRound className="size-4" /><input autoComplete="name" className={inputClass} maxLength={80} onChange={(event) => setName(event.target.value)} placeholder="ชื่อของคุณ" required value={name} /></span></label>
+                <label className="text-sm font-semibold text-slate-700">เบอร์โทร<span className={fieldShellClass}><UserRound className="size-4" /><input autoComplete="tel" className={inputClass} inputMode="tel" maxLength={32} onChange={(event) => setPhone(event.target.value)} placeholder="ไม่บังคับกรอก" type="tel" value={phone} /></span></label>
+                <label className="text-sm font-semibold text-slate-700">อีเมล<span className={fieldShellClass}><Mail className="size-4" /><input className={inputClass} readOnly value={email ?? "ไม่มีอีเมล"} /></span></label>
               </div>
-            </label>
-
-            <label className="profile-field">
-              <span>เบอร์โทร</span>
-              <div>
-                <UserRound data-icon="inline-start" />
-                <input
-                  autoComplete="tel"
-                  inputMode="tel"
-                  maxLength={32}
-                  onChange={(event) => setPhone(event.target.value)}
-                  placeholder="ไม่บังคับกรอก"
-                  type="tel"
-                  value={phone}
-                />
-              </div>
-            </label>
-
-            <label className="profile-field is-readonly">
-              <span>อีเมล</span>
-              <div>
-                <Mail data-icon="inline-start" />
-                <input readOnly value={email ?? "ไม่มีอีเมล"} />
-              </div>
-            </label>
-          </section>
-
-          {message ? (
-            <p className={messageTone === "error" ? "profile-message is-error" : "profile-message"}>
-              {messageTone === "success" ? <CheckCircle2 data-icon="inline-start" /> : null}
-              {message}
-            </p>
-          ) : null}
-
-          <section className="profile-actions" aria-label="Profile actions">
-            <Button disabled={isSaving || isPreparingAvatar} size="default" type="submit" variant="primary">
-              <Save data-icon="inline-start" />
-              {isSaving ? "กำลังบันทึก" : "บันทึกโปรไฟล์"}
-            </Button>
-            <Button asChild size="default" variant="ghost">
-              <Link href="/auth/sign-out">
-                <LogOut data-icon="inline-start" />
-                ออกจากระบบ
-              </Link>
-            </Button>
-          </section>
-        </form>
+              {message ? <p className={messageTone === "error" ? "mt-5 rounded-2xl bg-rose-50 p-4 text-sm text-rose-700" : "mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700"} role="status">{messageTone === "success" ? <CheckCircle2 className="size-4" /> : null}{message}</p> : null}
+              <div aria-label="Profile actions" className="mt-6 flex flex-wrap gap-3"><Button disabled={isSaving || isPreparingAvatar} type="submit"><Save className="size-4" />{isSaving ? "กำลังบันทึก" : "บันทึกโปรไฟล์"}</Button><Button asChild variant="ghost"><Link href="/auth/sign-out"><LogOut className="size-4" />ออกจากระบบ</Link></Button></div>
+            </section>
+          </form>
         )}
       </div>
-      <BottomNav active="profile" />
-    </main>
+    </AppShell>
   );
 }
