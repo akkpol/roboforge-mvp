@@ -335,12 +335,12 @@ def _closed_ws(webSocket):
 @MicroWebSrv.route('/', 'GET')
 def _http_control_page(httpClient, httpResponse):
     robot_id = config.get("robot_id", "Rover")
-    html = _CONTROL_PAGE_HTML
+    html = _CONTROL_PAGE_HTML.replace("__ROBOT_ID__", robot_id)
     httpResponse.WriteResponseOk(
         headers=None,
         contentType="text/html",
         contentCharset="UTF-8",
-        content=html % robot_id,
+        content=html,
     )
 
 
@@ -396,26 +396,6 @@ def _on_idle():
 
 
 # ============================================================
-# ▶️ MAIN
-# ============================================================
-
-stop()
-print("\nRoboForge WebSocket Agent", FIRMWARE_VERSION)
-print("Robot ID:", config["robot_id"])
-
-setup_wifi()
-
-srv = MicroWebSrv(webPath=None)  # no static files — all routes
-srv.MaxWebSocketRecvLen = 2048
-srv.WebSocketThreaded = False
-srv.AcceptWebSocketCallback = _accept_ws
-srv._idleCallback = _on_idle
-srv.Start(threaded=False)
-
-print("[HTTP] server started on 80")
-
-
-# ============================================================
 # 📄 หน้า control (ในตัว ไม่ต้องใช้ static file)
 # ============================================================
 
@@ -425,7 +405,7 @@ _CONTROL_PAGE_HTML = """\
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>%s - RoboForge</title>
+<title>__ROBOT_ID__ - RoboForge</title>
 <style>
 *{box-sizing:border-box;margin:0}
 body{font-family:-apple-system,sans-serif;background:#f0f6ff;color:#0d2448;min-height:100dvh;display:grid;place-items:center;padding:16px}
@@ -453,7 +433,7 @@ input[type=range]{flex:1;accent-color:#35c9b2}
 </head>
 <body>
 <div class="card" id="app">
-  <h1>🔵 <span id="title">%s</span></h1>
+  <h1>🔵 <span id="title">__ROBOT_ID__</span></h1>
   <div class="status"><span class="status-dot" id="dot"></span><span id="status-text">กำลังเชื่อมต่อ...</span></div>
   <div class="stats">
     <div class="stat-box">แบตเตอรี่<strong id="battery">--</strong></div>
@@ -496,3 +476,22 @@ document.getElementById('btn-wifi-save').onclick=function(){var s=document.getEl
 </script>
 </body>
 </html>"""
+
+
+# ============================================================
+# ▶️ MAIN
+# ============================================================
+
+stop()
+print("\nRoboForge WebSocket Agent", FIRMWARE_VERSION)
+print("Robot ID:", config["robot_id"])
+
+setup_wifi()
+
+srv = MicroWebSrv(webPath=None)  # no static files — all routes
+srv.MaxWebSocketRecvLen = 2048
+srv.WebSocketThreaded = False
+srv.AcceptWebSocketCallback = _accept_ws
+srv._idleCallback = _on_idle
+print("[HTTP] server starting on 80")
+srv.Start(threaded=False)

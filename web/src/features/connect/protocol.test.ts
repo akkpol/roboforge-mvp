@@ -26,6 +26,21 @@ describe("connect protocol", () => {
     expect(agent).toContain("check_serial_provision()");
   });
 
+  it("defines the control page before starting the blocking HTTP server", () => {
+    const agents = [
+      join(process.cwd(), "..", "firmware", "main.py"),
+      join(process.cwd(), "public", "firmware", "micropython", "main.py"),
+    ];
+
+    for (const path of agents) {
+      const source = readFileSync(path, "utf8");
+      expect(source.indexOf('_CONTROL_PAGE_HTML = """')).toBeGreaterThan(-1);
+      expect(source.indexOf('_CONTROL_PAGE_HTML = """')).toBeLessThan(source.indexOf("srv.Start(threaded=False)"));
+      expect(source).toContain('html = _CONTROL_PAGE_HTML.replace("__ROBOT_ID__", robot_id)');
+      expect(source).not.toContain("content=html % robot_id");
+    }
+  });
+
   it("normalizes robot ids for topic-safe names", () => {
     expect(normalizeRobotId(" Rover 01!! ")).toBe("rover-01");
     expect(normalizeRobotId("")).toBe("rf-rover");
