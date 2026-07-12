@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  buildMicroPythonFileWriteCommand,
+  buildMicroPythonFileWriteCommands,
   buildProvisionPayload,
   buildRobotCommand,
   canRunMotorTest,
@@ -60,11 +60,20 @@ describe("connect protocol", () => {
     });
   });
 
-  it("generates MicroPython REPL upload commands only for agent files", () => {
-    const command = buildMicroPythonFileWriteCommand("boot.py", "print('ok')");
-    expect(command).toContain("exec(");
-    expect(command).toContain("boot.py");
-    expect(() => buildMicroPythonFileWriteCommand("secrets.py", "")).toThrow("Unsupported MicroPython agent path");
+  it("chunks large UTF-8 agent files into acknowledged REPL commands", () => {
+    const source = `${"print('RoboForge')\n".repeat(3_000)}# ทดสอบ 🤖\n`;
+    const upload = buildMicroPythonFileWriteCommands("microWebSrv.py", source);
+
+    expect(upload.commands.length).toBeGreaterThan(100);
+    expect(new Set(upload.commands.map(({ acknowledgment }) => acknowledgment)).size).toBe(upload.commands.length);
+    expect(upload.commands.every(({ text }) => new TextEncoder().encode(text).byteLength <= 768)).toBe(true);
+    expect(upload.commands.at(-1)?.acknowledgment).toBe(`RF_FILE_OK:microWebSrv.py:${new TextEncoder().encode(source).byteLength}`);
+
+    const base64 = upload.commands
+      .map(({ text }) => text.match(/a2b_base64\("([A-Za-z0-9+/=]+)"\)/)?.[1] ?? "")
+      .join("");
+    expect(Buffer.from(base64, "base64").toString("utf8")).toBe(source);
+    expect(() => buildMicroPythonFileWriteCommands("secrets.py", "")).toThrow("Unsupported MicroPython agent path");
   });
 
   it("parses robot status from firmware payloads", () => {

@@ -10,7 +10,7 @@ import { AppShell } from "@/features/shell/app-shell";
 import {
   MICROPYTHON_AGENT_FILES,
   MICROPYTHON_RUNTIME_MANIFEST_URL,
-  buildMicroPythonFileWriteCommand,
+  buildMicroPythonFileWriteCommands,
   createRobotId,
 } from "./protocol";
 import {
@@ -33,6 +33,7 @@ const STEP_LABELS: Record<SetupStepId, string> = {
 type SerialPortLike = {
   close: () => Promise<void>;
   open: (options: { baudRate: number }) => Promise<void>;
+  readable?: ReadableStream<Uint8Array> | null;
   writable?: WritableStream<Uint8Array> | null;
 };
 
@@ -68,6 +69,89 @@ async function writeSerialText(port: SerialPortLike, text: string) {
   } finally {
     writer.releaseLock();
   }
+}
+
+class SerialReplyMonitor {
+  private readonly decoder = new TextDecoder();
+  private readonly reader: ReadableStreamDefaultReader<Uint8Array>;
+  private readonly waiters = new Set<() => void>();
+  private buffer = "";
+  private done = false;
+  private error: Error | null = null;
+  private readonly pumpPromise: Promise<void>;
+
+  constructor(readable: ReadableStream<Uint8Array>) {
+    this.reader = readable.getReader();
+    this.pumpPromise = this.pump();
+  }
+
+  private notify() {
+    for (const waiter of this.waiters) waiter();
+    this.waiters.clear();
+  }
+
+  private async pump() {
+    try {
+      while (true) {
+        const { done, value } = await this.reader.read();
+        if (done) break;
+        this.buffer += this.decoder.decode(value, { stream: true });
+        this.notify();
+      }
+      this.buffer += this.decoder.decode();
+    } catch (caught) {
+      this.error = caught instanceof Error ? caught : new Error("อ่านข้อมูลจาก ESP32 ไม่สำเร็จ");
+    } finally {
+      this.done = true;
+      this.notify();
+    }
+  }
+
+  async waitFor(expected: string, timeoutMs = 4_000) {
+    const deadline = Date.now() + timeoutMs;
+    while (true) {
+      const index = this.buffer.indexOf(expected);
+      if (index >= 0) {
+        this.buffer = this.buffer.slice(index + expected.length);
+        return;
+      }
+      if (this.error) throw this.error;
+      if (this.done) throw new Error(`ESP32 ปิดการเชื่อมต่อก่อนยืนยัน ${expected}`);
+
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw new Error(`ไม่ได้รับการยืนยันจาก ESP32: ${expected}`);
+      await new Promise<void>((resolve, reject) => {
+        const wake = () => {
+          window.clearTimeout(timer);
+          resolve();
+        };
+        const timer = window.setTimeout(() => {
+          this.waiters.delete(wake);
+          reject(new Error(`ไม่ได้รับการยืนยันจาก ESP32: ${expected}`));
+        }, remaining);
+        this.waiters.add(wake);
+      });
+    }
+  }
+
+  async close() {
+    try {
+      await this.reader.cancel();
+      await this.pumpPromise;
+    } finally {
+      this.reader.releaseLock();
+    }
+  }
+}
+
+async function writeAcknowledgedCommand(
+  port: SerialPortLike,
+  monitor: SerialReplyMonitor,
+  command: { acknowledgment: string; text: string },
+) {
+  await writeSerialText(port, command.text);
+  await monitor.waitFor(command.acknowledgment);
+  await monitor.waitFor(">>>");
 }
 
 export function ConnectWizard({ isAuthenticated }: { isAuthenticated: boolean }) {
@@ -123,6 +207,7 @@ export function ConnectWizard({ isAuthenticated }: { isAuthenticated: boolean })
     setUploading(true);
     setSetup((current) => reduceSetupState(current, { type: "retry" }));
     let port: SerialPortLike | null = null;
+    let monitor: SerialReplyMonitor | null = null;
     try {
       const files = await Promise.all(MICROPYTHON_AGENT_FILES.map(async (file) => {
         const response = await fetch(file.sourceUrl);
@@ -132,17 +217,27 @@ export function ConnectWizard({ isAuthenticated }: { isAuthenticated: boolean })
 
       port = await serial.requestPort();
       await port.open({ baudRate: 115200 });
+      if (!port.readable) throw new Error("ไม่พบช่องทางอ่านข้อมูลตอบกลับจาก ESP32");
+      monitor = new SerialReplyMonitor(port.readable);
       await writeSerialText(port, "\x03\x03\r\n");
-      await delay(500);
+      await monitor.waitFor(">>>");
       for (const file of files) {
-        await writeSerialText(port, buildMicroPythonFileWriteCommand(file.devicePath, file.source));
-        await delay(900);
+        const upload = buildMicroPythonFileWriteCommands(file.devicePath, file.source);
+        for (const command of upload.commands) {
+          await writeAcknowledgedCommand(port, monitor, command);
+        }
       }
       await writeSerialText(port, "import machine\r\nmachine.reset()\r\n");
+      await delay(300);
+      await monitor.close();
+      monitor = null;
       await port.close();
       port = null;
       succeed("agent");
     } catch (caught) {
+      if (monitor) {
+        try { await monitor.close(); } catch { /* Reader may already be closed. */ }
+      }
       if (port) {
         try { await port.close(); } catch { /* Port may already be closed. */ }
       }
