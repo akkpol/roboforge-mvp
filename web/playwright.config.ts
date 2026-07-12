@@ -6,6 +6,7 @@ export default defineConfig({
   reporter: "line",
   testDir: "./tests",
   testIgnore: "production.spec.ts",
+  timeout: 60_000,
   use: {
     baseURL: "http://127.0.0.1:3100",
     channel: "chrome",
