@@ -81,6 +81,23 @@ test("auth and guest profile share the new product language", async ({ page }) =
   await expectNoSeriousA11yIssues(page);
 });
 
+test("sign-out requires POST so route prefetch cannot revoke a session", async ({ request }) => {
+  const response = await request.get("/auth/sign-out", { maxRedirects: 0 });
+
+  expect(response.status()).toBe(405);
+});
+
+test("sign-out POST redirects to the guest login", async ({ request }) => {
+  const response = await request.post("/auth/sign-out", { maxRedirects: 0 });
+  const location = response.headers().location;
+
+  expect(response.status()).toBe(303);
+  expect(new URL(location, "http://127.0.0.1:3100").pathname).toBe("/login");
+  expect(new URL(location, "http://127.0.0.1:3100").search).toBe(
+    "?lang=th&redirect=/?connected=1",
+  );
+});
+
 test("install keeps old links working through the canonical connect route", async ({ page }) => {
   await page.goto("/install");
   await expect(page).toHaveURL(/\/connect$/);

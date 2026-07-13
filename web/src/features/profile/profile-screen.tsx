@@ -252,8 +252,9 @@ export function ProfileScreen({
             <div className="max-w-md"><div className="mx-auto grid size-20 place-items-center rounded-3xl bg-blue-50 text-2xl font-bold text-blue-700">RF</div><h2 className="mt-5 text-2xl font-bold text-slate-950">กรุณาเข้าสู่ระบบ</h2><p className="mt-2 text-sm leading-6 text-slate-600">เข้าสู่ระบบเพื่อจัดการโปรไฟล์ รูปประจำตัว และ Rover ของคุณ</p><Button asChild className="mt-6"><Link href="/login?redirect=/profile&lang=th"><LogIn className="size-4" />เข้าสู่ระบบ</Link></Button></div>
           </section>
         ) : (
-          <form className="grid gap-5 lg:grid-cols-3" onSubmit={handleSubmit}>
-            <section aria-label="รูปโปรไฟล์" className="rounded-3xl border border-white/80 bg-white/95 p-6 shadow-xl shadow-blue-950/5">
+          <>
+            <form className="grid gap-5 lg:grid-cols-3" onSubmit={handleSubmit}>
+              <section aria-label="รูปโปรไฟล์" className="rounded-3xl border border-white/80 bg-white/95 p-6 shadow-xl shadow-blue-950/5">
               <button aria-label="เลือกรูปโปรไฟล์" className="group relative mx-auto grid size-40 place-items-center overflow-hidden rounded-3xl bg-blue-50 text-4xl font-bold text-blue-700 outline-none focus-visible:ring-4 focus-visible:ring-blue-200" disabled={isPreparingAvatar || isSaving} onClick={() => fileInputRef.current?.click()} type="button">
                 {previewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -274,9 +275,11 @@ export function ProfileScreen({
                 <label className="text-sm font-semibold text-slate-700">อีเมล<span className={fieldShellClass}><Mail className="size-4" /><input className={inputClass} readOnly value={email ?? "ไม่มีอีเมล"} /></span></label>
               </div>
               {message ? <p className={messageTone === "error" ? "mt-5 rounded-2xl bg-rose-50 p-4 text-sm text-rose-700" : "mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700"} role="status">{messageTone === "success" ? <CheckCircle2 className="size-4" /> : null}{message}</p> : null}
-              <div aria-label="Profile actions" className="mt-6 flex flex-wrap gap-3"><Button disabled={isSaving || isPreparingAvatar} type="submit"><Save className="size-4" />{isSaving ? "กำลังบันทึก" : "บันทึกโปรไฟล์"}</Button><Button asChild variant="ghost"><Link href="/auth/sign-out"><LogOut className="size-4" />ออกจากระบบ</Link></Button></div>
-            </section>
-          </form>
+              <div aria-label="Profile actions" className="mt-6 flex flex-wrap gap-3"><Button disabled={isSaving || isPreparingAvatar} type="submit"><Save className="size-4" />{isSaving ? "กำลังบันทึก" : "บันทึกโปรไฟล์"}</Button><Button form="profile-sign-out-form" type="submit" variant="ghost"><LogOut className="size-4" />ออกจากระบบ</Button></div>
+              </section>
+            </form>
+            <form action="/auth/sign-out" id="profile-sign-out-form" method="post" />
+          </>
         )}
       </div>
     </AppShell>
