@@ -81,6 +81,23 @@ test("auth and guest profile share the new product language", async ({ page }) =
   await expectNoSeriousA11yIssues(page);
 });
 
+test("sign-out requires POST so route prefetch cannot revoke a session", async ({ request }) => {
+  const response = await request.get("/auth/sign-out", { maxRedirects: 0 });
+
+  expect(response.status()).toBe(405);
+});
+
+test("sign-out POST redirects to the guest login", async ({ request }) => {
+  const response = await request.post("/auth/sign-out", { maxRedirects: 0 });
+  const location = response.headers().location;
+
+  expect(response.status()).toBe(303);
+  expect(new URL(location, "http://127.0.0.1:3100").pathname).toBe("/login");
+  expect(new URL(location, "http://127.0.0.1:3100").search).toBe(
+    "?lang=th&redirect=/?connected=1",
+  );
+});
+
 test("install keeps old links working through the canonical connect route", async ({ page }) => {
   await page.goto("/install");
   await expect(page).toHaveURL(/\/connect$/);
@@ -124,16 +141,33 @@ test("connect keeps the user on upload failure, retries, and restores progress",
     body: "customElements.define('esp-web-install-button', class extends HTMLElement {});",
     contentType: "text/javascript",
   }));
-  await page.route("https://raw.githubusercontent.com/**", (route) => route.fulfill({
+  await page.route("**/firmware/micropython/*.py", (route) => route.fulfill({
     body: 'print("mock agent")',
     contentType: "text/plain",
   }));
   await page.addInitScript(() => {
     let requestCount = 0;
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    let controller: ReadableStreamDefaultController<Uint8Array>;
+    const readable = new ReadableStream<Uint8Array>({
+      start(nextController) {
+        controller = nextController;
+      },
+    });
     const port = {
       close: async () => undefined,
       open: async () => undefined,
-      writable: new WritableStream<Uint8Array>({ write: async () => undefined }),
+      readable,
+      writable: new WritableStream<Uint8Array>({
+        write(value) {
+          const text = decoder.decode(value);
+          if (text.includes("\x03")) controller.enqueue(encoder.encode("\r\n>>> "));
+          for (const match of text.matchAll(/print\("([^"]+)"\)/g)) {
+            controller.enqueue(encoder.encode(`${match[1]}\r\n>>> `));
+          }
+        },
+      }),
     };
     Object.defineProperty(navigator, "serial", {
       configurable: true,
@@ -159,4 +193,107 @@ test("connect keeps the user on upload failure, retries, and restores progress",
 
   await page.reload();
   await expect(page.getByRole("heading", { level: 2, name: "เชื่อมต่อผ่าน Wi-Fi" })).toBeVisible();
+});
+
+test("connect chunks large Agent files and waits for device acknowledgements", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "The mocked Web Serial flow targets desktop browsers.");
+
+  await page.route("https://unpkg.com/**", (route) => route.fulfill({
+    body: "customElements.define('esp-web-install-button', class extends HTMLElement {});",
+    contentType: "text/javascript",
+  }));
+  await page.route("**/firmware/micropython/*.py", (route) => route.fulfill({
+    body: `${"print('large agent')\n".repeat(2_500)}# ทดสอบ 🤖\n`,
+    contentType: "text/plain",
+  }));
+  await page.addInitScript(() => {
+    const state = window as typeof window & { __rfSerialWriteSizes?: number[] };
+    state.__rfSerialWriteSizes = [];
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    let controller: ReadableStreamDefaultController<Uint8Array>;
+    const readable = new ReadableStream<Uint8Array>({
+      start(nextController) {
+        controller = nextController;
+      },
+    });
+    const writable = new WritableStream<Uint8Array>({
+      write(value) {
+        state.__rfSerialWriteSizes?.push(value.byteLength);
+        const text = decoder.decode(value);
+        if (text.includes("\x03")) controller.enqueue(encoder.encode("\r\n>>> "));
+        for (const match of text.matchAll(/print\("([^"]+)"\)/g)) {
+          controller.enqueue(encoder.encode(`${match[1]}\r\n>>> `));
+        }
+      },
+    });
+    const port = {
+      close: async () => undefined,
+      open: async () => undefined,
+      readable,
+      writable,
+    };
+    Object.defineProperty(navigator, "serial", {
+      configurable: true,
+      value: { requestPort: async () => port },
+    });
+  });
+
+  await page.goto("/connect");
+  await page.getByRole("button", { name: "พร้อม เริ่มติดตั้ง" }).click();
+  await page.getByRole("button", { name: "ติดตั้ง MicroPython เสร็จแล้ว" }).click();
+  await page.getByRole("button", { name: "อัปโหลด Agent" }).click();
+
+  await expect(page.getByRole("heading", { level: 2, name: "เชื่อมต่อผ่าน Wi-Fi" })).toBeVisible({ timeout: 30_000 });
+  const writeSizes = await page.evaluate(() =>
+    (window as typeof window & { __rfSerialWriteSizes?: number[] }).__rfSerialWriteSizes ?? [],
+  );
+  expect(writeSizes.length).toBeGreaterThan(100);
+  expect(Math.max(...writeSizes)).toBeLessThanOrEqual(768);
+});
+
+test("connect stays on Agent when the device does not acknowledge a file", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "The mocked Web Serial flow targets desktop browsers.");
+
+  await page.route("https://unpkg.com/**", (route) => route.fulfill({
+    body: "customElements.define('esp-web-install-button', class extends HTMLElement {});",
+    contentType: "text/javascript",
+  }));
+  await page.route("**/firmware/micropython/*.py", (route) => route.fulfill({
+    body: 'print("mock agent")',
+    contentType: "text/plain",
+  }));
+  await page.addInitScript(() => {
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    let controller: ReadableStreamDefaultController<Uint8Array>;
+    const readable = new ReadableStream<Uint8Array>({
+      start(nextController) {
+        controller = nextController;
+      },
+    });
+    const writable = new WritableStream<Uint8Array>({
+      write(value) {
+        if (decoder.decode(value).includes("\x03")) controller.enqueue(encoder.encode("\r\n>>> "));
+      },
+    });
+    const port = {
+      close: async () => undefined,
+      open: async () => undefined,
+      readable,
+      writable,
+    };
+    Object.defineProperty(navigator, "serial", {
+      configurable: true,
+      value: { requestPort: async () => port },
+    });
+  });
+
+  await page.goto("/connect");
+  await page.getByRole("button", { name: "พร้อม เริ่มติดตั้ง" }).click();
+  await page.getByRole("button", { name: "ติดตั้ง MicroPython เสร็จแล้ว" }).click();
+  await page.getByRole("button", { name: "อัปโหลด Agent" }).click();
+
+  await expect(page.getByRole("alert").filter({ hasText: "ไม่ได้รับการยืนยันจาก ESP32" })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("heading", { level: 2, name: "อัปโหลด RoboForge Agent" })).toBeVisible();
 });

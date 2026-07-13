@@ -3,23 +3,19 @@ export const MICROPYTHON_RUNTIME_MANIFEST_URL =
 export const MICROPYTHON_AGENT_FILES = [
   {
     devicePath: "boot.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/boot.py",
+    sourceUrl: "/firmware/micropython/boot.py",
   },
   {
     devicePath: "main.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/main.py",
+    sourceUrl: "/firmware/micropython/main-websocket-agent.py",
   },
   {
     devicePath: "microWebSrv.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/microWebSrv.py",
+    sourceUrl: "/firmware/micropython/microWebSrv.py",
   },
   {
     devicePath: "microWebSocket.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/microWebSocket.py",
+    sourceUrl: "/firmware/micropython/microWebSocket.py",
   },
 ] as const;
 
@@ -120,19 +116,49 @@ export function buildProvisionPayload(input: {
   };
 }
 
-export function buildMicroPythonFileWriteCommand(devicePath: string, source: string) {
+export type MicroPythonFileWriteCommand = {
+  acknowledgment: string;
+  text: string;
+};
+
+const MICROPYTHON_BASE64_CHUNK_SIZE = 384;
+
+function encodeUtf8Base64(source: string) {
+  const bytes = new TextEncoder().encode(source);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return { base64: btoa(binary), byteLength: bytes.byteLength };
+}
+
+export function buildMicroPythonFileWriteCommands(devicePath: string, source: string) {
   if (!MICROPYTHON_AGENT_FILES.some((file) => file.devicePath === devicePath)) {
     throw new Error("Unsupported MicroPython agent path");
   }
 
-  const script = [
-    `fp = open(${JSON.stringify(devicePath)}, "w")`,
-    `fp.write(${JSON.stringify(source)})`,
-    "fp.close()",
-    `print("wrote ${devicePath}")`,
-  ].join("\n");
+  const { base64, byteLength } = encodeUtf8Base64(source);
+  const commands: MicroPythonFileWriteCommand[] = [];
+  const openAcknowledgment = `RF_FILE_OPEN:${devicePath}`;
+  commands.push({
+    acknowledgment: openAcknowledgment,
+    text: `import binascii; fp = open(${JSON.stringify(devicePath)}, "wb"); print(${JSON.stringify(openAcknowledgment)})\r\n`,
+  });
 
-  return `exec(${JSON.stringify(script)})\r\n`;
+  for (let offset = 0, index = 0; offset < base64.length; offset += MICROPYTHON_BASE64_CHUNK_SIZE, index += 1) {
+    const chunk = base64.slice(offset, offset + MICROPYTHON_BASE64_CHUNK_SIZE);
+    const acknowledgment = `RF_CHUNK_OK:${devicePath}:${index}`;
+    commands.push({
+      acknowledgment,
+      text: `fp.write(binascii.a2b_base64(${JSON.stringify(chunk)})); print(${JSON.stringify(acknowledgment)})\r\n`,
+    });
+  }
+
+  const finalAcknowledgment = `RF_FILE_OK:${devicePath}:${byteLength}`;
+  commands.push({
+    acknowledgment: finalAcknowledgment,
+    text: `fp.close(); print(${JSON.stringify(finalAcknowledgment)})\r\n`,
+  });
+
+  return { byteLength, commands };
 }
 
 function numericField(value: unknown) {
