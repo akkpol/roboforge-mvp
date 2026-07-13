@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  MICROPYTHON_AGENT_FILES,
   buildMicroPythonFileWriteCommands,
   buildProvisionPayload,
   buildRobotCommand,
@@ -14,6 +15,25 @@ import {
 } from "./protocol";
 
 describe("connect protocol", () => {
+  it("loads the exact Agent sources bundled with the current deployment", () => {
+    const expectedSources = {
+      "boot.py": "/firmware/micropython/boot.py",
+      "main.py": "/firmware/micropython/main-websocket-agent.py",
+      "microWebSocket.py": "/firmware/micropython/microWebSocket.py",
+      "microWebSrv.py": "/firmware/micropython/microWebSrv.py",
+    };
+
+    expect(Object.fromEntries(MICROPYTHON_AGENT_FILES.map(({ devicePath, sourceUrl }) => [devicePath, sourceUrl]))).toEqual(
+      expectedSources,
+    );
+
+    for (const { devicePath, sourceUrl } of MICROPYTHON_AGENT_FILES) {
+      const canonical = readFileSync(join(process.cwd(), "..", "firmware", devicePath), "utf8").replace(/\r\n/g, "\n");
+      const deployed = readFileSync(join(process.cwd(), "public", sourceUrl), "utf8").replace(/\r\n/g, "\n");
+      expect(deployed).toBe(canonical);
+    }
+  });
+
   it("keeps the browser installer asset compatible with the established device protocol", () => {
     for (const file of ["boot.py", "main.py", "microWebSrv.py", "microWebSocket.py"]) {
       expect(readFileSync(join(process.cwd(), "public", "firmware", "micropython", file), "utf8").length).toBeGreaterThan(0);

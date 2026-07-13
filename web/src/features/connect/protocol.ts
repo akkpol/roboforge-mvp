@@ -3,23 +3,19 @@ export const MICROPYTHON_RUNTIME_MANIFEST_URL =
 export const MICROPYTHON_AGENT_FILES = [
   {
     devicePath: "boot.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/boot.py",
+    sourceUrl: "/firmware/micropython/boot.py",
   },
   {
     devicePath: "main.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/main.py",
+    sourceUrl: "/firmware/micropython/main-websocket-agent.py",
   },
   {
     devicePath: "microWebSrv.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/microWebSrv.py",
+    sourceUrl: "/firmware/micropython/microWebSrv.py",
   },
   {
     devicePath: "microWebSocket.py",
-    sourceUrl:
-      "https://raw.githubusercontent.com/akkpol/roboforge-mvp/main/firmware/microWebSocket.py",
+    sourceUrl: "/firmware/micropython/microWebSocket.py",
   },
 ] as const;
 

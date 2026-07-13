@@ -141,7 +141,7 @@ test("connect keeps the user on upload failure, retries, and restores progress",
     body: "customElements.define('esp-web-install-button', class extends HTMLElement {});",
     contentType: "text/javascript",
   }));
-  await page.route("https://raw.githubusercontent.com/**", (route) => route.fulfill({
+  await page.route("**/firmware/micropython/*.py", (route) => route.fulfill({
     body: 'print("mock agent")',
     contentType: "text/plain",
   }));
@@ -202,7 +202,7 @@ test("connect chunks large Agent files and waits for device acknowledgements", a
     body: "customElements.define('esp-web-install-button', class extends HTMLElement {});",
     contentType: "text/javascript",
   }));
-  await page.route("https://raw.githubusercontent.com/**", (route) => route.fulfill({
+  await page.route("**/firmware/micropython/*.py", (route) => route.fulfill({
     body: `${"print('large agent')\n".repeat(2_500)}# ทดสอบ 🤖\n`,
     contentType: "text/plain",
   }));
@@ -259,7 +259,7 @@ test("connect stays on Agent when the device does not acknowledge a file", async
     body: "customElements.define('esp-web-install-button', class extends HTMLElement {});",
     contentType: "text/javascript",
   }));
-  await page.route("https://raw.githubusercontent.com/**", (route) => route.fulfill({
+  await page.route("**/firmware/micropython/*.py", (route) => route.fulfill({
     body: 'print("mock agent")',
     contentType: "text/plain",
   }));
